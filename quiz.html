@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Games - PlayZone</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .back-btn {
+            display: inline-block;
+            padding: 0.8rem 2rem;
+            background: white;
+            color: #667eea;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .back-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .game-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .game-card h2 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .game-area {
+            margin: 1.5rem 0;
+            min-height: 250px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            margin: 0.5rem;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .question {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .option {
+            padding: 1rem;
+            background: #f5f5f5;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .option:hover {
+            background: #e8e8ff;
+            border-color: #667eea;
+        }
+
+        .option.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .option.correct {
+            background: #4caf50;
+            color: white;
+            border-color: #4caf50;
+        }
+
+        .option.incorrect {
+            background: #f44336;
+            color: white;
+            border-color: #f44336;
+        }
+
+        .score {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            margin: 1rem 0;
+        }
+
+        .timer {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #f44336;
+            margin: 1rem 0;
+        }
+
+        .result {
+            font-size: 1.1rem;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        .result.correct {
+            background: #4caf50;
+            color: white;
+        }
+
+        .result.incorrect {
+            background: #f44336;
+            color: white;
+        }
+
+        .personality-result {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        .category-select {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .category-btn {
+            padding: 1rem;
+            background: #f5f5f5;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .category-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-btn">← Back to Home</a>
+            <h1>📚 Quiz Games</h1>
+            <p style="font-size: 1.2rem; margin-top: 0.5rem;">Test your knowledge and learn new things!</p>
+        </div>
+
+        <div class="games-grid">
+            <!-- Multiple Choice Quiz -->
+            <div class="game-card">
+                <h2>Multiple Choice Quiz</h2>
+                <div class="score">Score: <span id="mc-score">0</span> / <span id="mc-total">0</span></div>
+                <div class="game-area">
+                    <div id="mc-quiz-area"></div>
+                </div>
+                <button onclick="initMultipleChoice()">Start Quiz</button>
+            </div>
+
+            <!-- True or False Game -->
+            <div class="game-card">
+                <h2>True or False</h2>
+                <div class="score">Score: <span id="tf-score">0</span> / <span id="tf-total">0</span></div>
+                <div class="game-area">
+                    <div id="tf-quiz-area"></div>
+                </div>
+                <button onclick="initTrueFalse()">Start Game</button>
+            </div>
+
+            <!-- Timed Quiz Challenge -->
+            <div class="game-card">
+                <h2>Timed Challenge</h2>
+                <div class="timer">Time: <span id="timer">30</span>s</div>
+                <div class="score">Score: <span id="timed-score">0</span></div>
+                <div class="game-area">
+                    <div id="timed-quiz-area"></div>
+                </div>
+                <button onclick="initTimedQuiz()">Start Challenge</button>
+            </div>
+
+            <!-- Personality Quiz -->
+            <div class="game-card">
+                <h2>Personality Quiz</h2>
+                <div class="game-area">
+                    <div id="personality-quiz-area"></div>
+                </div>
+                <button onclick="initPersonalityQuiz()">Start Quiz</button>
+            </div>
+
+            <!-- Category Quiz -->
+            <div class="game-card">
+                <h2>Category Quiz</h2>
+                <div class="score">Score: <span id="cat-score">0</span> / <span id="cat-total">0</span></div>
+                <div class="game-area">
+                    <div id="category-quiz-area">
+                        <p style="margin-bottom: 1rem;">Choose a category:</p>
+                        <div class="category-select">
+                            <button class="category-btn" onclick="startCategoryQuiz('geography')">🌍 Geography</button>
+                            <button class="category-btn" onclick="startCategoryQuiz('movies')">🎬 Movies</button>
+                            <button class="category-btn" onclick="startCategoryQuiz('sports')">⚽ Sports</button>
+                            <button class="category-btn" onclick="startCategoryQuiz('science')">🔬 Science</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== MULTIPLE CHOICE QUIZ ==========
+        const mcQuestions = [
+            {
+                question: "What is the capital of France?",
+                options: ["London", "Berlin", "Paris", "Madrid"],
+                correct: 2
+            },
+            {
+                question: "Which planet is known as the Red Planet?",
+                options: ["Venus", "Mars", "Jupiter", "Saturn"],
+                correct: 1
+            },
+            {
+                question: "Who painted the Mona Lisa?",
+                options: ["Vincent van Gogh", "Pablo Picasso", "Leonardo da Vinci", "Michelangelo"],
+                correct: 2
+            },
+            {
+                question: "What is the largest ocean on Earth?",
+                options: ["Atlantic Ocean", "Indian Ocean", "Arctic Ocean", "Pacific Ocean"],
+                correct: 3
+            },
+            {
+                question: "In which year did World War II end?",
+                options: ["1943", "1944", "1945", "1946"],
+                correct: 2
+            }
+        ];
+
+        let mcCurrentQuestion = 0;
+        let mcScore = 0;
+
+        function initMultipleChoice() {
+            mcCurrentQuestion = 0;
+            mcScore = 0;
+            document.getElementById('mc-score').textContent = '0';
+            document.getElementById('mc-total').textContent = mcQuestions.length;
+            showMCQuestion();
+        }
+
+        function showMCQuestion() {
+            if (mcCurrentQuestion >= mcQuestions.length) {
+                document.getElementById('mc-quiz-area').innerHTML = `
+                    <div class="result correct">
+                        <h3>Quiz Complete!</h3>
+                        <p>Final Score: ${mcScore} / ${mcQuestions.length}</p>
+                        <p>${mcScore === mcQuestions.length ? '🎉 Perfect Score!' : mcScore >= mcQuestions.length / 2 ? '👍 Good Job!' : '💪 Keep practicing!'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const q = mcQuestions[mcCurrentQuestion];
+            let html = `<div class="question">${mcCurrentQuestion + 1}. ${q.question}</div><div class="options">`;
+            
+            q.options.forEach((opt, idx) => {
+                html += `<div class="option" onclick="checkMCAnswer(${idx})">${opt}</div>`;
+            });
+            
+            html += '</div>';
+            document.getElementById('mc-quiz-area').innerHTML = html;
+        }
+
+        function checkMCAnswer(selected) {
+            const q = mcQuestions[mcCurrentQuestion];
+            const options = document.querySelectorAll('#mc-quiz-area .option');
+            
+            options[selected].classList.add(selected === q.correct ? 'correct' : 'incorrect');
+            options[q.correct].classList.add('correct');
+            
+            if (selected === q.correct) {
+                mcScore++;
+                document.getElementById('mc-score').textContent = mcScore;
+            }
+            
+            setTimeout(() => {
+                mcCurrentQuestion++;
+                showMCQuestion();
+            }, 1500);
+        }
+
+        // ========== TRUE OR FALSE GAME ==========
+        const tfQuestions = [
+            { question: "The Great Wall of China is visible from space.", answer: false },
+            { question: "Honey never spoils.", answer: true },
+            { question: "A group of flamingos is called a 'flamboyance'.", answer: true },
+            { question: "Bananas grow on trees.", answer: false },
+            { question: "The human brain uses 100% of its capacity.", answer: false },
+            { question: "Lightning never strikes the same place twice.", answer: false },
+            { question: "Octopuses have three hearts.", answer: true },
+            { question: "The Earth is closer to the sun in summer.", answer: false }
+        ];
+
+        let tfCurrentQuestion = 0;
+        let tfScore = 0;
+
+        function initTrueFalse() {
+            tfCurrentQuestion = 0;
+            tfScore = 0;
+            document.getElementById('tf-score').textContent = '0';
+            document.getElementById('tf-total').textContent = tfQuestions.length;
+            showTFQuestion();
+        }
+
+        function showTFQuestion() {
+            if (tfCurrentQuestion >= tfQuestions.length) {
+                document.getElementById('tf-quiz-area').innerHTML = `
+                    <div class="result correct">
+                        <h3>Game Complete!</h3>
+                        <p>Final Score: ${tfScore} / ${tfQuestions.length}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const q = tfQuestions[tfCurrentQuestion];
+            document.getElementById('tf-quiz-area').innerHTML = `
+                <div class="question">${tfCurrentQuestion + 1}. ${q.question}</div>
+                <div class="options">
+                    <div class="option" onclick="checkTFAnswer(true)">✓ TRUE</div>
+                    <div class="option" onclick="checkTFAnswer(false)">✗ FALSE</div>
+                </div>
+            `;
+        }
+
+        function checkTFAnswer(selected) {
+            const q = tfQuestions[tfCurrentQuestion];
+            const correct = selected === q.answer;
+            
+            if (correct) {
+                tfScore++;
+                document.getElementById('tf-score').textContent = tfScore;
+            }
+            
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'result ' + (correct ? 'correct' : 'incorrect');
+            resultDiv.innerHTML = correct ? '✓ Correct!' : `✗ Wrong! The answer is ${q.answer ? 'TRUE' : 'FALSE'}`;
+            document.getElementById('tf-quiz-area').appendChild(resultDiv);
+            
+            setTimeout(() => {
+                tfCurrentQuestion++;
+                showTFQuestion();
+            }, 1500);
+        }
+
+        // ========== TIMED QUIZ CHALLENGE ==========
+        const timedQuestions = [
+            { question: "2 + 2 = ?", options: ["3", "4", "5"], correct: 1 },
+            { question: "Capital of Japan?", options: ["Seoul", "Tokyo", "Beijing"], correct: 1 },
+            { question: "Color of the sky?", options: ["Blue", "Green", "Red"], correct: 0 },
+            { question: "12 ÷ 4 = ?", options: ["2", "3", "4"], correct: 1 },
+            { question: "Largest mammal?", options: ["Elephant", "Blue Whale", "Giraffe"], correct: 1 },
+            { question: "Author of Harry Potter?", options: ["J.K. Rowling", "Tolkien", "C.S. Lewis"], correct: 0 },
+            { question: "H2O is?", options: ["Water", "Air", "Fire"], correct: 0 },
+            { question: "Speed of light?", options: ["Fast", "Very Fast", "Super Fast"], correct: 1 }
+        ];
+
+        let timedCurrentQuestion = 0;
+        let timedScore = 0;
+        let timedTimer = null;
+        let timedTimeLeft = 30;
+
+        function initTimedQuiz() {
+            timedCurrentQuestion = 0;
+            timedScore = 0;
+            timedTimeLeft = 30;
+            document.getElementById('timed-score').textContent = '0';
+            
+            if (timedTimer) clearInterval(timedTimer);
+            
+            timedTimer = setInterval(() => {
+                timedTimeLeft--;
+                document.getElementById('timer').textContent = timedTimeLeft;
+                
+                if (timedTimeLeft <= 0) {
+                    clearInterval(timedTimer);
+                    endTimedQuiz();
+                }
+            }, 1000);
+            
+            showTimedQuestion();
+        }
+
+        function showTimedQuestion() {
+            if (timedCurrentQuestion >= timedQuestions.length) {
+                clearInterval(timedTimer);
+                endTimedQuiz();
+                return;
+            }
+
+            const q = timedQuestions[timedCurrentQuestion];
+            let html = `<div class="question">${q.question}</div><div class="options">`;
+            
+            q.options.forEach((opt, idx) => {
+                html += `<div class="option" onclick="checkTimedAnswer(${idx})">${opt}</div>`;
+            });
+            
+            html += '</div>';
+            document.getElementById('timed-quiz-area').innerHTML = html;
+        }
+
+        function checkTimedAnswer(selected) {
+            const q = timedQuestions[timedCurrentQuestion];
+            
+            if (selected === q.correct) {
+                timedScore++;
+                document.getElementById('timed-score').textContent = timedScore;
+            }
+            
+            timedCurrentQuestion++;
+            showTimedQuestion();
+        }
+
+        function endTimedQuiz() {
+            document.getElementById('timed-quiz-area').innerHTML = `
+                <div class="result correct">
+                    <h3>Time's Up!</h3>
+                    <p>You answered ${timedCurrentQuestion} questions</p>
+                    <p>Correct: ${timedScore}</p>
+                    <p>Score: ${Math.round((timedScore / timedCurrentQuestion) * 100)}%</p>
+                </div>
+            `;
+        }
+
+        // ========== PERSONALITY QUIZ ==========
+        const personalityQuestions = [
+            {
+                question: "How do you prefer to spend your weekend?",
+                options: [
+                    { text: "Reading a book at home", trait: "introvert" },
+                    { text: "Going to a party", trait: "extrovert" },
+                    { text: "Outdoor adventure", trait: "adventurer" },
+                    { text: "Working on a project", trait: "creative" }
+                ]
+            },
+            {
+                question: "What's your ideal vacation?",
+                options: [
+                    { text: "Beach resort", trait: "relaxer" },
+                    { text: "Mountain hiking", trait: "adventurer" },
+                    { text: "City tour", trait: "explorer" },
+                    { text: "Staycation", trait: "introvert" }
+                ]
+            },
+            {
+                question: "How do you handle stress?",
+                options: [
+                    { text: "Exercise", trait: "active" },
+                    { text: "Talk to friends", trait: "extrovert" },
+                    { text: "Alone time", trait: "introvert" },
+                    { text: "Creative outlet", trait: "creative" }
+                ]
+            }
+        ];
+
+        let personalityCurrentQuestion = 0;
+        let personalityScores = {};
+
+        function initPersonalityQuiz() {
+            personalityCurrentQuestion = 0;
+            personalityScores = {};
+            showPersonalityQuestion();
+        }
+
+        function showPersonalityQuestion() {
+            if (personalityCurrentQuestion >= personalityQuestions.length) {
+                showPersonalityResult();
+                return;
+            }
+
+            const q = personalityQuestions[personalityCurrentQuestion];
+            let html = `<div class="question">${q.question}</div><div class="options">`;
+            
+            q.options.forEach((opt, idx) => {
+                html += `<div class="option" onclick="selectPersonalityAnswer('${opt.trait}')">${opt.text}</div>`;
+            });
+            
+            html += '</div>';
+            document.getElementById('personality-quiz-area').innerHTML = html;
+        }
+
+        function selectPersonalityAnswer(trait) {
+            personalityScores[trait] = (personalityScores[trait] || 0) + 1;
+            personalityCurrentQuestion++;
+            showPersonalityQuestion();
+        }
+
+        function showPersonalityResult() {
+            let maxTrait = '';
+            let maxScore = 0;
+            
+            for (let trait in personalityScores) {
+                if (personalityScores[trait] > maxScore) {
+                    maxScore = personalityScores[trait];
+                    maxTrait = trait;
+                }
+            }
+
+            const results = {
+                introvert: { title: "The Thoughtful Introvert", desc: "You enjoy quiet time and deep reflection. You're a great listener and thinker!" },
+                extrovert: { title: "The Social Butterfly", desc: "You thrive in social settings and love being around people. You're energetic and outgoing!" },
+                adventurer: { title: "The Bold Adventurer", desc: "You love excitement and new experiences. You're brave and always ready for a challenge!" },
+                creative: { title: "The Creative Soul", desc: "You express yourself through creativity. You're innovative and artistic!" },
+                relaxer: { title: "The Chill Relaxer", desc: "You know how to take it easy and enjoy life. You're balanced and peaceful!" },
+                explorer: { title: "The Curious Explorer", desc: "You love discovering new things. You're curious and open-minded!" },
+                active: { title: "The Energetic Doer", desc: "You love staying active and productive. You're motivated and dynamic!" }
+            };
+
+            const result = results[maxTrait] || results.introvert;
+            
+            document.getElementById('personality-quiz-area').innerHTML = `
+                <div class="personality-result">
+                    <h3>${result.title}</h3>
+                    <p>${result.desc}</p>
+                </div>
+            `;
+        }
+
+        // ========== CATEGORY QUIZ ==========
+        const categoryQuestions = {
+            geography: [
+                { question: "What is the smallest country in the world?", options: ["Monaco", "Vatican City", "San Marino", "Liechtenstein"], correct: 1 },
+                { question: "Which river is the longest in the world?", options: ["Amazon", "Nile", "Yangtze", "Mississippi"], correct: 1 },
+                { question: "Mount Everest is located in which mountain range?", options: ["Alps", "Andes", "Himalayas", "Rockies"], correct: 2 }
+            ],
+            movies: [
+                { question: "Who directed 'Inception'?", options: ["Spielberg", "Nolan", "Tarantino", "Scorsese"], correct: 1 },
+                { question: "Which movie won the Oscar for Best Picture in 1994?", options: ["Pulp Fiction", "Forrest Gump", "The Shawshank Redemption", "Jurassic Park"], correct: 1 },
+                { question: "What is the highest-grossing film of all time?", options: ["Titanic", "Avatar", "Avengers: Endgame", "Star Wars"], correct: 1 }
+            ],
+            sports: [
+                { question: "How many players are on a soccer team?", options: ["9", "10", "11", "12"], correct: 2 },
+                { question: "In which sport is 'love' a score?", options: ["Tennis", "Golf", "Cricket", "Baseball"], correct: 0 },
+                { question: "How many rings are on the Olympic flag?", options: ["4", "5", "6", "7"], correct: 1 }
+            ],
+            science: [
+                { question: "What is the chemical symbol for gold?", options: ["Go", "Gd", "Au", "Ag"], correct: 2 },
+                { question: "How many bones are in the human body?", options: ["186", "206", "226", "246"], correct: 1 },
+                { question: "What is the speed of light?", options: ["300,000 km/s", "150,000 km/s", "450,000 km/s", "600,000 km/s"], correct: 0 }
+            ]
+        };
+
+        let catCurrentQuestion = 0;
+        let catScore = 0;
+        let catQuestions = [];
+
+        function startCategoryQuiz(category) {
+            catCurrentQuestion = 0;
+            catScore = 0;
+            catQuestions = categoryQuestions[category];
+            document.getElementById('cat-score').textContent = '0';
+            document.getElementById('cat-total').textContent = catQuestions.length;
+            showCategoryQuestion();
+        }
+
+        function showCategoryQuestion() {
+            if (catCurrentQuestion >= catQuestions.length) {
+                document.getElementById('category-quiz-area').innerHTML = `
+                    <div class="result correct">
+                        <h3>Quiz Complete!</h3>
+                        <p>Final Score: ${catScore} / ${catQuestions.length}</p>
+                    </div>
+                    <button onclick="location.reload()">Play Another Category</button>
+                `;
+                return;
+            }
+
+            const q = catQuestions[catCurrentQuestion];
+            let html = `<div class="question">${catCurrentQuestion + 1}. ${q.question}</div><div class="options">`;
+            
+            q.options.forEach((opt, idx) => {
+                html += `<div class="option" onclick="checkCategoryAnswer(${idx})">${opt}</div>`;
+            });
+            
+            html += '</div>';
+            document.getElementById('category-quiz-area').innerHTML = html;
+        }
+
+        function checkCategoryAnswer(selected) {
+            const q = catQuestions[catCurrentQuestion];
+            const options = document.querySelectorAll('#category-quiz-area .option');
+            
+            options[selected].classList.add(selected === q.correct ? 'correct' : 'incorrect');
+            options[q.correct].classList.add('correct');
+            
+            if (selected === q.correct) {
+                catScore++;
+                document.getElementById('cat-score').textContent = catScore;
+            }
+            
+            setTimeout(() => {
+                catCurrentQuestion++;
+                showCategoryQuestion();
+            }, 1500);
+        }
+
+        // Initialize first quiz
+        initMultipleChoice();
+    </script>
+</body>
+</html>

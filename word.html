@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Games - PlayZone</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .back-btn {
+            display: inline-block;
+            padding: 0.8rem 2rem;
+            background: white;
+            color: #667eea;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .back-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .game-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .game-card h2 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .game-area {
+            margin: 1.5rem 0;
+            min-height: 200px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            margin: 0.5rem;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Hangman Styles */
+        .hangman-display {
+            font-size: 2rem;
+            letter-spacing: 0.5rem;
+            font-weight: bold;
+            margin: 2rem 0;
+            text-align: center;
+            color: #333;
+        }
+
+        .keyboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .key {
+            padding: 0.8rem;
+            background: #f5f5f5;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .key:hover:not(.used) {
+            background: #667eea;
+            color: white;
+        }
+
+        .key.used {
+            background: #ccc;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        /* Wordle Styles */
+        .wordle-grid {
+            display: grid;
+            grid-template-rows: repeat(6, 1fr);
+            gap: 0.5rem;
+            margin: 1rem auto;
+            width: fit-content;
+        }
+
+        .wordle-row {
+            display: grid;
+            grid-template-columns: repeat(5, 60px);
+            gap: 0.5rem;
+        }
+
+        .wordle-cell {
+            width: 60px;
+            height: 60px;
+            border: 2px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-radius: 5px;
+        }
+
+        .wordle-cell.correct {
+            background: #6aaa64;
+            color: white;
+            border-color: #6aaa64;
+        }
+
+        .wordle-cell.present {
+            background: #c9b458;
+            color: white;
+            border-color: #c9b458;
+        }
+
+        .wordle-cell.absent {
+            background: #787c7e;
+            color: white;
+            border-color: #787c7e;
+        }
+
+        .wordle-input {
+            width: 100%;
+            padding: 0.8rem;
+            font-size: 1.2rem;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            text-align: center;
+            text-transform: uppercase;
+            margin: 1rem 0;
+        }
+
+        /* Anagram Styles */
+        .anagram-word {
+            font-size: 2.5rem;
+            font-weight: bold;
+            letter-spacing: 0.5rem;
+            color: #667eea;
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .answer-input {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.2rem;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        /* Typing Test Styles */
+        .typing-text {
+            background: #f5f5f5;
+            padding: 1.5rem;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin: 1rem 0;
+            color: #333;
+        }
+
+        .typing-input {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.1rem;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            margin: 1rem 0;
+        }
+
+        .typing-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .stat {
+            background: #f5f5f5;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* Word Chain Styles */
+        .word-chain-display {
+            background: #f5f5f5;
+            padding: 1rem;
+            border-radius: 10px;
+            min-height: 100px;
+            margin: 1rem 0;
+        }
+
+        .chain-word {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            margin: 0.5rem;
+        }
+
+        .score {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            margin: 1rem 0;
+        }
+
+        .message {
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .message.success {
+            background: #4caf50;
+            color: white;
+        }
+
+        .message.error {
+            background: #f44336;
+            color: white;
+        }
+
+        .message.info {
+            background: #2196F3;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .wordle-row {
+                grid-template-columns: repeat(5, 50px);
+            }
+
+            .wordle-cell {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-btn">← Back to Home</a>
+            <h1>✍️ Word Games</h1>
+            <p style="font-size: 1.2rem; margin-top: 0.5rem;">Master the art of words!</p>
+        </div>
+
+        <div class="games-grid">
+            <!-- Hangman Game -->
+            <div class="game-card">
+                <h2>Hangman</h2>
+                <div class="score">Lives: <span id="hangman-lives">6</span></div>
+                <div class="game-area">
+                    <div class="hangman-display" id="hangman-word"></div>
+                    <div id="hangman-message"></div>
+                    <div class="keyboard" id="hangman-keyboard"></div>
+                </div>
+                <button onclick="initHangman()">New Game</button>
+            </div>
+
+            <!-- Wordle Game -->
+            <div class="game-card">
+                <h2>Wordle</h2>
+                <div class="score">Attempts: <span id="wordle-attempts">0</span> / 6</div>
+                <div class="game-area">
+                    <div class="wordle-grid" id="wordle-grid"></div>
+                    <input type="text" class="wordle-input" id="wordle-input" maxlength="5" placeholder="Enter 5-letter word">
+                    <button onclick="submitWordle()">Submit</button>
+                </div>
+                <button onclick="initWordle()">New Game</button>
+            </div>
+
+            <!-- Anagram Game -->
+            <div class="game-card">
+                <h2>Anagram Scrambler</h2>
+                <div class="score">Score: <span id="anagram-score">0</span></div>
+                <div class="game-area">
+                    <div class="anagram-word" id="anagram-word"></div>
+                    <input type="text" class="answer-input" id="anagram-input" placeholder="Unscramble the word">
+                    <div id="anagram-message"></div>
+                </div>
+                <button onclick="checkAnagram()">Submit</button>
+                <button onclick="initAnagram()">New Word</button>
+            </div>
+
+            <!-- Typing Speed Test -->
+            <div class="game-card">
+                <h2>Typing Speed Test</h2>
+                <div class="game-area">
+                    <div class="typing-text" id="typing-text"></div>
+                    <textarea class="typing-input" id="typing-input" rows="4" placeholder="Start typing to begin..."></textarea>
+                    <div class="typing-stats">
+                        <div class="stat">
+                            <div class="stat-value" id="typing-wpm">0</div>
+                            <div class="stat-label">WPM</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="typing-accuracy">100</div>
+                            <div class="stat-label">Accuracy %</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="typing-time">60</div>
+                            <div class="stat-label">Time (s)</div>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="initTypingTest()">New Test</button>
+            </div>
+
+            <!-- Word Chain Game -->
+            <div class="game-card">
+                <h2>Word Chain</h2>
+                <div class="score">Chain Length: <span id="chain-length">0</span></div>
+                <div class="game-area">
+                    <div class="word-chain-display" id="word-chain"></div>
+                    <input type="text" class="answer-input" id="chain-input" placeholder="Enter next word">
+                    <div id="chain-message"></div>
+                </div>
+                <button onclick="submitChainWord()">Submit Word</button>
+                <button onclick="initWordChain()">New Chain</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== HANGMAN GAME ==========
+        const hangmanWords = ['JAVASCRIPT', 'PYTHON', 'PROGRAMMING', 'DEVELOPER', 'COMPUTER', 'KEYBOARD', 'ALGORITHM', 'DATABASE', 'NETWORK', 'SOFTWARE'];
+        let hangmanWord = '';
+        let hangmanGuessed = [];
+        let hangmanLives = 6;
+
+        function initHangman() {
+            hangmanWord = hangmanWords[Math.floor(Math.random() * hangmanWords.length)];
+            hangmanGuessed = [];
+            hangmanLives = 6;
+            document.getElementById('hangman-lives').textContent = hangmanLives;
+            document.getElementById('hangman-message').innerHTML = '';
+            renderHangman();
+            renderKeyboard();
+        }
+
+        function renderHangman() {
+            let display = '';
+            for (let char of hangmanWord) {
+                display += hangmanGuessed.includes(char) ? char + ' ' : '_ ';
+            }
+            document.getElementById('hangman-word').textContent = display;
+            
+            // Check win
+            if (!display.includes('_')) {
+                document.getElementById('hangman-message').innerHTML = '<div class="message success">🎉 You Won!</div>';
+                disableKeyboard();
+            }
+        }
+
+        function renderKeyboard() {
+            const keyboard = document.getElementById('hangman-keyboard');
+            keyboard.innerHTML = '';
+            for (let i = 65; i <= 90; i++) {
+                const letter = String.fromCharCode(i);
+                const key = document.createElement('div');
+                key.className = 'key';
+                if (hangmanGuessed.includes(letter)) {
+                    key.classList.add('used');
+                }
+                key.textContent = letter;
+                key.onclick = () => guessLetter(letter);
+                keyboard.appendChild(key);
+            }
+        }
+
+        function guessLetter(letter) {
+            if (hangmanGuessed.includes(letter) || hangmanLives === 0) return;
+            
+            hangmanGuessed.push(letter);
+            
+            if (!hangmanWord.includes(letter)) {
+                hangmanLives--;
+                document.getElementById('hangman-lives').textContent = hangmanLives;
+                
+                if (hangmanLives === 0) {
+                    document.getElementById('hangman-message').innerHTML = `<div class="message error">Game Over! Word was: ${hangmanWord}</div>`;
+                    disableKeyboard();
+                }
+            }
+            
+            renderHangman();
+            renderKeyboard();
+        }
+
+        function disableKeyboard() {
+            document.querySelectorAll('.key').forEach(key => key.classList.add('used'));
+        }
+
+        // ========== WORDLE GAME ==========
+        const wordleWords = ['REACT', 'SWIFT', 'FLASK', 'REDIS', 'NGINX', 'LINUX', 'BADGE', 'CRANE', 'SLATE', 'ADIEU'];
+        let wordleTarget = '';
+        let wordleAttempts = 0;
+
+        function initWordle() {
+            wordleTarget = wordleWords[Math.floor(Math.random() * wordleWords.length)];
+            wordleAttempts = 0;
+            document.getElementById('wordle-attempts').textContent = '0';
+            document.getElementById('wordle-input').value = '';
+            document.getElementById('wordle-input').disabled = false;
+            renderWordleGrid();
+        }
+
+        function renderWordleGrid() {
+            const grid = document.getElementById('wordle-grid');
+            grid.innerHTML = '';
+            for (let i = 0; i < 6; i++) {
+                const row = document.createElement('div');
+                row.className = 'wordle-row';
+                for (let j = 0; j < 5; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'wordle-cell';
+                    row.appendChild(cell);
+                }
+                grid.appendChild(row);
+            }
+        }
+
+        function submitWordle() {
+            const input = document.getElementById('wordle-input');
+            const guess = input.value.toUpperCase();
+            
+            if (guess.length !== 5) {
+                alert('Please enter a 5-letter word!');
+                return;
+            }
+            
+            const row = document.querySelectorAll('.wordle-row')[wordleAttempts];
+            const cells = row.querySelectorAll('.wordle-cell');
+            
+            for (let i = 0; i < 5; i++) {
+                cells[i].textContent = guess[i];
+                
+                if (guess[i] === wordleTarget[i]) {
+                    cells[i].classList.add('correct');
+                } else if (wordleTarget.includes(guess[i])) {
+                    cells[i].classList.add('present');
+                } else {
+                    cells[i].classList.add('absent');
+                }
+            }
+            
+            wordleAttempts++;
+            document.getElementById('wordle-attempts').textContent = wordleAttempts;
+            input.value = '';
+            
+            if (guess === wordleTarget) {
+                alert('🎉 Congratulations! You found the word!');
+                document.getElementById('wordle-input').disabled = true;
+            } else if (wordleAttempts === 6) {
+                alert(`Game Over! The word was: ${wordleTarget}`);
+                document.getElementById('wordle-input').disabled = true;
+            }
+        }
+
+        // ========== ANAGRAM GAME ==========
+        const anagramWords = [
+            { word: 'LISTEN', scrambled: 'SILENT' },
+            { word: 'EARTH', scrambled: 'HEART' },
+            { word: 'NIGHT', scrambled: 'THING' },
+            { word: 'BELOW', scrambled: 'ELBOW' },
+            { word: 'STUDY', scrambled: 'DUSTY' },
+            { word: 'ANGEL', scrambled: 'ANGLE' },
+            { word: 'DINE', scrambled: 'NIDE' },
+            { word: 'EVIL', scrambled: 'VILE' }
+        ];
+        let currentAnagram = null;
+        let anagramScore = 0;
+
+        function initAnagram() {
+            currentAnagram = anagramWords[Math.floor(Math.random() * anagramWords.length)];
+            const scrambled = currentAnagram.word.split('').sort(() => Math.random() - 0.5).join('');
+            document.getElementById('anagram-word').textContent = scrambled;
+            document.getElementById('anagram-input').value = '';
+            document.getElementById('anagram-message').innerHTML = '';
+        }
+
+        function checkAnagram() {
+            const input = document.getElementById('anagram-input').value.toUpperCase();
+            const messageDiv = document.getElementById('anagram-message');
+            
+            if (input === currentAnagram.word || input === currentAnagram.scrambled) {
+                anagramScore++;
+                document.getElementById('anagram-score').textContent = anagramScore;
+                messageDiv.innerHTML = '<div class="message success">✓ Correct!</div>';
+                setTimeout(initAnagram, 1500);
+            } else {
+                messageDiv.innerHTML = `<div class="message error">✗ Wrong! Answer: ${currentAnagram.word}</div>`;
+            }
+        }
+
+        // ========== TYPING SPEED TEST ==========
+        const typingTexts = [
+            "The quick brown fox jumps over the lazy dog. This sentence contains every letter of the alphabet at least once.",
+            "Programming is the art of telling a computer what to do through a set of instructions. These instructions are written in programming languages.",
+            "Practice makes perfect. The more you type, the faster and more accurate you will become. Keep practicing every day.",
+            "JavaScript is a versatile programming language used for web development. It can run in browsers and on servers."
+        ];
+        let typingStartTime = null;
+        let typingTimerInterval = null;
+        let typingTargetText = '';
+
+        function initTypingTest() {
+            typingTargetText = typingTexts[Math.floor(Math.random() * typingTexts.length)];
+            document.getElementById('typing-text').textContent = typingTargetText;
+            document.getElementById('typing-input').value = '';
+            document.getElementById('typing-input').disabled = false;
+            document.getElementById('typing-wpm').textContent = '0';
+            document.getElementById('typing-accuracy').textContent = '100';
+            document.getElementById('typing-time').textContent = '60';
+            
+            typingStartTime = null;
+            if (typingTimerInterval) clearInterval(typingTimerInterval);
+            
+            const input = document.getElementById('typing-input');
+            input.oninput = updateTypingStats;
+        }
+
+        function updateTypingStats() {
+            if (!typingStartTime) {
+                typingStartTime = Date.now();
+                let timeLeft = 60;
+                
+                typingTimerInterval = setInterval(() => {
+                    timeLeft--;
+                    document.getElementById('typing-time').textContent = timeLeft;
+                    
+                    if (timeLeft === 0) {
+                        clearInterval(typingTimerInterval);
+                        document.getElementById('typing-input').disabled = true;
+                    }
+                }, 1000);
+            }
+            
+            const typed = document.getElementById('typing-input').value;
+            const timeElapsed = (Date.now() - typingStartTime) / 1000 / 60; // in minutes
+            
+            // Calculate WPM
+            const words = typed.trim().split(/\s+/).length;
+            const wpm = Math.round(words / timeElapsed) || 0;
+            document.getElementById('typing-wpm').textContent = wpm;
+            
+            // Calculate accuracy
+            let correct = 0;
+            for (let i = 0; i < typed.length; i++) {
+                if (typed[i] === typingTargetText[i]) correct++;
+            }
+            const accuracy = typed.length > 0 ? Math.round((correct / typed.length) * 100) : 100;
+            document.getElementById('typing-accuracy').textContent = accuracy;
+        }
+
+        // ========== WORD CHAIN GAME ==========
+        const wordChainDict = ['APPLE', 'ELEPHANT', 'TABLE', 'ENERGY', 'YELLOW', 'WINDOW', 'ORANGE', 'EARTH', 'HELLO', 'OCEAN', 'NEST', 'TIGER', 'RED', 'DOG', 'GAME', 'EGG', 'GREEN'];
+        let wordChain = [];
+
+        function initWordChain() {
+            wordChain = ['START'];
+            document.getElementById('chain-length').textContent = '0';
+            document.getElementById('chain-input').value = '';
+            document.getElementById('chain-message').innerHTML = '';
+            renderWordChain();
+        }
+
+        function renderWordChain() {
+            const chainDiv = document.getElementById('word-chain');
+            chainDiv.innerHTML = '';
+            wordChain.forEach(word => {
+                const span = document.createElement('span');
+                span.className = 'chain-word';
+                span.textContent = word;
+                chainDiv.appendChild(span);
+            });
+        }
+
+        function submitChainWord() {
+            const input = document.getElementById('chain-input').value.toUpperCase().trim();
+            const lastWord = wordChain[wordChain.length - 1];
+            const lastLetter = lastWord[lastWord.length - 1];
+            const messageDiv = document.getElementById('chain-message');
+            
+            if (input.length === 0) {
+                messageDiv.innerHTML = '<div class="message error">Please enter a word!</div>';
+                return;
+            }
+            
+            if (input[0] !== lastLetter) {
+                messageDiv.innerHTML = `<div class="message error">Word must start with "${lastLetter}"</div>`;
+                return;
+            }
+            
+            if (wordChain.includes(input)) {
+                messageDiv.innerHTML = '<div class="message error">Word already used!</div>';
+                return;
+            }
+            
+            wordChain.push(input);
+            document.getElementById('chain-length').textContent = wordChain.length - 1;
+            document.getElementById('chain-input').value = '';
+            messageDiv.innerHTML = '<div class="message success">✓ Great!</div>';
+            renderWordChain();
+            
+            setTimeout(() => {
+                messageDiv.innerHTML = '';
+            }, 1500);
+        }
+
+        // Initialize games
+        initHangman();
+        initWordle();
+        initAnagram();
+        initTypingTest();
+        initWordChain();
+
+        // Enter key support for inputs
+        document.getElementById('wordle-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') submitWordle();
+        });
+
+        document.getElementById('anagram-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') checkAnagram();
+        });
+
+        document.getElementById('chain-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') submitChainWord();
+        });
+    </script>
+</body>
+</html>
