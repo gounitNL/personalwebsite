@@ -15,11 +15,13 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 2rem;
+            overflow-x: hidden;
         }
 
-        .container {
-            max-width: 1400px;
+        /* Menu View Styles */
+        .menu-view {
+            padding: 2rem;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
@@ -51,28 +53,117 @@
             transform: scale(1.05);
         }
 
-        .games-grid {
+        .games-menu {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 2rem;
             margin-top: 2rem;
         }
 
-        .game-card {
+        .game-menu-card {
             background: white;
             border-radius: 15px;
             padding: 2rem;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
-        .game-card h2 {
-            color: #667eea;
+        .game-menu-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-menu-card .icon {
+            font-size: 4rem;
+            text-align: center;
             margin-bottom: 1rem;
+        }
+
+        .game-menu-card h3 {
+            color: #667eea;
             font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .game-menu-card p {
+            color: #666;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        /* Full Screen Game View */
+        .game-view {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .game-view.active {
+            display: block;
+        }
+
+        .game-header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .game-title {
+            font-size: 1.5rem;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .game-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .close-game-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .close-game-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .game-content {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .game-area {
-            margin: 1.5rem 0;
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 2rem;
         }
 
         button {
@@ -96,27 +187,43 @@
             cursor: not-allowed;
         }
 
-        /* 2048 Game Styles */
+        .score {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            margin: 1rem 0;
+        }
+
+        .instructions {
+            background: #f0f0ff;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            color: #666;
+            text-align: center;
+        }
+
+        /* Game Specific Styles */
         .grid-2048 {
             display: grid;
-            grid-template-columns: repeat(4, 80px);
-            grid-gap: 10px;
+            grid-template-columns: repeat(4, min(80px, 18vw));
+            grid-gap: min(10px, 2vw);
             background: #bbada0;
-            padding: 10px;
+            padding: min(10px, 2vw);
             border-radius: 10px;
             margin: 1rem auto;
             width: fit-content;
         }
 
         .cell-2048 {
-            width: 80px;
-            height: 80px;
+            width: min(80px, 18vw);
+            height: min(80px, 18vw);
             background: #cdc1b4;
             border-radius: 5px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
+            font-size: min(2rem, 5vw);
             font-weight: bold;
             color: #776e65;
         }
@@ -130,20 +237,12 @@
         .cell-2048[data-value="128"] { background: #edcf72; color: #f9f6f2; }
         .cell-2048[data-value="256"] { background: #edcc61; color: #f9f6f2; }
         .cell-2048[data-value="512"] { background: #edc850; color: #f9f6f2; }
-        .cell-2048[data-value="1024"] { background: #edc53f; color: #f9f6f2; font-size: 1.5rem; }
-        .cell-2048[data-value="2048"] { background: #edc22e; color: #f9f6f2; font-size: 1.5rem; }
+        .cell-2048[data-value="1024"] { background: #edc53f; color: #f9f6f2; font-size: min(1.5rem, 4vw); }
+        .cell-2048[data-value="2048"] { background: #edc22e; color: #f9f6f2; font-size: min(1.5rem, 4vw); }
 
-        .score {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #333;
-            margin: 1rem 0;
-        }
-
-        /* Sudoku Styles */
         .sudoku-grid {
             display: grid;
-            grid-template-columns: repeat(9, 40px);
+            grid-template-columns: repeat(9, min(40px, 9vw));
             grid-gap: 0;
             margin: 1rem auto;
             width: fit-content;
@@ -151,11 +250,11 @@
         }
 
         .sudoku-cell {
-            width: 40px;
-            height: 40px;
+            width: min(40px, 9vw);
+            height: min(40px, 9vw);
             border: 1px solid #999;
             text-align: center;
-            font-size: 1.2rem;
+            font-size: min(1.2rem, 4vw);
             font-weight: bold;
         }
 
@@ -178,18 +277,17 @@
             color: #667eea;
         }
 
-        /* Minesweeper Styles */
         .minesweeper-grid {
             display: grid;
-            grid-template-columns: repeat(10, 35px);
+            grid-template-columns: repeat(10, min(35px, 8vw));
             grid-gap: 2px;
             margin: 1rem auto;
             width: fit-content;
         }
 
         .mine-cell {
-            width: 35px;
-            height: 35px;
+            width: min(35px, 8vw);
+            height: min(35px, 8vw);
             background: #bbb;
             border: 2px outset #999;
             display: flex;
@@ -198,6 +296,7 @@
             font-weight: bold;
             cursor: pointer;
             user-select: none;
+            font-size: min(1rem, 3vw);
         }
 
         .mine-cell.revealed {
@@ -213,24 +312,23 @@
             background: #f44336;
         }
 
-        /* Sliding Puzzle Styles */
         .sliding-grid {
             display: grid;
-            grid-template-columns: repeat(4, 80px);
-            grid-gap: 5px;
+            grid-template-columns: repeat(4, min(80px, 20vw));
+            grid-gap: min(5px, 1vw);
             margin: 1rem auto;
             width: fit-content;
         }
 
         .sliding-tile {
-            width: 80px;
-            height: 80px;
+            width: min(80px, 20vw);
+            height: min(80px, 20vw);
             background: #667eea;
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
+            font-size: min(2rem, 5vw);
             font-weight: bold;
             border-radius: 5px;
             cursor: pointer;
@@ -246,23 +344,16 @@
             transform: scale(1.05);
         }
 
-        /* Nonogram Styles */
-        .nonogram-container {
-            display: flex;
-            justify-content: center;
-            margin: 1rem 0;
-        }
-
         .nonogram-grid {
             display: grid;
-            grid-template-columns: repeat(5, 40px);
+            grid-template-columns: repeat(5, min(40px, 15vw));
             grid-gap: 2px;
             margin: 1rem auto;
         }
 
         .nonogram-cell {
-            width: 40px;
-            height: 40px;
+            width: min(40px, 15vw);
+            height: min(40px, 15vw);
             background: white;
             border: 1px solid #999;
             cursor: pointer;
@@ -273,103 +364,210 @@
         }
 
         .nonogram-clues {
-            font-size: 0.9rem;
-            color: #666;
+            font-size: min(0.9rem, 3vw);
+            color: #333;
             margin: 0.5rem 0;
+            padding: 1rem;
+            background: rgba(255,255,255,0.9);
+            border-radius: 10px;
         }
 
         @media (max-width: 768px) {
-            .games-grid {
-                grid-template-columns: 1fr;
-            }
-            
             .header h1 {
                 font-size: 2rem;
             }
 
-            .grid-2048 {
-                grid-template-columns: repeat(4, 60px);
+            .game-title {
+                font-size: 1.2rem;
             }
 
-            .cell-2048 {
-                width: 60px;
-                height: 60px;
+            .game-header {
+                padding: 1rem;
+            }
+
+            .game-content {
+                padding: 1rem;
+            }
+
+            .game-area {
+                padding: 1rem;
+            }
+
+            .games-menu {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
                 font-size: 1.5rem;
+            }
+
+            button {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Menu View -->
+    <div class="menu-view" id="menuView">
         <div class="header">
             <a href="index.html" class="back-btn">← Back to Home</a>
             <h1>🧠 Puzzle Games</h1>
-            <p style="font-size: 1.2rem; margin-top: 0.5rem;">Challenge your brain with these classic puzzles!</p>
+            <p style="font-size: 1.2rem; margin-top: 0.5rem;">Choose a game to play</p>
         </div>
 
-        <div class="games-grid">
-            <!-- 2048 Game -->
-            <div class="game-card">
-                <h2>2048</h2>
-                <div class="score">Score: <span id="score-2048">0</span></div>
-                <div class="game-area">
-                    <div class="grid-2048" id="grid-2048"></div>
-                </div>
-                <button onclick="init2048()">New Game</button>
-                <p style="margin-top: 1rem; color: #666; font-size: 0.9rem;">Use arrow keys to slide tiles. Combine same numbers to reach 2048!</p>
+        <div class="games-menu">
+            <div class="game-menu-card" onclick="openGame('2048')">
+                <div class="icon">🎯</div>
+                <h3>2048</h3>
+                <p>Slide tiles to reach 2048!</p>
             </div>
 
-            <!-- Sudoku Game -->
-            <div class="game-card">
-                <h2>Sudoku</h2>
-                <div class="game-area">
-                    <div class="sudoku-grid" id="sudoku-grid"></div>
-                </div>
+            <div class="game-menu-card" onclick="openGame('sudoku')">
+                <div class="icon">🔢</div>
+                <h3>Sudoku</h3>
+                <p>Classic number puzzle</p>
+            </div>
+
+            <div class="game-menu-card" onclick="openGame('minesweeper')">
+                <div class="icon">💣</div>
+                <h3>Minesweeper</h3>
+                <p>Find all the mines!</p>
+            </div>
+
+            <div class="game-menu-card" onclick="openGame('sliding')">
+                <div class="icon">🧩</div>
+                <h3>Sliding Puzzle</h3>
+                <p>Arrange numbers in order</p>
+            </div>
+
+            <div class="game-menu-card" onclick="openGame('nonogram')">
+                <div class="icon">🖼️</div>
+                <h3>Nonogram</h3>
+                <p>Reveal the hidden picture</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Views -->
+    <!-- 2048 Game -->
+    <div class="game-view" id="game-2048">
+        <div class="game-header">
+            <div class="game-title">🎯 2048</div>
+            <div class="game-controls">
+                <div class="score">Score: <span id="score-2048">0</span></div>
+                <button onclick="init2048()">New Game</button>
+                <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
+            </div>
+        </div>
+        <div class="game-content">
+            <div class="game-area">
+                <div class="grid-2048" id="grid-2048"></div>
+                <div class="instructions">Use arrow keys to slide tiles. Combine same numbers to reach 2048!</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sudoku Game -->
+    <div class="game-view" id="game-sudoku">
+        <div class="game-header">
+            <div class="game-title">🔢 Sudoku</div>
+            <div class="game-controls">
                 <button onclick="checkSudoku()">Check Solution</button>
                 <button onclick="initSudoku()">New Puzzle</button>
-                <p style="margin-top: 1rem; color: #666; font-size: 0.9rem;">Fill the grid so each row, column, and 3×3 box contains 1-9.</p>
+                <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
             </div>
+        </div>
+        <div class="game-content">
+            <div class="game-area">
+                <div class="sudoku-grid" id="sudoku-grid"></div>
+                <div class="instructions">Fill the grid so each row, column, and 3×3 box contains 1-9</div>
+            </div>
+        </div>
+    </div>
 
-            <!-- Minesweeper Game -->
-            <div class="game-card">
-                <h2>Minesweeper</h2>
+    <!-- Minesweeper Game -->
+    <div class="game-view" id="game-minesweeper">
+        <div class="game-header">
+            <div class="game-title">💣 Minesweeper</div>
+            <div class="game-controls">
                 <div class="score">Flags: <span id="flags-count">10</span> | Mines: 10</div>
-                <div class="game-area">
-                    <div class="minesweeper-grid" id="minesweeper-grid"></div>
-                </div>
                 <button onclick="initMinesweeper()">New Game</button>
-                <p style="margin-top: 1rem; color: #666; font-size: 0.9rem;">Left click to reveal, right click to flag. Avoid the mines!</p>
+                <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
             </div>
+        </div>
+        <div class="game-content">
+            <div class="game-area">
+                <div class="minesweeper-grid" id="minesweeper-grid"></div>
+                <div class="instructions">Left click to reveal, right click to flag. Avoid the mines!</div>
+            </div>
+        </div>
+    </div>
 
-            <!-- Sliding Puzzle Game -->
-            <div class="game-card">
-                <h2>Sliding Puzzle</h2>
+    <!-- Sliding Puzzle Game -->
+    <div class="game-view" id="game-sliding">
+        <div class="game-header">
+            <div class="game-title">🧩 Sliding Puzzle</div>
+            <div class="game-controls">
                 <div class="score">Moves: <span id="moves-count">0</span></div>
-                <div class="game-area">
-                    <div class="sliding-grid" id="sliding-grid"></div>
-                </div>
                 <button onclick="initSlidingPuzzle()">Shuffle</button>
-                <p style="margin-top: 1rem; color: #666; font-size: 0.9rem;">Arrange the numbers in order from 1 to 15!</p>
+                <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
             </div>
+        </div>
+        <div class="game-content">
+            <div class="game-area">
+                <div class="sliding-grid" id="sliding-grid"></div>
+                <div class="instructions">Arrange the numbers in order from 1 to 15!</div>
+            </div>
+        </div>
+    </div>
 
-            <!-- Nonogram Game -->
-            <div class="game-card">
-                <h2>Nonogram (Picross)</h2>
+    <!-- Nonogram Game -->
+    <div class="game-view" id="game-nonogram">
+        <div class="game-header">
+            <div class="game-title">🖼️ Nonogram (Picross)</div>
+            <div class="game-controls">
+                <button onclick="checkNonogram()">Check Solution</button>
+                <button onclick="initNonogram()">Clear</button>
+                <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
+            </div>
+        </div>
+        <div class="game-content">
+            <div class="game-area">
                 <div class="nonogram-clues">
                     <div><strong>Rows:</strong> [5], [1,1], [5], [1,1], [5]</div>
                     <div><strong>Cols:</strong> [5], [1,1], [5], [1,1], [5]</div>
                 </div>
-                <div class="game-area">
-                    <div class="nonogram-grid" id="nonogram-grid"></div>
-                </div>
-                <button onclick="checkNonogram()">Check Solution</button>
-                <button onclick="initNonogram()">Clear</button>
-                <p style="margin-top: 1rem; color: #666; font-size: 0.9rem;">Click cells to fill. Use clues to reveal the hidden picture!</p>
+                <div class="nonogram-grid" id="nonogram-grid"></div>
+                <div class="instructions">Click cells to fill. Use clues to reveal the hidden picture!</div>
             </div>
         </div>
     </div>
 
     <script>
+        // Navigation Functions
+        function openGame(gameName) {
+            document.getElementById('menuView').style.display = 'none';
+            document.getElementById('game-' + gameName).classList.add('active');
+            
+            // Initialize the game
+            if (gameName === '2048') init2048();
+            else if (gameName === 'sudoku') initSudoku();
+            else if (gameName === 'minesweeper') initMinesweeper();
+            else if (gameName === 'sliding') initSlidingPuzzle();
+            else if (gameName === 'nonogram') initNonogram();
+        }
+
+        function closeGame() {
+            document.querySelectorAll('.game-view').forEach(view => {
+                view.classList.remove('active');
+            });
+            document.getElementById('menuView').style.display = 'block';
+        }
+
         // ========== 2048 GAME ==========
         let grid2048 = [];
         let score2048 = 0;
@@ -466,18 +664,18 @@
         }
 
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft') move2048('left');
-            else if (e.key === 'ArrowRight') move2048('right');
-            else if (e.key === 'ArrowUp') move2048('up');
-            else if (e.key === 'ArrowDown') move2048('down');
+            if (document.getElementById('game-2048').classList.contains('active')) {
+                if (e.key === 'ArrowLeft') { e.preventDefault(); move2048('left'); }
+                else if (e.key === 'ArrowRight') { e.preventDefault(); move2048('right'); }
+                else if (e.key === 'ArrowUp') { e.preventDefault(); move2048('up'); }
+                else if (e.key === 'ArrowDown') { e.preventDefault(); move2048('down'); }
+            }
         });
 
         // ========== SUDOKU GAME ==========
         let sudokuPuzzle = [];
-        let sudokuSolution = [];
 
         function initSudoku() {
-            // Simple puzzle for demo
             const puzzle = [
                 [5,3,0,0,7,0,0,0,0],
                 [6,0,0,1,9,5,0,0,0],
@@ -532,10 +730,8 @@
                 }
             }
             
-            // Check if valid
             let valid = true;
             
-            // Check rows and columns
             for (let i = 0; i < 9; i++) {
                 let row = new Set(grid[i].filter(x => x !== 0));
                 let col = new Set(grid.map(r => r[i]).filter(x => x !== 0));
@@ -565,7 +761,6 @@
             mineRevealed = Array(MINE_SIZE).fill().map(() => Array(MINE_SIZE).fill(false));
             mineFlagged = Array(MINE_SIZE).fill().map(() => Array(MINE_SIZE).fill(false));
             
-            // Place mines
             let placed = 0;
             while (placed < MINE_COUNT) {
                 const i = Math.floor(Math.random() * MINE_SIZE);
@@ -576,7 +771,6 @@
                 }
             }
             
-            // Calculate numbers
             for (let i = 0; i < MINE_SIZE; i++) {
                 for (let j = 0; j < MINE_SIZE; j++) {
                     if (mineField[i][j] !== -1) {
@@ -643,14 +837,12 @@
             
             if (mineField[i][j] === -1) {
                 alert('💥 Game Over! You hit a mine!');
-                // Reveal all mines
                 for (let x = 0; x < MINE_SIZE; x++) {
                     for (let y = 0; y < MINE_SIZE; y++) {
                         if (mineField[x][y] === -1) mineRevealed[x][y] = true;
                     }
                 }
             } else if (mineField[i][j] === 0) {
-                // Flood fill
                 for (let di = -1; di <= 1; di++) {
                     for (let dj = -1; dj <= 1; dj++) {
                         const ni = i + di, nj = j + dj;
@@ -685,7 +877,6 @@
             emptyPos = {i: 3, j: 3};
             moveCount = 0;
             
-            // Shuffle
             for (let i = 0; i < 100; i++) {
                 const moves = [];
                 if (emptyPos.i > 0) moves.push({i: emptyPos.i - 1, j: emptyPos.j});
@@ -724,7 +915,6 @@
             
             document.getElementById('moves-count').textContent = moveCount;
             
-            // Check win
             let won = true;
             let num = 1;
             for (let i = 0; i < 4; i++) {
@@ -806,13 +996,6 @@
                 alert('Not quite right. Check the clues and try again!');
             }
         }
-
-        // Initialize all games
-        init2048();
-        initSudoku();
-        initMinesweeper();
-        initSlidingPuzzle();
-        initNonogram();
     </script>
 </body>
 </html>
