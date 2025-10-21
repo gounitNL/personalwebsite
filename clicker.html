@@ -308,9 +308,19 @@
         const cookieUpgrades = [
             { name: 'Better Oven', cost: 10, clickBonus: 1, description: '+1 per click' },
             { name: 'Grandma', cost: 50, passive: 1, description: '+1 cookie/sec' },
+            { name: 'Cookie Recipe', cost: 100, clickBonus: 2, description: '+2 per click' },
             { name: 'Factory', cost: 200, passive: 5, description: '+5 cookies/sec' },
             { name: 'Golden Touch', cost: 500, clickBonus: 5, description: '+5 per click' },
-            { name: 'Cookie Farm', cost: 1000, passive: 20, description: '+20 cookies/sec' }
+            { name: 'Cookie Farm', cost: 1000, passive: 20, description: '+20 cookies/sec' },
+            { name: 'Cookie Mine', cost: 2000, passive: 50, description: '+50 cookies/sec' },
+            { name: 'Master Chef', cost: 5000, clickBonus: 10, description: '+10 per click' },
+            { name: 'Cookie Franchise', cost: 10000, passive: 100, description: '+100 cookies/sec' },
+            { name: 'Cookie Empire', cost: 25000, passive: 250, description: '+250 cookies/sec' },
+            { name: 'Cookie Planet', cost: 50000, passive: 500, description: '+500 cookies/sec' },
+            { name: 'Cookie Galaxy', cost: 100000, passive: 1000, description: '+1000 cookies/sec' },
+            { name: 'Cookie Universe', cost: 250000, passive: 2500, description: '+2500 cookies/sec' },
+            { name: 'Cookie Dimension', cost: 500000, passive: 5000, description: '+5000 cookies/sec' },
+            { name: 'Cookie God', cost: 1000000, clickBonus: 1000, description: '+1000 per click' }
         ];
 
         function clickCookie() {
@@ -368,9 +378,19 @@
         let farmInterval = null;
         const farmUpgrades = [
             { name: 'Better Seeds', cost: 20, harvestBonus: 2, description: '+$2 per harvest' },
+            { name: 'Watering Can', cost: 50, harvestBonus: 3, description: '+$3 per harvest' },
             { name: 'Sprinkler', cost: 100, passive: 1, description: '+$1/sec' },
+            { name: 'Fertilizer', cost: 250, harvestBonus: 5, description: '+$5 per harvest' },
             { name: 'Tractor', cost: 500, harvestBonus: 10, description: '+$10 per harvest' },
-            { name: 'Greenhouse', cost: 1500, passive: 10, description: '+$10/sec' }
+            { name: 'Greenhouse', cost: 1500, passive: 10, description: '+$10/sec' },
+            { name: 'Farm Workers', cost: 3000, passive: 25, description: '+$25/sec' },
+            { name: 'Combine Harvester', cost: 5000, harvestBonus: 50, description: '+$50 per harvest' },
+            { name: 'Automated System', cost: 10000, passive: 75, description: '+$75/sec' },
+            { name: 'Mega Farm', cost: 25000, passive: 150, description: '+$150/sec' },
+            { name: 'Farming Corporation', cost: 50000, passive: 300, description: '+$300/sec' },
+            { name: 'Agricultural Empire', cost: 100000, passive: 750, description: '+$750/sec' },
+            { name: 'Global Farming Network', cost: 250000, passive: 1500, description: '+$1500/sec' },
+            { name: 'Space Farm', cost: 500000, passive: 3000, description: '+$3000/sec' }
         ];
 
         function harvest() {
@@ -427,9 +447,19 @@
         let businessInterval = null;
         const businesses = [
             { name: 'Lemonade Stand', cost: 50, revenue: 1, description: '+$1/sec' },
+            { name: 'Newspaper Route', cost: 150, revenue: 3, description: '+$3/sec' },
             { name: 'Coffee Shop', cost: 500, revenue: 10, description: '+$10/sec' },
+            { name: 'Food Truck', cost: 1000, revenue: 25, description: '+$25/sec' },
             { name: 'Restaurant', cost: 2000, revenue: 50, description: '+$50/sec' },
-            { name: 'Shopping Mall', cost: 10000, revenue: 200, description: '+$200/sec' }
+            { name: 'Gym', cost: 5000, revenue: 100, description: '+$100/sec' },
+            { name: 'Shopping Mall', cost: 10000, revenue: 200, description: '+$200/sec' },
+            { name: 'Hotel', cost: 25000, revenue: 500, description: '+$500/sec' },
+            { name: 'Casino', cost: 50000, revenue: 1000, description: '+$1000/sec' },
+            { name: 'Tech Startup', cost: 100000, revenue: 2500, description: '+$2500/sec' },
+            { name: 'Movie Studio', cost: 250000, revenue: 5000, description: '+$5000/sec' },
+            { name: 'Bank', cost: 500000, revenue: 10000, description: '+$10000/sec' },
+            { name: 'Oil Company', cost: 1000000, revenue: 25000, description: '+$25000/sec' },
+            { name: 'Space Tourism', cost: 5000000, revenue: 100000, description: '+$100000/sec' }
         ];
 
         function updateBusinessDisplay() {
@@ -480,9 +510,18 @@
         let heroGold = 0, heroDamage = 1, monsterLevel = 1, monsterHealth = 10, monsterMaxHealth = 10;
         const heroUpgrades = [
             { name: 'Iron Sword', cost: 10, damage: 1, description: '+1 damage' },
+            { name: 'Leather Armor', cost: 25, damage: 2, description: '+2 damage' },
             { name: 'Steel Armor', cost: 50, damage: 3, description: '+3 damage' },
+            { name: 'Healing Potion', cost: 100, damage: 5, description: '+5 damage' },
             { name: 'Magic Bow', cost: 200, damage: 10, description: '+10 damage' },
-            { name: 'Dragon Blade', cost: 1000, damage: 50, description: '+50 damage' }
+            { name: 'Enchanted Shield', cost: 500, damage: 20, description: '+20 damage' },
+            { name: 'Dragon Blade', cost: 1000, damage: 50, description: '+50 damage' },
+            { name: 'Mythic Armor', cost: 2500, damage: 100, description: '+100 damage' },
+            { name: 'Legendary Axe', cost: 5000, damage: 250, description: '+250 damage' },
+            { name: 'Divine Sword', cost: 10000, damage: 500, description: '+500 damage' },
+            { name: 'Celestial Wings', cost: 25000, damage: 1000, description: '+1000 damage' },
+            { name: 'God Slayer', cost: 50000, damage: 2500, description: '+2500 damage' },
+            { name: 'Infinity Weapon', cost: 100000, damage: 5000, description: '+5000 damage' }
         ];
 
         function attackMonster() {
@@ -539,10 +578,19 @@
         let energyCount = 0, energyPerClick = 1, energyPerSecond = 0, energyCash = 0;
         let energyInterval = null;
         const energyUpgrades = [
+            { name: 'Battery Pack', cost: 25, clickBonus: 2, description: '+2 per click' },
             { name: 'Solar Panel', cost: 50, passive: 1, description: '+1 energy/sec' },
+            { name: 'Hydroelectric Dam', cost: 150, passive: 3, description: '+3 energy/sec' },
             { name: 'Wind Turbine', cost: 200, passive: 5, description: '+5 energy/sec' },
             { name: 'Better Capacitor', cost: 500, clickBonus: 5, description: '+5 per click' },
-            { name: 'Nuclear Plant', cost: 2000, passive: 25, description: '+25 energy/sec' }
+            { name: 'Geothermal Plant', cost: 1000, passive: 15, description: '+15 energy/sec' },
+            { name: 'Nuclear Plant', cost: 2000, passive: 25, description: '+25 energy/sec' },
+            { name: 'Advanced Reactor', cost: 5000, passive: 75, description: '+75 energy/sec' },
+            { name: 'Fusion Reactor', cost: 10000, passive: 150, description: '+150 energy/sec' },
+            { name: 'Antimatter Generator', cost: 25000, passive: 400, description: '+400 energy/sec' },
+            { name: 'Dyson Sphere', cost: 50000, passive: 1000, description: '+1000 energy/sec' },
+            { name: 'Zero Point Energy', cost: 100000, passive: 2500, description: '+2500 energy/sec' },
+            { name: 'Quantum Singularity', cost: 250000, passive: 6000, description: '+6000 energy/sec' }
         ];
 
         function generateEnergy() {
