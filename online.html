@@ -393,14 +393,32 @@
         /* Mini-map */
         .mini-map {
             position: absolute;
-            bottom: 20px;
+            top: 20px;
             right: 20px;
-            width: 150px;
-            height: 150px;
+            width: 200px;
+            height: 200px;
             background: rgba(0, 0, 0, 0.7);
             border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 10px;
             overflow: hidden;
+        }
+        
+        .compass {
+            position: absolute;
+            top: 230px;
+            right: 85px;
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff0000;
+            text-shadow: 0 0 5px #000;
         }
 
         /* Day/Night Indicator */
@@ -1099,7 +1117,8 @@
                 <span id="timeIcon">☀️</span>
                 <span id="timeText">Day</span>
             </div>
-            <canvas class="mini-map" id="miniMapCanvas" width="150" height="150"></canvas>
+            <canvas class="mini-map" id="miniMapCanvas" width="200" height="200"></canvas>
+            <div class="compass" id="compassIndicator">N</div>
             
             <!-- Mobile Virtual Joystick -->
             <div id="mobileControls">
@@ -1508,28 +1527,33 @@
             player: 10     // For PVP
         };
         
-        // NPC Definitions
-        const NPCS = [
-            { id: 'elder_marcus', name: 'Elder Marcus', x: -10, z: 10, type: 'quest', color: 0x8b4513, dialogue: 'Welcome, young adventurer!' },
-            { id: 'blacksmith_gareth', name: 'Blacksmith Gareth', x: 15, z: -15, type: 'shop', color: 0x696969, dialogue: 'Looking for quality equipment?' },
-            { id: 'banker', name: 'Banker', x: -30, z: -5, type: 'bank', color: 0xffd700, dialogue: 'Welcome to the bank!' },
-            { id: 'pet_master', name: 'Pet Master Luna', x: -20, z: -20, type: 'pet', color: 0x9370db, dialogue: 'Want a loyal companion?' },
-            { id: 'farmer_jane', name: 'Farmer Jane', x: 25, z: 15, type: 'quest', color: 0xdaa520, dialogue: 'Can you help me?' },
-            { id: 'guard_captain', name: 'Guard Captain', x: 0, z: -30, type: 'quest', color: 0x4169e1, dialogue: 'The village needs defenders!' },
-            { id: 'fisherman_bob', name: 'Fisherman Bob', x: -35, z: 5, type: 'quest', color: 0x20b2aa, dialogue: 'Fish are biting today!' },
-            { id: 'wizard_aldrin', name: 'Wizard Aldrin', x: 30, z: 30, type: 'quest', color: 0x9400d3, dialogue: 'The arcane arts await...' },
-            { id: 'scholar_elena', name: 'Scholar Elena', x: -25, z: 25, type: 'quest', color: 0xcd853f, dialogue: 'Knowledge is power!' },
-            { id: 'king_aldric', name: 'King Aldric', x: 0, z: 40, type: 'quest', color: 0xffd700, dialogue: 'The kingdom needs a hero!' }
+        // House Definitions with door positions (defined first for NPC positioning)
+        const HOUSES = [
+            { x: -15, z: 5, width: 8, depth: 8, height: 6, color: 0x8b4513, name: 'Elder\'s Home', doorZ: 'front', hasDesk: false },
+            { x: 20, z: -20, width: 10, depth: 8, height: 7, color: 0x696969, name: 'Blacksmith', doorZ: 'front', hasDesk: true },
+            { x: -25, z: -15, width: 7, depth: 7, height: 5, color: 0xffd700, name: 'Bank', doorZ: 'front', hasDesk: true },
+            { x: -20, z: 25, width: 7, depth: 7, height: 5, color: 0x9370db, name: 'Pet Shop', doorZ: 'front', hasDesk: true },
+            { x: 30, z: 10, width: 6, depth: 6, height: 5, color: 0x8fbc8f, name: 'Farm House', doorZ: 'front', hasDesk: false },
+            { x: -5, z: -35, width: 9, depth: 7, height: 6, color: 0x4682b4, name: 'Guard House', doorZ: 'front', hasDesk: false },
+            { x: 35, z: -35, width: 8, depth: 8, height: 7, color: 0x9400d3, name: 'Wizard Tower', doorZ: 'front', hasDesk: false },
+            { x: -35, z: -35, width: 7, depth: 7, height: 6, color: 0xcd853f, name: 'Library', doorZ: 'front', hasDesk: false },
+            { x: 0, z: 45, width: 15, depth: 12, height: 10, color: 0xffd700, name: 'Royal Palace', doorZ: 'front', hasDesk: false },
+            { x: -40, z: 10, width: 6, depth: 6, height: 5, color: 0x20b2aa, name: 'Fishing Hut', doorZ: 'front', hasDesk: false }
         ];
         
-        // House Definitions with door positions
-        const HOUSES = [
-            { x: -15, z: 5, width: 8, depth: 8, height: 6, color: 0x8b4513, name: 'Elder\'s Home', doorZ: 'front' },
-            { x: 20, z: -20, width: 10, depth: 8, height: 7, color: 0x696969, name: 'Blacksmith', doorZ: 'front' },
-            { x: -25, z: -15, width: 7, depth: 7, height: 5, color: 0xdaa520, name: 'Pet Shop', doorZ: 'front' },
-            { x: 30, z: 10, width: 6, depth: 6, height: 5, color: 0x8fbc8f, name: 'Cottage', doorZ: 'front' },
-            { x: -5, z: -35, width: 9, depth: 7, height: 6, color: 0x4682b4, name: 'Guard House', doorZ: 'front' },
-            { x: 0, z: 45, width: 15, depth: 12, height: 10, color: 0xffd700, name: 'Royal Palace', doorZ: 'front' }
+        // NPC Definitions - positioned inside houses with desks for functional NPCs
+        // Each quest NPC has one unique quest assigned
+        const NPCS = [
+            { id: 'elder_marcus', name: 'Elder Marcus', x: -15, z: 3, type: 'quest', color: 0x8b4513, dialogue: 'Welcome, young adventurer!', questId: 'welcome_adventurer' },
+            { id: 'blacksmith_gareth', name: 'Blacksmith Gareth', x: 20, z: -21, type: 'shop', color: 0x696969, dialogue: 'Looking for quality equipment?', hasDesk: true },
+            { id: 'banker', name: 'Banker', x: -25, z: -16, type: 'bank', color: 0xffd700, dialogue: 'Welcome to the bank!', hasDesk: true },
+            { id: 'pet_master', name: 'Pet Master Luna', x: -20, z: 24, type: 'pet', color: 0x9370db, dialogue: 'Want a loyal companion?', hasDesk: true },
+            { id: 'farmer_jane', name: 'Farmer Jane', x: 30, z: 9, type: 'quest', color: 0xdaa520, dialogue: 'Can you help me with my farm?', questId: 'the_lost_pet' },
+            { id: 'guard_captain', name: 'Guard Captain', x: -5, z: -36, type: 'quest', color: 0x4169e1, dialogue: 'The village needs defenders!', questId: 'defend_the_village' },
+            { id: 'fisherman_bob', name: 'Fisherman Bob', x: -40, z: 9, type: 'quest', color: 0x20b2aa, dialogue: 'Fish are biting today!', questId: 'fishing_master' },
+            { id: 'wizard_aldrin', name: 'Wizard Aldrin', x: 35, z: -36, type: 'quest', color: 0x9400d3, dialogue: 'The arcane arts await...', questId: 'magical_mysteries' },
+            { id: 'scholar_elena', name: 'Scholar Elena', x: -35, z: -36, type: 'quest', color: 0xcd853f, dialogue: 'Knowledge is power!', questId: 'lost_knowledge' },
+            { id: 'king_aldric', name: 'King Aldric', x: 0, z: 43, type: 'quest', color: 0xffd700, dialogue: 'The kingdom needs a hero!', questId: 'royal_decree' }
         ];
 
         // Constants
@@ -2497,7 +2521,7 @@
             // Scene setup
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x87CEEB); // Sky blue
-            scene.fog = new THREE.Fog(0x87CEEB, 100, 300);  // Adjusted for larger map
+            scene.fog = new THREE.Fog(0x87CEEB, 150, 500);  // Reduced fog density for better visibility
 
             // Camera setup (isometric-like view)
             camera = new THREE.PerspectiveCamera(60, canvas.offsetWidth / canvas.offsetHeight, 0.1, 1000);
@@ -2843,7 +2867,7 @@
             const y = e.clientY - rect.top;
             
             // Convert minimap click to world position
-            const miniMapSize = 150;
+            const miniMapSize = 200;
             const scale = (MAP_SIZE * 2) / miniMapSize;
             
             // Calculate relative position from center
@@ -3045,44 +3069,63 @@
             weaponGroup.name = 'weapon';
             
             if (weaponName.includes('Sword')) {
-                // Create sword
+                // Create sword - larger and more visible
                 // Handle/grip
-                const handleGeometry = new THREE.CylinderGeometry(0.04, 0.04, 0.4, 8);
-                const handleMaterial = new THREE.MeshStandardMaterial({ color: 0x654321 });
+                const handleGeometry = new THREE.CylinderGeometry(0.08, 0.08, 0.5, 8);
+                const handleMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x654321,
+                    roughness: 0.7
+                });
                 const handle = new THREE.Mesh(handleGeometry, handleMaterial);
                 handle.castShadow = true;
                 weaponGroup.add(handle);
                 
                 // Guard
-                const guardGeometry = new THREE.BoxGeometry(0.3, 0.05, 0.08);
-                const guardMaterial = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.8 });
+                const guardGeometry = new THREE.BoxGeometry(0.4, 0.08, 0.12);
+                const guardMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x888888, 
+                    metalness: 0.9,
+                    roughness: 0.3
+                });
                 const guard = new THREE.Mesh(guardGeometry, guardMaterial);
-                guard.position.y = 0.2;
+                guard.position.y = 0.25;
                 guard.castShadow = true;
                 weaponGroup.add(guard);
                 
-                // Blade
-                const bladeGeometry = new THREE.BoxGeometry(0.1, 0.8, 0.02);
+                // Blade - wider and more prominent
+                const bladeGeometry = new THREE.BoxGeometry(0.15, 1.0, 0.04);
+                const bladeColor = weaponName.includes('Dragon') ? 0xff4444 : 
+                                  weaponName.includes('Steel') ? 0xcccccc : 
+                                  weaponName.includes('Iron') ? 0x999999 : 0xaaaaaa;
                 const bladeMaterial = new THREE.MeshStandardMaterial({ 
-                    color: weaponName.includes('Dragon') ? 0xff4444 : weaponName.includes('Steel') ? 0xaaaaaa : 0x999999,
-                    metalness: 0.9,
-                    roughness: 0.2
+                    color: bladeColor,
+                    metalness: 0.95,
+                    roughness: 0.1,
+                    emissive: bladeColor,
+                    emissiveIntensity: 0.1
                 });
                 const blade = new THREE.Mesh(bladeGeometry, bladeMaterial);
-                blade.position.y = 0.6;
+                blade.position.y = 0.75;
                 blade.castShadow = true;
                 weaponGroup.add(blade);
                 
                 // Blade tip
-                const tipGeometry = new THREE.ConeGeometry(0.05, 0.15, 4);
+                const tipGeometry = new THREE.ConeGeometry(0.08, 0.2, 4);
                 const tip = new THREE.Mesh(tipGeometry, bladeMaterial);
-                tip.position.y = 1.075;
+                tip.position.y = 1.35;
                 tip.castShadow = true;
                 weaponGroup.add(tip);
                 
-                // Position sword in right hand
-                weaponGroup.position.set(0.55, 0.5, 0.2);
-                weaponGroup.rotation.z = Math.PI / 4; // Angle it
+                // Pommel
+                const pommelGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+                const pommel = new THREE.Mesh(pommelGeometry, guardMaterial);
+                pommel.position.y = -0.25;
+                pommel.castShadow = true;
+                weaponGroup.add(pommel);
+                
+                // Position sword in right hand - more visible
+                weaponGroup.position.set(0.6, 0.5, 0.15);
+                weaponGroup.rotation.z = Math.PI / 6; // Less angle for better visibility
                 
             } else if (weaponName.includes('Staff')) {
                 // Create magic staff
@@ -3275,6 +3318,49 @@
                 const rightDivider = new THREE.Mesh(dividerGeo, dividerMat);
                 rightDivider.position.set(houseData.width * 0.3, houseData.height * 0.6 + 0.3, houseData.depth / 2 + 0.15);
                 houseGroup.add(rightDivider);
+                
+                // Add desk for functional NPCs (bank, shop, pet shop)
+                if (houseData.hasDesk) {
+                    // Desk top
+                    const deskTopGeo = new THREE.BoxGeometry(houseData.width * 0.5, 0.1, houseData.depth * 0.25);
+                    const deskMat = new THREE.MeshStandardMaterial({ 
+                        color: 0x8B4513,
+                        roughness: 0.7
+                    });
+                    const deskTop = new THREE.Mesh(deskTopGeo, deskMat);
+                    deskTop.position.set(0, 0.9, -houseData.depth * 0.25);
+                    deskTop.castShadow = true;
+                    houseGroup.add(deskTop);
+                    
+                    // Desk legs
+                    const legGeo = new THREE.BoxGeometry(0.1, 0.8, 0.1);
+                    const positions = [
+                        [-houseData.width * 0.2, 0.4, -houseData.depth * 0.15],
+                        [houseData.width * 0.2, 0.4, -houseData.depth * 0.15],
+                        [-houseData.width * 0.2, 0.4, -houseData.depth * 0.35],
+                        [houseData.width * 0.2, 0.4, -houseData.depth * 0.35]
+                    ];
+                    
+                    positions.forEach(pos => {
+                        const leg = new THREE.Mesh(legGeo, deskMat);
+                        leg.position.set(...pos);
+                        leg.castShadow = true;
+                        houseGroup.add(leg);
+                    });
+                    
+                    // Chair
+                    const chairSeatGeo = new THREE.BoxGeometry(0.4, 0.1, 0.4);
+                    const chairSeat = new THREE.Mesh(chairSeatGeo, deskMat);
+                    chairSeat.position.set(0, 0.5, -houseData.depth * 0.25 - 0.5);
+                    chairSeat.castShadow = true;
+                    houseGroup.add(chairSeat);
+                    
+                    const chairBackGeo = new THREE.BoxGeometry(0.4, 0.5, 0.1);
+                    const chairBack = new THREE.Mesh(chairBackGeo, deskMat);
+                    chairBack.position.set(0, 0.75, -houseData.depth * 0.25 - 0.7);
+                    chairBack.castShadow = true;
+                    houseGroup.add(chairBack);
+                }
                 
                 houseGroup.position.set(houseData.x, 0, houseData.z);
                 houseGroup.userData = house;
@@ -4595,9 +4681,36 @@
             
             // Default icons for resources
             const resourceIcons = {
+                // Wood types
+                'Logs': '🪵',
+                'Oak Logs': '🪵',
+                'Willow Logs': '🪵',
+                'Maple Logs': '🪵',
+                'Yew Logs': '🪵',
+                'Magic Logs': '🪵',
                 'Wood': '🪵',
+                
+                // Ore types
+                'Copper Ore': '🪨',
+                'Tin Ore': '🪨',
+                'Iron Ore': '🪨',
+                'Coal': '⚫',
+                'Mithril Ore': '🔵',
+                'Adamant Ore': '🟢',
+                'Runite Ore': '💎',
                 'Ore': '🪨',
+                
+                // Fish types
+                'Raw Shrimp': '🦐',
+                'Raw Sardine': '🐟',
+                'Raw Trout': '🐟',
+                'Raw Salmon': '🐟',
+                'Raw Tuna': '🐟',
+                'Raw Lobster': '🦞',
+                'Raw Swordfish': '🐟',
+                'Raw Shark': '🦈',
                 'Fish': '🐟',
+                
                 'Gem': '💎'
             };
             
@@ -4678,17 +4791,19 @@
                     element.style.cursor = 'pointer';
                     element.onclick = () => unequipItem(slot);
                     element.title = `Click to unequip`;
+                    element.style.opacity = '1';
                 } else {
                     const defaultIcons = {
-                        'weapon': '🗡️ Weapon',
-                        'body': '🛡️ Armor',
-                        'head': '⛑️ Helmet',
-                        'feet': '👢 Boots'
+                        'weapon': '🗡️',
+                        'body': '🛡️',
+                        'head': '⛑️',
+                        'feet': '👢'
                     };
-                    element.innerHTML = defaultIcons[slot];
+                    element.innerHTML = `<span style="font-size: 3rem; opacity: 0.3;">❌</span><br><small style="font-size:0.7rem; opacity: 0.5;">${defaultIcons[slot]} Empty</small>`;
                     element.style.cursor = 'default';
                     element.onclick = null;
-                    element.title = '';
+                    element.title = 'No item equipped';
+                    element.style.opacity = '0.5';
                 }
             });
         }
@@ -5284,9 +5399,9 @@
                 itemEl.style.cursor = 'pointer';
                 itemEl.onclick = () => depositItem(item);
                 
-                const itemData = findItemData(item);
+                const icon = getItemIcon(item);
                 itemEl.innerHTML = `
-                    <div>${itemData ? itemData.icon : '📦'}</div>
+                    <div>${icon}</div>
                     <div class="item-count">${count}</div>
                 `;
                 itemEl.title = `${item} (Click to deposit)`;
@@ -5303,9 +5418,9 @@
                 itemEl.style.cursor = 'pointer';
                 itemEl.onclick = () => withdrawItem(item);
                 
-                const itemData = findItemData(item);
+                const icon = getItemIcon(item);
                 itemEl.innerHTML = `
-                    <div>${itemData ? itemData.icon : '📦'}</div>
+                    <div>${icon}</div>
                     <div class="item-count">${count}</div>
                 `;
                 itemEl.title = `${item} (Click to withdraw)`;
@@ -5479,12 +5594,49 @@
             
             if (inPVP && !pvpEnabled) {
                 pvpEnabled = true;
-                addChatMessage('PVP', 'You have entered the Wilderness! PVP is enabled!', 'system');
+                addChatMessage('PVP', '⚠️ You have entered the Wilderness! PVP is enabled! Death will cause you to drop all items!', 'system');
             } else if (!inPVP && pvpEnabled) {
                 pvpEnabled = false;
                 targetPlayer = null;
                 addChatMessage('PVP', 'You have left the Wilderness. PVP is disabled.', 'system');
             }
+            
+            // Check if player died in PVP
+            if (pvpEnabled && currentPlayer.hp <= 0) {
+                handlePVPDeath();
+            }
+        }
+        
+        function handlePVPDeath() {
+            // Drop all items at death location
+            const deathX = currentPlayer.x;
+            const deathZ = currentPlayer.z;
+            
+            addChatMessage('Death', '💀 You have died! All items dropped at death location.', 'system');
+            
+            // Clear inventory and equipment
+            currentPlayer.inventory = {};
+            currentPlayer.equipment = {
+                weapon: null,
+                armor: null,
+                helmet: null,
+                boots: null,
+                gloves: null,
+                offhand: null
+            };
+            
+            // Respawn at map center
+            currentPlayer.x = 0;
+            currentPlayer.z = 0;
+            currentPlayer.hp = currentPlayer.maxHp;
+            pvpEnabled = false;
+            
+            // Update UI
+            updateStats();
+            renderInventory();
+            updateEquipmentDisplay();
+            
+            addChatMessage('Respawn', '🏥 You have respawned at the town center.', 'system');
         }
         
         // Achievement System
@@ -5605,21 +5757,29 @@
             });
         }
         
-        // Mini-map
+        // Mini-map with rotation
         function updateMiniMap() {
             const miniMapCanvas = document.getElementById('miniMapCanvas');
             if (!miniMapCanvas) return;
             
             const ctx = miniMapCanvas.getContext('2d');
-            ctx.clearRect(0, 0, 150, 150);
+            const size = 200;
+            const centerX = size / 2;
+            const centerY = size / 2;
+            
+            ctx.clearRect(0, 0, size, size);
+            
+            // Save context and rotate based on camera angle
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate(cameraAngle);
+            ctx.translate(-centerX, -centerY);
             
             // Draw background
             ctx.fillStyle = '#2d5016';
-            ctx.fillRect(0, 0, 150, 150);
+            ctx.fillRect(0, 0, size, size);
             
-            const scale = 150 / (MAP_SIZE * 2);
-            const centerX = 75;
-            const centerY = 75;
+            const scale = size / (MAP_SIZE * 2);
             
             // Draw monsters
             monsters.forEach(monster => {
@@ -5643,23 +5803,33 @@
                 }
             });
             
-            // Draw NPCs (shops and quest givers)
+            // Draw NPCs with clear symbols
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
             NPCS.forEach(npc => {
                 const x = centerX + (npc.x - currentPlayer.x) * scale;
                 const y = centerY + (npc.z - currentPlayer.z) * scale;
                 
-                // Different colors for different NPC types
-                if (npc.type === 'shop') {
-                    ctx.fillStyle = '#FFD700'; // Gold for shops
-                    ctx.fillRect(x - 3, y - 3, 6, 6);
+                // Draw background circle
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+                ctx.beginPath();
+                ctx.arc(x, y, 8, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw icon based on NPC type
+                if (npc.type === 'bank') {
+                    ctx.fillStyle = '#FFD700'; // Gold for bank
+                    ctx.fillText('$', x, y);
+                } else if (npc.type === 'shop') {
+                    ctx.fillStyle = '#FF8C00'; // Orange for shop
+                    ctx.fillText('🛒', x, y);
                 } else if (npc.type === 'quest') {
-                    ctx.fillStyle = '#FFA500'; // Orange for quest givers
-                    ctx.beginPath();
-                    ctx.arc(x, y, 3, 0, Math.PI * 2);
-                    ctx.fill();
+                    ctx.fillStyle = '#FFA500'; // Orange for quest
+                    ctx.fillText('!', x, y);
                 } else if (npc.type === 'pet') {
-                    ctx.fillStyle = '#9370DB'; // Purple for pet shop
-                    ctx.fillRect(x - 3, y - 3, 6, 6);
+                    ctx.fillStyle = '#9370DB'; // Purple for pets
+                    ctx.fillText('🐾', x, y);
                 }
             });
             
@@ -5703,6 +5873,9 @@
                 ctx.fill();
             });
             
+            // Restore context after rotation
+            ctx.restore();
+            
             // Draw player (center) - more visible
             ctx.fillStyle = '#f39c12';
             ctx.strokeStyle = '#ffffff';
@@ -5712,13 +5885,43 @@
             ctx.fill();
             ctx.stroke();
             
-            // Draw direction
+            // Draw direction arrow
             ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 3;
             ctx.beginPath();
             ctx.moveTo(centerX, centerY);
-            ctx.lineTo(centerX + Math.sin(currentPlayer.rotation) * 10, centerY + Math.cos(currentPlayer.rotation) * 10);
+            ctx.lineTo(centerX, centerY - 12);
             ctx.stroke();
+            
+            // Arrow head
+            ctx.beginPath();
+            ctx.moveTo(centerX - 3, centerY - 8);
+            ctx.lineTo(centerX, centerY - 12);
+            ctx.lineTo(centerX + 3, centerY - 8);
+            ctx.stroke();
+            
+            // Update compass
+            updateCompass();
+        }
+        
+        function updateCompass() {
+            const compassEl = document.getElementById('compassIndicator');
+            if (!compassEl) return;
+            
+            // Calculate compass direction based on camera angle
+            const degrees = (cameraAngle * 180 / Math.PI) % 360;
+            let direction = 'N';
+            
+            if (degrees >= -22.5 && degrees < 22.5) direction = 'N';
+            else if (degrees >= 22.5 && degrees < 67.5) direction = 'NE';
+            else if (degrees >= 67.5 && degrees < 112.5) direction = 'E';
+            else if (degrees >= 112.5 && degrees < 157.5) direction = 'SE';
+            else if (degrees >= 157.5 || degrees < -157.5) direction = 'S';
+            else if (degrees >= -157.5 && degrees < -112.5) direction = 'SW';
+            else if (degrees >= -112.5 && degrees < -67.5) direction = 'W';
+            else if (degrees >= -67.5 && degrees < -22.5) direction = 'NW';
+            
+            compassEl.textContent = direction;
         }
         
         // Loot System
@@ -6449,9 +6652,9 @@
             
             // Fog effect
             if (weatherType === 'fog') {
-                scene.fog = new THREE.Fog(0xcccccc, 10, 30);
+                scene.fog = new THREE.Fog(0xcccccc, 50, 100);
             } else {
-                scene.fog = null;
+                scene.fog = new THREE.Fog(0x87CEEB, 150, 500);
             }
             
             // Storm darkens sky
