@@ -5,418 +5,285 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Word Games - PlayZone</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 2rem;
+            overflow-x: hidden;
         }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 2rem;
-        }
-
-        .header h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
-        }
-
+        .menu-view { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+        .header { text-align: center; color: white; margin-bottom: 2rem; }
+        .header h1 { font-size: 3rem; margin-bottom: 1rem; text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3); }
+        
         .back-btn {
-            display: inline-block;
-            padding: 0.8rem 2rem;
-            background: white;
-            color: #667eea;
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: 600;
-            margin-bottom: 2rem;
+            display: inline-block; padding: 0.8rem 2rem; background: white; color: #667eea;
+            text-decoration: none; border-radius: 50px; font-weight: 600; margin-bottom: 2rem;
             transition: transform 0.3s ease;
         }
+        .back-btn:hover { transform: scale(1.05); }
 
-        .back-btn:hover {
-            transform: scale(1.05);
+        .games-menu {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-top: 2rem;
         }
 
-        .games-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 2rem;
-            margin-top: 2rem;
+        .game-menu-card {
+            background: white; border-radius: 15px; padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
+        .game-menu-card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3); }
+        .game-menu-card .icon { font-size: 4rem; text-align: center; margin-bottom: 1rem; }
+        .game-menu-card h3 { color: #667eea; font-size: 1.5rem; margin-bottom: 0.5rem; text-align: center; }
+        .game-menu-card p { color: #666; text-align: center; font-size: 0.9rem; }
 
-        .game-card {
-            background: white;
-            border-radius: 15px;
-            padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        .game-view {
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); z-index: 1000; overflow-y: auto;
         }
+        .game-view.active { display: block; }
 
-        .game-card h2 {
-            color: #667eea;
-            margin-bottom: 1rem;
-            font-size: 1.5rem;
+        .game-header {
+            background: rgba(255, 255, 255, 0.95); padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); display: flex;
+            justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;
         }
+        .game-title { font-size: 1.5rem; color: #667eea; font-weight: bold; }
+        .game-controls { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+        
+        .close-game-btn {
+            background: #f44336; color: white; border: none; padding: 0.6rem 1.5rem;
+            border-radius: 50px; font-weight: 600; cursor: pointer; transition: transform 0.3s ease;
+        }
+        .close-game-btn:hover { transform: scale(1.05); }
 
-        .game-area {
-            margin: 1.5rem 0;
-            min-height: 200px;
-        }
+        .game-content { padding: 2rem; max-width: 900px; margin: 0 auto; }
+        .game-area { background: white; border-radius: 15px; padding: 2rem; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); min-height: 400px; }
 
         button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 0.8rem 2rem;
-            border-radius: 50px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-            margin: 0.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;
+            padding: 0.8rem 2rem; border-radius: 50px; font-weight: 600; cursor: pointer;
+            transition: transform 0.3s ease; margin: 0.5rem;
         }
+        button:hover { transform: scale(1.05); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        button:hover {
-            transform: scale(1.05);
-        }
-
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        /* Hangman Styles */
-        .hangman-display {
-            font-size: 2rem;
-            letter-spacing: 0.5rem;
-            font-weight: bold;
-            margin: 2rem 0;
-            text-align: center;
-            color: #333;
-        }
-
-        .keyboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
-            gap: 0.5rem;
-            margin: 1rem 0;
-        }
-
+        .score { font-size: 1.2rem; font-weight: bold; color: white; margin: 1rem 0; }
+        
+        .hangman-display { font-size: 2rem; letter-spacing: 0.5rem; font-weight: bold; margin: 2rem 0; text-align: center; color: #333; }
+        .keyboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(40px, 1fr)); gap: 0.5rem; margin: 1rem 0; }
         .key {
-            padding: 0.8rem;
-            background: #f5f5f5;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            cursor: pointer;
-            text-align: center;
-            font-weight: bold;
-            transition: all 0.3s ease;
+            padding: 0.8rem; background: #f5f5f5; border: 2px solid #ddd; border-radius: 5px;
+            cursor: pointer; text-align: center; font-weight: bold; transition: all 0.3s ease;
         }
+        .key:hover:not(.used) { background: #667eea; color: white; }
+        .key.used { background: #ccc; cursor: not-allowed; opacity: 0.5; }
 
-        .key:hover:not(.used) {
-            background: #667eea;
-            color: white;
-        }
-
-        .key.used {
-            background: #ccc;
-            cursor: not-allowed;
-            opacity: 0.5;
-        }
-
-        /* Wordle Styles */
-        .wordle-grid {
-            display: grid;
-            grid-template-rows: repeat(6, 1fr);
-            gap: 0.5rem;
-            margin: 1rem auto;
-            width: fit-content;
-        }
-
-        .wordle-row {
-            display: grid;
-            grid-template-columns: repeat(5, 60px);
-            gap: 0.5rem;
-        }
-
+        .wordle-grid { display: grid; grid-template-rows: repeat(6, 1fr); gap: 0.5rem; margin: 1rem auto; width: fit-content; }
+        .wordle-row { display: grid; grid-template-columns: repeat(5, min(60px, 15vw)); gap: 0.5rem; }
         .wordle-cell {
-            width: 60px;
-            height: 60px;
-            border: 2px solid #ddd;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            border-radius: 5px;
+            width: min(60px, 15vw); height: min(60px, 15vw); border: 2px solid #ddd;
+            display: flex; align-items: center; justify-content: center; font-size: min(2rem, 5vw);
+            font-weight: bold; text-transform: uppercase; border-radius: 5px;
         }
-
-        .wordle-cell.correct {
-            background: #6aaa64;
-            color: white;
-            border-color: #6aaa64;
+        .wordle-cell.correct { background: #6aaa64; color: white; border-color: #6aaa64; }
+        .wordle-cell.present { background: #c9b458; color: white; border-color: #c9b458; }
+        .wordle-cell.absent { background: #787c7e; color: white; border-color: #787c7e; }
+        
+        .wordle-input, .answer-input {
+            width: 100%; padding: 1rem; font-size: 1.2rem; border: 2px solid #667eea;
+            border-radius: 10px; text-align: center; margin: 1rem 0;
         }
+        .wordle-input { text-transform: uppercase; }
 
-        .wordle-cell.present {
-            background: #c9b458;
-            color: white;
-            border-color: #c9b458;
-        }
-
-        .wordle-cell.absent {
-            background: #787c7e;
-            color: white;
-            border-color: #787c7e;
-        }
-
-        .wordle-input {
-            width: 100%;
-            padding: 0.8rem;
-            font-size: 1.2rem;
-            border: 2px solid #667eea;
-            border-radius: 10px;
-            text-align: center;
-            text-transform: uppercase;
-            margin: 1rem 0;
-        }
-
-        /* Anagram Styles */
-        .anagram-word {
-            font-size: 2.5rem;
-            font-weight: bold;
-            letter-spacing: 0.5rem;
-            color: #667eea;
-            margin: 2rem 0;
-            text-align: center;
-        }
-
-        .answer-input {
-            width: 100%;
-            padding: 1rem;
-            font-size: 1.2rem;
-            border: 2px solid #667eea;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        /* Typing Test Styles */
+        .anagram-word { font-size: 2.5rem; font-weight: bold; letter-spacing: 0.5rem; color: #667eea; margin: 2rem 0; text-align: center; }
+        
         .typing-text {
-            background: #f5f5f5;
-            padding: 1.5rem;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            line-height: 1.8;
-            margin: 1rem 0;
-            color: #333;
+            background: #f5f5f5; padding: 1.5rem; border-radius: 10px; font-size: 1.1rem;
+            line-height: 1.8; margin: 1rem 0; color: #333;
         }
+        .typing-input { width: 100%; padding: 1rem; font-size: 1.1rem; border: 2px solid #667eea; border-radius: 10px; margin: 1rem 0; }
+        .typing-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1rem 0; }
+        .stat { background: #f5f5f5; padding: 1rem; border-radius: 10px; text-align: center; }
+        .stat-value { font-size: 2rem; font-weight: bold; color: #667eea; }
+        .stat-label { font-size: 0.9rem; color: #666; }
 
-        .typing-input {
-            width: 100%;
-            padding: 1rem;
-            font-size: 1.1rem;
-            border: 2px solid #667eea;
-            border-radius: 10px;
-            margin: 1rem 0;
-        }
-
-        .typing-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            margin: 1rem 0;
-        }
-
-        .stat {
-            background: #f5f5f5;
-            padding: 1rem;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #667eea;
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            color: #666;
-        }
-
-        /* Word Chain Styles */
-        .word-chain-display {
-            background: #f5f5f5;
-            padding: 1rem;
-            border-radius: 10px;
-            min-height: 100px;
-            margin: 1rem 0;
-        }
-
+        .word-chain-display { background: #f5f5f5; padding: 1rem; border-radius: 10px; min-height: 100px; margin: 1rem 0; }
         .chain-word {
-            display: inline-block;
-            background: #667eea;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            margin: 0.5rem;
+            display: inline-block; background: #667eea; color: white; padding: 0.5rem 1rem;
+            border-radius: 20px; margin: 0.5rem;
         }
 
-        .score {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #333;
-            margin: 1rem 0;
-        }
-
-        .message {
-            padding: 1rem;
-            border-radius: 10px;
-            margin: 1rem 0;
-            text-align: center;
-            font-weight: bold;
-        }
-
-        .message.success {
-            background: #4caf50;
-            color: white;
-        }
-
-        .message.error {
-            background: #f44336;
-            color: white;
-        }
-
-        .message.info {
-            background: #2196F3;
-            color: white;
-        }
+        .message { padding: 1rem; border-radius: 10px; margin: 1rem 0; text-align: center; font-weight: bold; }
+        .message.success { background: #4caf50; color: white; }
+        .message.error { background: #f44336; color: white; }
 
         @media (max-width: 768px) {
-            .games-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .header h1 {
-                font-size: 2rem;
-            }
-
-            .wordle-row {
-                grid-template-columns: repeat(5, 50px);
-            }
-
-            .wordle-cell {
-                width: 50px;
-                height: 50px;
-                font-size: 1.5rem;
-            }
+            .header h1 { font-size: 2rem; }
+            .game-title { font-size: 1.2rem; }
+            .game-header { padding: 1rem; }
+            .game-content { padding: 1rem; }
+            .game-area { padding: 1rem; }
+            .games-menu { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="menu-view" id="menuView">
         <div class="header">
             <a href="index.html" class="back-btn">← Back to Home</a>
             <h1>✍️ Word Games</h1>
             <p style="font-size: 1.2rem; margin-top: 0.5rem;">Master the art of words!</p>
         </div>
 
-        <div class="games-grid">
-            <!-- Hangman Game -->
-            <div class="game-card">
-                <h2>Hangman</h2>
+        <div class="games-menu">
+            <div class="game-menu-card" onclick="openGame('hangman')">
+                <div class="icon">🎯</div>
+                <h3>Hangman</h3>
+                <p>Classic letter guessing game</p>
+            </div>
+            <div class="game-menu-card" onclick="openGame('wordle')">
+                <div class="icon">🔤</div>
+                <h3>Wordle</h3>
+                <p>Guess the 5-letter word!</p>
+            </div>
+            <div class="game-menu-card" onclick="openGame('anagram')">
+                <div class="icon">🔀</div>
+                <h3>Anagram</h3>
+                <p>Unscramble the words</p>
+            </div>
+            <div class="game-menu-card" onclick="openGame('typing')">
+                <div class="icon">⌨️</div>
+                <h3>Typing Test</h3>
+                <p>Test your typing speed</p>
+            </div>
+            <div class="game-menu-card" onclick="openGame('word-chain')">
+                <div class="icon">🔗</div>
+                <h3>Word Chain</h3>
+                <p>Build an endless word chain</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Views -->
+    <div class="game-view" id="game-hangman">
+        <div class="game-header">
+            <div class="game-title">🎯 Hangman</div>
+            <div class="game-controls">
                 <div class="score">Lives: <span id="hangman-lives">6</span></div>
-                <div class="game-area">
-                    <div class="hangman-display" id="hangman-word"></div>
-                    <div id="hangman-message"></div>
-                    <div class="keyboard" id="hangman-keyboard"></div>
-                </div>
                 <button onclick="initHangman()">New Game</button>
+                <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
             </div>
+        </div>
+        <div class="game-content">
+            <div class="game-area">
+                <div class="hangman-display" id="hangman-word"></div>
+                <div id="hangman-message"></div>
+                <div class="keyboard" id="hangman-keyboard"></div>
+            </div>
+        </div>
+    </div>
 
-            <!-- Wordle Game -->
-            <div class="game-card">
-                <h2>Wordle</h2>
+    <div class="game-view" id="game-wordle">
+        <div class="game-header">
+            <div class="game-title">🔤 Wordle</div>
+            <div class="game-controls">
                 <div class="score">Attempts: <span id="wordle-attempts">0</span> / 6</div>
-                <div class="game-area">
-                    <div class="wordle-grid" id="wordle-grid"></div>
-                    <input type="text" class="wordle-input" id="wordle-input" maxlength="5" placeholder="Enter 5-letter word">
-                    <button onclick="submitWordle()">Submit</button>
-                </div>
                 <button onclick="initWordle()">New Game</button>
+                <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
             </div>
+        </div>
+        <div class="game-content">
+            <div class="game-area">
+                <div class="wordle-grid" id="wordle-grid"></div>
+                <input type="text" class="wordle-input" id="wordle-input" maxlength="5" placeholder="Enter 5-letter word">
+                <button onclick="submitWordle()">Submit</button>
+            </div>
+        </div>
+    </div>
 
-            <!-- Anagram Game -->
-            <div class="game-card">
-                <h2>Anagram Scrambler</h2>
+    <div class="game-view" id="game-anagram">
+        <div class="game-header">
+            <div class="game-title">🔀 Anagram</div>
+            <div class="game-controls">
                 <div class="score">Score: <span id="anagram-score">0</span></div>
-                <div class="game-area">
-                    <div class="anagram-word" id="anagram-word"></div>
-                    <input type="text" class="answer-input" id="anagram-input" placeholder="Unscramble the word">
-                    <div id="anagram-message"></div>
-                </div>
-                <button onclick="checkAnagram()">Submit</button>
                 <button onclick="initAnagram()">New Word</button>
+                <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
             </div>
+        </div>
+        <div class="game-content">
+            <div class="game-area">
+                <div class="anagram-word" id="anagram-word"></div>
+                <input type="text" class="answer-input" id="anagram-input" placeholder="Unscramble the word">
+                <div id="anagram-message"></div>
+                <button onclick="checkAnagram()">Submit</button>
+            </div>
+        </div>
+    </div>
 
-            <!-- Typing Speed Test -->
-            <div class="game-card">
-                <h2>Typing Speed Test</h2>
-                <div class="game-area">
-                    <div class="typing-text" id="typing-text"></div>
-                    <textarea class="typing-input" id="typing-input" rows="4" placeholder="Start typing to begin..."></textarea>
-                    <div class="typing-stats">
-                        <div class="stat">
-                            <div class="stat-value" id="typing-wpm">0</div>
-                            <div class="stat-label">WPM</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-value" id="typing-accuracy">100</div>
-                            <div class="stat-label">Accuracy %</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-value" id="typing-time">60</div>
-                            <div class="stat-label">Time (s)</div>
-                        </div>
-                    </div>
-                </div>
+    <div class="game-view" id="game-typing">
+        <div class="game-header">
+            <div class="game-title">⌨️ Typing Test</div>
+            <div class="game-controls">
                 <button onclick="initTypingTest()">New Test</button>
+                <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
             </div>
-
-            <!-- Word Chain Game -->
-            <div class="game-card">
-                <h2>Word Chain</h2>
-                <div class="score">Chain Length: <span id="chain-length">0</span></div>
-                <div class="game-area">
-                    <div class="word-chain-display" id="word-chain"></div>
-                    <input type="text" class="answer-input" id="chain-input" placeholder="Enter next word">
-                    <div id="chain-message"></div>
+        </div>
+        <div class="game-content">
+            <div class="game-area">
+                <div class="typing-text" id="typing-text"></div>
+                <textarea class="typing-input" id="typing-input" rows="4" placeholder="Start typing to begin..."></textarea>
+                <div class="typing-stats">
+                    <div class="stat"><div class="stat-value" id="typing-wpm">0</div><div class="stat-label">WPM</div></div>
+                    <div class="stat"><div class="stat-value" id="typing-accuracy">100</div><div class="stat-label">Accuracy %</div></div>
+                    <div class="stat"><div class="stat-value" id="typing-time">60</div><div class="stat-label">Time (s)</div></div>
                 </div>
-                <button onclick="submitChainWord()">Submit Word</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-view" id="game-word-chain">
+        <div class="game-header">
+            <div class="game-title">🔗 Word Chain</div>
+            <div class="game-controls">
+                <div class="score">Chain: <span id="chain-length">0</span></div>
                 <button onclick="initWordChain()">New Chain</button>
+                <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
+            </div>
+        </div>
+        <div class="game-content">
+            <div class="game-area">
+                <div class="word-chain-display" id="word-chain"></div>
+                <input type="text" class="answer-input" id="chain-input" placeholder="Enter next word">
+                <div id="chain-message"></div>
+                <button onclick="submitChainWord()">Submit Word</button>
             </div>
         </div>
     </div>
 
     <script>
-        // ========== HANGMAN GAME ==========
-        const hangmanWords = ['JAVASCRIPT', 'PYTHON', 'PROGRAMMING', 'DEVELOPER', 'COMPUTER', 'KEYBOARD', 'ALGORITHM', 'DATABASE', 'NETWORK', 'SOFTWARE'];
-        let hangmanWord = '';
-        let hangmanGuessed = [];
-        let hangmanLives = 6;
+        function openGame(gameName) {
+            document.getElementById('menuView').style.display = 'none';
+            document.getElementById('game-' + gameName).classList.add('active');
+            
+            if (gameName === 'hangman') initHangman();
+            else if (gameName === 'wordle') initWordle();
+            else if (gameName === 'anagram') initAnagram();
+            else if (gameName === 'typing') initTypingTest();
+            else if (gameName === 'word-chain') initWordChain();
+        }
+
+        function closeGame() {
+            document.querySelectorAll('.game-view').forEach(view => view.classList.remove('active'));
+            document.getElementById('menuView').style.display = 'block';
+            if (typingTimerInterval) clearInterval(typingTimerInterval);
+        }
+
+        // HANGMAN
+        const hangmanWords = ['JAVASCRIPT', 'PYTHON', 'PROGRAMMING', 'DEVELOPER', 'COMPUTER', 'KEYBOARD', 'ALGORITHM', 'DATABASE'];
+        let hangmanWord = '', hangmanGuessed = [], hangmanLives = 6;
 
         function initHangman() {
             hangmanWord = hangmanWords[Math.floor(Math.random() * hangmanWords.length)];
@@ -435,7 +302,6 @@
             }
             document.getElementById('hangman-word').textContent = display;
             
-            // Check win
             if (!display.includes('_')) {
                 document.getElementById('hangman-message').innerHTML = '<div class="message success">🎉 You Won!</div>';
                 disableKeyboard();
@@ -449,9 +315,7 @@
                 const letter = String.fromCharCode(i);
                 const key = document.createElement('div');
                 key.className = 'key';
-                if (hangmanGuessed.includes(letter)) {
-                    key.classList.add('used');
-                }
+                if (hangmanGuessed.includes(letter)) key.classList.add('used');
                 key.textContent = letter;
                 key.onclick = () => guessLetter(letter);
                 keyboard.appendChild(key);
@@ -460,15 +324,13 @@
 
         function guessLetter(letter) {
             if (hangmanGuessed.includes(letter) || hangmanLives === 0) return;
-            
             hangmanGuessed.push(letter);
             
             if (!hangmanWord.includes(letter)) {
                 hangmanLives--;
                 document.getElementById('hangman-lives').textContent = hangmanLives;
-                
                 if (hangmanLives === 0) {
-                    document.getElementById('hangman-message').innerHTML = `<div class="message error">Game Over! Word was: ${hangmanWord}</div>`;
+                    document.getElementById('hangman-message').innerHTML = `<div class="message error">Game Over! Word: ${hangmanWord}</div>`;
                     disableKeyboard();
                 }
             }
@@ -481,10 +343,9 @@
             document.querySelectorAll('.key').forEach(key => key.classList.add('used'));
         }
 
-        // ========== WORDLE GAME ==========
-        const wordleWords = ['REACT', 'SWIFT', 'FLASK', 'REDIS', 'NGINX', 'LINUX', 'BADGE', 'CRANE', 'SLATE', 'ADIEU'];
-        let wordleTarget = '';
-        let wordleAttempts = 0;
+        // WORDLE
+        const wordleWords = ['REACT', 'SWIFT', 'FLASK', 'REDIS', 'NGINX', 'LINUX', 'BADGE', 'CRANE'];
+        let wordleTarget = '', wordleAttempts = 0;
 
         function initWordle() {
             wordleTarget = wordleWords[Math.floor(Math.random() * wordleWords.length)];
@@ -524,7 +385,6 @@
             
             for (let i = 0; i < 5; i++) {
                 cells[i].textContent = guess[i];
-                
                 if (guess[i] === wordleTarget[i]) {
                     cells[i].classList.add('correct');
                 } else if (wordleTarget.includes(guess[i])) {
@@ -539,7 +399,7 @@
             input.value = '';
             
             if (guess === wordleTarget) {
-                alert('🎉 Congratulations! You found the word!');
+                alert('🎉 Congratulations!');
                 document.getElementById('wordle-input').disabled = true;
             } else if (wordleAttempts === 6) {
                 alert(`Game Over! The word was: ${wordleTarget}`);
@@ -547,19 +407,19 @@
             }
         }
 
-        // ========== ANAGRAM GAME ==========
+        document.getElementById('wordle-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') submitWordle();
+        });
+
+        // ANAGRAM
         const anagramWords = [
             { word: 'LISTEN', scrambled: 'SILENT' },
             { word: 'EARTH', scrambled: 'HEART' },
             { word: 'NIGHT', scrambled: 'THING' },
             { word: 'BELOW', scrambled: 'ELBOW' },
-            { word: 'STUDY', scrambled: 'DUSTY' },
-            { word: 'ANGEL', scrambled: 'ANGLE' },
-            { word: 'DINE', scrambled: 'NIDE' },
-            { word: 'EVIL', scrambled: 'VILE' }
+            { word: 'STUDY', scrambled: 'DUSTY' }
         ];
-        let currentAnagram = null;
-        let anagramScore = 0;
+        let currentAnagram = null, anagramScore = 0;
 
         function initAnagram() {
             currentAnagram = anagramWords[Math.floor(Math.random() * anagramWords.length)];
@@ -583,16 +443,17 @@
             }
         }
 
-        // ========== TYPING SPEED TEST ==========
+        document.getElementById('anagram-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') checkAnagram();
+        });
+
+        // TYPING TEST
         const typingTexts = [
-            "The quick brown fox jumps over the lazy dog. This sentence contains every letter of the alphabet at least once.",
-            "Programming is the art of telling a computer what to do through a set of instructions. These instructions are written in programming languages.",
-            "Practice makes perfect. The more you type, the faster and more accurate you will become. Keep practicing every day.",
-            "JavaScript is a versatile programming language used for web development. It can run in browsers and on servers."
+            "The quick brown fox jumps over the lazy dog.",
+            "Programming is the art of telling a computer what to do.",
+            "Practice makes perfect. Keep typing every day!"
         ];
-        let typingStartTime = null;
-        let typingTimerInterval = null;
-        let typingTargetText = '';
+        let typingStartTime = null, typingTimerInterval = null, typingTargetText = '';
 
         function initTypingTest() {
             typingTargetText = typingTexts[Math.floor(Math.random() * typingTexts.length)];
@@ -606,19 +467,16 @@
             typingStartTime = null;
             if (typingTimerInterval) clearInterval(typingTimerInterval);
             
-            const input = document.getElementById('typing-input');
-            input.oninput = updateTypingStats;
+            document.getElementById('typing-input').oninput = updateTypingStats;
         }
 
         function updateTypingStats() {
             if (!typingStartTime) {
                 typingStartTime = Date.now();
                 let timeLeft = 60;
-                
                 typingTimerInterval = setInterval(() => {
                     timeLeft--;
                     document.getElementById('typing-time').textContent = timeLeft;
-                    
                     if (timeLeft === 0) {
                         clearInterval(typingTimerInterval);
                         document.getElementById('typing-input').disabled = true;
@@ -627,14 +485,11 @@
             }
             
             const typed = document.getElementById('typing-input').value;
-            const timeElapsed = (Date.now() - typingStartTime) / 1000 / 60; // in minutes
-            
-            // Calculate WPM
+            const timeElapsed = (Date.now() - typingStartTime) / 1000 / 60;
             const words = typed.trim().split(/\s+/).length;
             const wpm = Math.round(words / timeElapsed) || 0;
             document.getElementById('typing-wpm').textContent = wpm;
             
-            // Calculate accuracy
             let correct = 0;
             for (let i = 0; i < typed.length; i++) {
                 if (typed[i] === typingTargetText[i]) correct++;
@@ -643,8 +498,7 @@
             document.getElementById('typing-accuracy').textContent = accuracy;
         }
 
-        // ========== WORD CHAIN GAME ==========
-        const wordChainDict = ['APPLE', 'ELEPHANT', 'TABLE', 'ENERGY', 'YELLOW', 'WINDOW', 'ORANGE', 'EARTH', 'HELLO', 'OCEAN', 'NEST', 'TIGER', 'RED', 'DOG', 'GAME', 'EGG', 'GREEN'];
+        // WORD CHAIN
         let wordChain = [];
 
         function initWordChain() {
@@ -692,27 +546,8 @@
             document.getElementById('chain-input').value = '';
             messageDiv.innerHTML = '<div class="message success">✓ Great!</div>';
             renderWordChain();
-            
-            setTimeout(() => {
-                messageDiv.innerHTML = '';
-            }, 1500);
+            setTimeout(() => messageDiv.innerHTML = '', 1500);
         }
-
-        // Initialize games
-        initHangman();
-        initWordle();
-        initAnagram();
-        initTypingTest();
-        initWordChain();
-
-        // Enter key support for inputs
-        document.getElementById('wordle-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') submitWordle();
-        });
-
-        document.getElementById('anagram-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') checkAnagram();
-        });
 
         document.getElementById('chain-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') submitChainWord();

@@ -15,11 +15,12 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 2rem;
+            overflow-x: hidden;
         }
 
-        .container {
-            max-width: 1400px;
+        .menu-view {
+            padding: 2rem;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
@@ -51,29 +52,113 @@
             transform: scale(1.05);
         }
 
-        .games-grid {
+        .games-menu {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 2rem;
             margin-top: 2rem;
         }
 
-        .game-card {
+        .game-menu-card {
             background: white;
             border-radius: 15px;
             padding: 2rem;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
-        .game-card h2 {
-            color: #667eea;
+        .game-menu-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-menu-card .icon {
+            font-size: 4rem;
+            text-align: center;
             margin-bottom: 1rem;
+        }
+
+        .game-menu-card h3 {
+            color: #667eea;
             font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .game-menu-card p {
+            color: #666;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .game-view {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .game-view.active {
+            display: block;
+        }
+
+        .game-header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .game-title {
+            font-size: 1.5rem;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .game-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .close-game-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .close-game-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .game-content {
+            padding: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
         }
 
         .game-area {
-            margin: 1.5rem 0;
-            min-height: 250px;
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            min-height: 400px;
         }
 
         button {
@@ -97,8 +182,14 @@
             cursor: not-allowed;
         }
 
-        .question {
+        .score {
             font-size: 1.2rem;
+            font-weight: bold;
+            color: white;
+        }
+
+        .question {
+            font-size: 1.3rem;
             font-weight: bold;
             margin-bottom: 1.5rem;
             color: #333;
@@ -118,6 +209,7 @@
             border-radius: 10px;
             cursor: pointer;
             transition: all 0.3s ease;
+            font-size: 1rem;
         }
 
         .option:hover {
@@ -141,13 +233,6 @@
             background: #f44336;
             color: white;
             border-color: #f44336;
-        }
-
-        .score {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #333;
-            margin: 1rem 0;
         }
 
         .timer {
@@ -199,6 +284,7 @@
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: 600;
+            font-size: 1rem;
         }
 
         .category-btn:hover {
@@ -208,112 +294,179 @@
         }
 
         @media (max-width: 768px) {
-            .games-grid {
-                grid-template-columns: 1fr;
-            }
-            
             .header h1 {
                 font-size: 2rem;
+            }
+
+            .game-title {
+                font-size: 1.2rem;
+            }
+
+            .game-header {
+                padding: 1rem;
+            }
+
+            .game-content {
+                padding: 1rem;
+            }
+
+            .game-area {
+                padding: 1rem;
+            }
+
+            .games-menu {
+                grid-template-columns: 1fr;
+            }
+
+            .question {
+                font-size: 1.1rem;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Menu View -->
+    <div class="menu-view" id="menuView">
         <div class="header">
             <a href="index.html" class="back-btn">← Back to Home</a>
             <h1>📚 Quiz Games</h1>
-            <p style="font-size: 1.2rem; margin-top: 0.5rem;">Test your knowledge and learn new things!</p>
+            <p style="font-size: 1.2rem; margin-top: 0.5rem;">Test your knowledge!</p>
         </div>
 
-        <div class="games-grid">
-            <!-- Multiple Choice Quiz -->
-            <div class="game-card">
-                <h2>Multiple Choice Quiz</h2>
+        <div class="games-menu">
+            <div class="game-menu-card" onclick="openGame('multiple-choice')">
+                <div class="icon">🎓</div>
+                <h3>Multiple Choice</h3>
+                <p>Answer questions and score points</p>
+            </div>
+
+            <div class="game-menu-card" onclick="openGame('true-false')">
+                <div class="icon">✓✗</div>
+                <h3>True or False</h3>
+                <p>Quick fact checking game</p>
+            </div>
+
+            <div class="game-menu-card" onclick="openGame('timed')">
+                <div class="icon">⏱️</div>
+                <h3>Timed Challenge</h3>
+                <p>Answer as many as you can in 30 seconds!</p>
+            </div>
+
+            <div class="game-menu-card" onclick="openGame('personality')">
+                <div class="icon">🎭</div>
+                <h3>Personality Quiz</h3>
+                <p>Discover your personality type</p>
+            </div>
+
+            <div class="game-menu-card" onclick="openGame('category')">
+                <div class="icon">🌍</div>
+                <h3>Category Quiz</h3>
+                <p>Pick your favorite topic</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Views -->
+    <div class="game-view" id="game-multiple-choice">
+        <div class="game-header">
+            <div class="game-title">🎓 Multiple Choice Quiz</div>
+            <div class="game-controls">
                 <div class="score">Score: <span id="mc-score">0</span> / <span id="mc-total">0</span></div>
-                <div class="game-area">
-                    <div id="mc-quiz-area"></div>
-                </div>
-                <button onclick="initMultipleChoice()">Start Quiz</button>
+                <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
             </div>
+        </div>
+        <div class="game-content">
+            <div class="game-area" id="mc-quiz-area"></div>
+        </div>
+    </div>
 
-            <!-- True or False Game -->
-            <div class="game-card">
-                <h2>True or False</h2>
+    <div class="game-view" id="game-true-false">
+        <div class="game-header">
+            <div class="game-title">✓✗ True or False</div>
+            <div class="game-controls">
                 <div class="score">Score: <span id="tf-score">0</span> / <span id="tf-total">0</span></div>
-                <div class="game-area">
-                    <div id="tf-quiz-area"></div>
-                </div>
-                <button onclick="initTrueFalse()">Start Game</button>
+                <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
             </div>
+        </div>
+        <div class="game-content">
+            <div class="game-area" id="tf-quiz-area"></div>
+        </div>
+    </div>
 
-            <!-- Timed Quiz Challenge -->
-            <div class="game-card">
-                <h2>Timed Challenge</h2>
+    <div class="game-view" id="game-timed">
+        <div class="game-header">
+            <div class="game-title">⏱️ Timed Challenge</div>
+            <div class="game-controls">
                 <div class="timer">Time: <span id="timer">30</span>s</div>
                 <div class="score">Score: <span id="timed-score">0</span></div>
-                <div class="game-area">
-                    <div id="timed-quiz-area"></div>
-                </div>
-                <button onclick="initTimedQuiz()">Start Challenge</button>
+                <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
             </div>
+        </div>
+        <div class="game-content">
+            <div class="game-area" id="timed-quiz-area"></div>
+        </div>
+    </div>
 
-            <!-- Personality Quiz -->
-            <div class="game-card">
-                <h2>Personality Quiz</h2>
-                <div class="game-area">
-                    <div id="personality-quiz-area"></div>
-                </div>
-                <button onclick="initPersonalityQuiz()">Start Quiz</button>
+    <div class="game-view" id="game-personality">
+        <div class="game-header">
+            <div class="game-title">🎭 Personality Quiz</div>
+            <div class="game-controls">
+                <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
             </div>
+        </div>
+        <div class="game-content">
+            <div class="game-area" id="personality-quiz-area"></div>
+        </div>
+    </div>
 
-            <!-- Category Quiz -->
-            <div class="game-card">
-                <h2>Category Quiz</h2>
+    <div class="game-view" id="game-category">
+        <div class="game-header">
+            <div class="game-title">🌍 Category Quiz</div>
+            <div class="game-controls">
                 <div class="score">Score: <span id="cat-score">0</span> / <span id="cat-total">0</span></div>
-                <div class="game-area">
-                    <div id="category-quiz-area">
-                        <p style="margin-bottom: 1rem;">Choose a category:</p>
-                        <div class="category-select">
-                            <button class="category-btn" onclick="startCategoryQuiz('geography')">🌍 Geography</button>
-                            <button class="category-btn" onclick="startCategoryQuiz('movies')">🎬 Movies</button>
-                            <button class="category-btn" onclick="startCategoryQuiz('sports')">⚽ Sports</button>
-                            <button class="category-btn" onclick="startCategoryQuiz('science')">🔬 Science</button>
-                        </div>
-                    </div>
+                <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
+            </div>
+        </div>
+        <div class="game-content">
+            <div class="game-area" id="category-quiz-area">
+                <p style="margin-bottom: 1rem; font-size: 1.2rem; font-weight: bold;">Choose a category:</p>
+                <div class="category-select">
+                    <button class="category-btn" onclick="startCategoryQuiz('geography')">🌍 Geography</button>
+                    <button class="category-btn" onclick="startCategoryQuiz('movies')">🎬 Movies</button>
+                    <button class="category-btn" onclick="startCategoryQuiz('sports')">⚽ Sports</button>
+                    <button class="category-btn" onclick="startCategoryQuiz('science')">🔬 Science</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        function openGame(gameName) {
+            document.getElementById('menuView').style.display = 'none';
+            document.getElementById('game-' + gameName).classList.add('active');
+            
+            if (gameName === 'multiple-choice') initMultipleChoice();
+            else if (gameName === 'true-false') initTrueFalse();
+            else if (gameName === 'timed') initTimedQuiz();
+            else if (gameName === 'personality') initPersonalityQuiz();
+        }
+
+        function closeGame() {
+            document.querySelectorAll('.game-view').forEach(view => {
+                view.classList.remove('active');
+            });
+            document.getElementById('menuView').style.display = 'block';
+            
+            if (timedTimer) clearInterval(timedTimer);
+        }
+
         // ========== MULTIPLE CHOICE QUIZ ==========
         const mcQuestions = [
-            {
-                question: "What is the capital of France?",
-                options: ["London", "Berlin", "Paris", "Madrid"],
-                correct: 2
-            },
-            {
-                question: "Which planet is known as the Red Planet?",
-                options: ["Venus", "Mars", "Jupiter", "Saturn"],
-                correct: 1
-            },
-            {
-                question: "Who painted the Mona Lisa?",
-                options: ["Vincent van Gogh", "Pablo Picasso", "Leonardo da Vinci", "Michelangelo"],
-                correct: 2
-            },
-            {
-                question: "What is the largest ocean on Earth?",
-                options: ["Atlantic Ocean", "Indian Ocean", "Arctic Ocean", "Pacific Ocean"],
-                correct: 3
-            },
-            {
-                question: "In which year did World War II end?",
-                options: ["1943", "1944", "1945", "1946"],
-                correct: 2
-            }
+            { question: "What is the capital of France?", options: ["London", "Berlin", "Paris", "Madrid"], correct: 2 },
+            { question: "Which planet is known as the Red Planet?", options: ["Venus", "Mars", "Jupiter", "Saturn"], correct: 1 },
+            { question: "Who painted the Mona Lisa?", options: ["Vincent van Gogh", "Pablo Picasso", "Leonardo da Vinci", "Michelangelo"], correct: 2 },
+            { question: "What is the largest ocean on Earth?", options: ["Atlantic Ocean", "Indian Ocean", "Arctic Ocean", "Pacific Ocean"], correct: 3 },
+            { question: "In which year did World War II end?", options: ["1943", "1944", "1945", "1946"], correct: 2 }
         ];
 
         let mcCurrentQuestion = 0;
@@ -335,6 +488,7 @@
                         <p>Final Score: ${mcScore} / ${mcQuestions.length}</p>
                         <p>${mcScore === mcQuestions.length ? '🎉 Perfect Score!' : mcScore >= mcQuestions.length / 2 ? '👍 Good Job!' : '💪 Keep practicing!'}</p>
                     </div>
+                    <button onclick="initMultipleChoice()">Play Again</button>
                 `;
                 return;
             }
@@ -398,6 +552,7 @@
                         <h3>Game Complete!</h3>
                         <p>Final Score: ${tfScore} / ${tfQuestions.length}</p>
                     </div>
+                    <button onclick="initTrueFalse()">Play Again</button>
                 `;
                 return;
             }
@@ -508,6 +663,7 @@
                     <p>Correct: ${timedScore}</p>
                     <p>Score: ${Math.round((timedScore / timedCurrentQuestion) * 100)}%</p>
                 </div>
+                <button onclick="initTimedQuiz()">Play Again</button>
             `;
         }
 
@@ -600,8 +756,9 @@
             document.getElementById('personality-quiz-area').innerHTML = `
                 <div class="personality-result">
                     <h3>${result.title}</h3>
-                    <p>${result.desc}</p>
+                    <p style="margin-top: 1rem;">${result.desc}</p>
                 </div>
+                <button onclick="initPersonalityQuiz()">Take Quiz Again</button>
             `;
         }
 
@@ -649,7 +806,7 @@
                         <h3>Quiz Complete!</h3>
                         <p>Final Score: ${catScore} / ${catQuestions.length}</p>
                     </div>
-                    <button onclick="location.reload()">Play Another Category</button>
+                    <button onclick="closeGame(); setTimeout(() => openGame('category'), 100)">Play Another Category</button>
                 `;
                 return;
             }
@@ -682,9 +839,6 @@
                 showCategoryQuestion();
             }, 1500);
         }
-
-        // Initialize first quiz
-        initMultipleChoice();
     </script>
 </body>
 </html>
