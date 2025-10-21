@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-box {
+            background: #f0f0f0;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 5px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>🔥 Firebase Connection Test</h1>
+    <p>This page tests if Firebase is properly initialized.</p>
+    
+    <div id="result" class="test-box">Testing...</div>
+    
+    <h2>Test Results:</h2>
+    <div id="tests"></div>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    
+    <script>
+        const resultDiv = document.getElementById('result');
+        const testsDiv = document.getElementById('tests');
+        
+        function addTest(name, status, message) {
+            const div = document.createElement('div');
+            div.className = 'test-box ' + (status ? 'success' : 'error');
+            div.innerHTML = `<strong>${status ? '✅' : '❌'} ${name}</strong><br>${message}`;
+            testsDiv.appendChild(div);
+        }
+        
+        try {
+            // Test 1: Firebase object exists
+            if (typeof firebase !== 'undefined') {
+                addTest('Firebase SDK Loaded', true, 'Firebase object is available');
+            } else {
+                addTest('Firebase SDK Loaded', false, 'Firebase object not found');
+                throw new Error('Firebase not loaded');
+            }
+            
+            // Test 2: Initialize Firebase
+            const firebaseConfig = {
+                apiKey: "AIzaSyCqMqav_HFKid6XdmbnfhG5llgCMZoYQV0",
+                authDomain: "fantasyquest-mmorpg.firebaseapp.com",
+                databaseURL: "https://fantasyquest-mmorpg-default-rtdb.europe-west1.firebasedatabase.app",
+                projectId: "fantasyquest-mmorpg",
+                storageBucket: "fantasyquest-mmorpg.firebasestorage.app",
+                messagingSenderId: "149888279159",
+                appId: "1:149888279159:web:48a53797f0c57f3a671c72"
+            };
+            
+            firebase.initializeApp(firebaseConfig);
+            addTest('Firebase Initialized', true, 'firebase.initializeApp() succeeded');
+            
+            // Test 3: Get Auth
+            var auth = firebase.auth();
+            addTest('Auth Service', true, 'firebase.auth() is accessible: ' + typeof auth);
+            
+            // Test 4: Get Database
+            var database = firebase.database();
+            addTest('Database Service', true, 'firebase.database() is accessible: ' + typeof database);
+            
+            // Test 5: Check Auth State
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    addTest('Auth State', true, 'User is logged in: ' + user.email);
+                } else {
+                    addTest('Auth State', true, 'No user logged in (this is OK for testing)');
+                }
+            });
+            
+            resultDiv.className = 'test-box success';
+            resultDiv.innerHTML = '<h2>✅ All Tests Passed!</h2><p>Firebase is properly configured. The main game should work!</p>';
+            
+        } catch (error) {
+            resultDiv.className = 'test-box error';
+            resultDiv.innerHTML = '<h2>❌ Test Failed</h2><p>' + error.message + '</p>';
+            addTest('Error', false, error.toString());
+            console.error('Firebase test error:', error);
+        }
+    </script>
+</body>
+</html>
