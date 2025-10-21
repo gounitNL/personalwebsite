@@ -1391,6 +1391,35 @@
         let equippedWeaponMesh = null; // Visual weapon mesh
         let targetMonster = null; // Monster being walked to
         let targetResource = null; // Resource being walked to
+        let targetPosition = null; // Position being walked to (click-to-move)
+        let houses = []; // House structures
+        let houseMeshes = []; // House 3D meshes
+        let npcData = []; // NPC data
+        let npcMeshes = []; // NPC 3D meshes
+        let currentQuestStep = {}; // Track progress in multi-step quests
+        
+        // NPC Definitions
+        const NPCS = [
+            { id: 'elder_marcus', name: 'Elder Marcus', x: -10, z: 10, type: 'quest', color: 0x8b4513, dialogue: 'Welcome, young adventurer!' },
+            { id: 'blacksmith_gareth', name: 'Blacksmith Gareth', x: 15, z: -15, type: 'shop', color: 0x696969, dialogue: 'Looking for quality equipment?' },
+            { id: 'pet_master', name: 'Pet Master Luna', x: -20, z: -20, type: 'pet', color: 0x9370db, dialogue: 'Want a loyal companion?' },
+            { id: 'farmer_jane', name: 'Farmer Jane', x: 25, z: 15, type: 'quest', color: 0xdaa520, dialogue: 'Can you help me?' },
+            { id: 'guard_captain', name: 'Guard Captain', x: 0, z: -30, type: 'quest', color: 0x4169e1, dialogue: 'The village needs defenders!' },
+            { id: 'fisherman_bob', name: 'Fisherman Bob', x: -35, z: 5, type: 'quest', color: 0x20b2aa, dialogue: 'Fish are biting today!' },
+            { id: 'wizard_aldrin', name: 'Wizard Aldrin', x: 30, z: 30, type: 'quest', color: 0x9400d3, dialogue: 'The arcane arts await...' },
+            { id: 'scholar_elena', name: 'Scholar Elena', x: -25, z: 25, type: 'quest', color: 0xcd853f, dialogue: 'Knowledge is power!' },
+            { id: 'king_aldric', name: 'King Aldric', x: 0, z: 40, type: 'quest', color: 0xffd700, dialogue: 'The kingdom needs a hero!' }
+        ];
+        
+        // House Definitions
+        const HOUSES = [
+            { x: -15, z: 5, width: 8, depth: 8, height: 6, color: 0x8b4513, name: 'Elder\'s Home' },
+            { x: 20, z: -20, width: 10, depth: 8, height: 7, color: 0x696969, name: 'Blacksmith' },
+            { x: -25, z: -15, width: 7, depth: 7, height: 5, color: 0xdaa520, name: 'Pet Shop' },
+            { x: 30, z: 10, width: 6, depth: 6, height: 5, color: 0x8fbc8f, name: 'Cottage' },
+            { x: -5, z: -35, width: 9, depth: 7, height: 6, color: 0x4682b4, name: 'Guard House' },
+            { x: 0, z: 45, width: 15, depth: 12, height: 10, color: 0xffd700, name: 'Royal Palace' }
+        ];
 
         // Constants
         const PLAYER_SPEED = 0.15;
@@ -1423,39 +1452,151 @@
             }
         };
         
-        // NEW: Quest Database
+        // NEW: Quest Database with Creative Multi-Step Quests
         const QUESTS = [
+            // Beginner Quests
             { 
-                id: 'tutorial_combat',
-                name: 'First Blood',
-                description: 'Defeat 3 monsters',
-                objective: { type: 'kill', target: 'any', count: 3 },
+                id: 'welcome_adventurer',
+                name: '🌟 Welcome, Adventurer!',
+                description: 'Elder Marcus needs your help getting started. Talk to him to begin your journey!',
+                npc: 'Elder Marcus',
+                steps: [
+                    { type: 'talk', target: 'Elder Marcus', text: 'Learn the basics from Elder Marcus' },
+                    { type: 'gather', target: 'Wood', count: 3, text: 'Gather 3 Wood from trees' },
+                    { type: 'kill', target: 'any', count: 2, text: 'Defeat 2 monsters to prove your strength' }
+                ],
                 reward: { xp: 100, gold: 50, item: 'Iron Sword' },
-                level: 1
+                level: 1,
+                story: "Welcome to FantasyQuest! I'm Elder Marcus, and I'll guide you on your journey. First, let me teach you the basics of survival..."
             },
             {
-                id: 'resource_gather',
-                name: 'Resource Collector',
-                description: 'Gather 10 resources',
-                objective: { type: 'gather', count: 10 },
-                reward: { xp: 150, gold: 75 },
-                level: 1
+                id: 'the_lost_pet',
+                name: '🐕 The Lost Pet',
+                description: 'Farmer Jane lost her beloved pet. Help her find it!',
+                npc: 'Farmer Jane',
+                steps: [
+                    { type: 'talk', target: 'Farmer Jane', text: 'Talk to Farmer Jane about her lost pet' },
+                    { type: 'explore', x: 30, z: -20, range: 5, text: 'Search the forest area (30, -20)' },
+                    { type: 'kill', target: 'Wolf', count: 3, text: 'Defeat 3 Wolves blocking the way' },
+                    { type: 'talk', target: 'Farmer Jane', text: 'Return to Farmer Jane with good news' }
+                ],
+                reward: { xp: 200, gold: 100, pet: 'Wolf Pup' },
+                level: 1,
+                story: "My dear pet ran into the forest and wolves have taken over that area! Please help me get him back safely."
             },
             {
-                id: 'dragon_slayer',
-                name: 'Dragon Slayer',
-                description: 'Defeat the mighty Dragon',
-                objective: { type: 'kill', target: 'Dragon', count: 1 },
-                reward: { xp: 1000, gold: 500, item: 'Dragon Sword' },
-                level: 15
+                id: 'mysterious_ore',
+                name: '⛏️ The Mysterious Ore',
+                description: 'Blacksmith Gareth needs rare materials for a special project.',
+                npc: 'Blacksmith Gareth',
+                steps: [
+                    { type: 'talk', target: 'Blacksmith Gareth', text: 'Speak with Blacksmith Gareth' },
+                    { type: 'gather', target: 'Ore', count: 10, text: 'Mine 10 Ore from rocks' },
+                    { type: 'gather', target: 'Wood', count: 5, text: 'Gather 5 Wood' },
+                    { type: 'craft', target: 'Iron Sword', count: 1, text: 'Craft an Iron Sword' }
+                ],
+                reward: { xp: 250, gold: 150 },
+                level: 3,
+                story: "I've discovered a technique to forge stronger weapons, but I need your help gathering materials!"
+            },
+            
+            // Intermediate Quests
+            {
+                id: 'bandits_threat',
+                name: '⚔️ Bandit Threat',
+                description: 'A group of bandits is terrorizing the village. Clear them out!',
+                npc: 'Guard Captain',
+                steps: [
+                    { type: 'talk', target: 'Guard Captain', text: 'Get briefing from Guard Captain' },
+                    { type: 'kill', target: 'Goblin', count: 5, text: 'Defeat 5 Goblins' },
+                    { type: 'kill', target: 'Orc', count: 3, text: 'Defeat 3 Orcs' },
+                    { type: 'explore', x: -40, z: 30, range: 10, text: 'Clear the bandit camp (-40, 30)' },
+                    { type: 'talk', target: 'Guard Captain', text: 'Report back to Guard Captain' }
+                ],
+                reward: { xp: 500, gold: 300, item: 'Steel Armor' },
+                level: 8,
+                story: "Bandits have set up camp near the village. We need someone brave enough to deal with them!"
             },
             {
-                id: 'skill_master',
-                name: 'Skill Master',
-                description: 'Reach level 10 in any skill',
-                objective: { type: 'skill', level: 10 },
-                reward: { xp: 500, gold: 250 },
-                level: 5
+                id: 'fishing_contest',
+                name: '🎣 The Great Fishing Contest',
+                description: 'Prove you\'re the best fisher in the land!',
+                npc: 'Fisherman Bob',
+                steps: [
+                    { type: 'talk', target: 'Fisherman Bob', text: 'Enter the fishing contest' },
+                    { type: 'gather', target: 'Fish', count: 20, text: 'Catch 20 Fish' },
+                    { type: 'talk', target: 'Fisherman Bob', text: 'Show your catch to Fisherman Bob' }
+                ],
+                reward: { xp: 300, gold: 200 },
+                level: 5,
+                story: "Think you're a good fisher? Prove it! Catch more fish than anyone else and win a prize!"
+            },
+            {
+                id: 'magical_research',
+                name: '🔮 Magical Research',
+                description: 'Help the wizard with his arcane experiments.',
+                npc: 'Wizard Aldrin',
+                steps: [
+                    { type: 'talk', target: 'Wizard Aldrin', text: 'Speak with Wizard Aldrin' },
+                    { type: 'kill', target: 'Slime', count: 10, text: 'Collect essence from 10 Slimes' },
+                    { type: 'craft', target: 'Mana Potion', count: 3, text: 'Craft 3 Mana Potions' },
+                    { type: 'explore', x: 50, z: 50, range: 5, text: 'Study the magical ley line (50, 50)' }
+                ],
+                reward: { xp: 400, gold: 250, item: 'Magic Staff' },
+                level: 7,
+                story: "I'm studying the magical energies of this realm. Your help could lead to groundbreaking discoveries!"
+            },
+            
+            // Advanced Quests
+            {
+                id: 'dragon_menace',
+                name: '🐉 The Dragon Menace',
+                description: 'An ancient dragon threatens the entire kingdom!',
+                npc: 'King Aldric',
+                steps: [
+                    { type: 'talk', target: 'King Aldric', text: 'Receive the king\'s quest' },
+                    { type: 'gather', target: 'Ore', count: 30, text: 'Gather 30 Ore for dragon-proof armor' },
+                    { type: 'craft', target: 'Dragon Armor', count: 1, text: 'Forge Dragon Armor' },
+                    { type: 'kill', target: 'Dragon', count: 1, text: 'Slay the Dragon!' },
+                    { type: 'talk', target: 'King Aldric', text: 'Report your victory to the king' }
+                ],
+                reward: { xp: 2000, gold: 1000, item: 'Dragon Sword' },
+                level: 15,
+                story: "A fearsome dragon has awakened! Only the bravest hero can save our kingdom from destruction."
+            },
+            {
+                id: 'artifact_hunt',
+                name: '🏺 The Ancient Artifact',
+                description: 'Seek out a legendary artifact hidden in dangerous lands.',
+                npc: 'Scholar Elena',
+                steps: [
+                    { type: 'talk', target: 'Scholar Elena', text: 'Learn about the artifact' },
+                    { type: 'explore', x: -60, z: -60, range: 5, text: 'Search the ancient ruins (-60, -60)' },
+                    { type: 'kill', target: 'any', count: 15, text: 'Clear 15 guardians' },
+                    { type: 'explore', x: 70, z: -50, range: 5, text: 'Find the hidden temple (70, -50)' },
+                    { type: 'gather', target: 'Wood', count: 50, text: 'Gather 50 Wood to repair the bridge' }
+                ],
+                reward: { xp: 1500, gold: 800, pet: 'Phoenix' },
+                level: 12,
+                story: "Ancient texts speak of a powerful artifact. If we find it, it could change everything!"
+            },
+            {
+                id: 'epic_journey',
+                name: '⭐ The Epic Journey',
+                description: 'Complete a series of legendary trials to become a hero.',
+                npc: 'Elder Marcus',
+                steps: [
+                    { type: 'talk', target: 'Elder Marcus', text: 'Begin the trials' },
+                    { type: 'kill', target: 'any', count: 50, text: 'Trial of Combat: Defeat 50 enemies' },
+                    { type: 'gather', target: 'Wood', count: 30, text: 'Trial of Patience: Gather 30 Wood' },
+                    { type: 'gather', target: 'Ore', count: 30, text: 'Trial of Strength: Mine 30 Ore' },
+                    { type: 'gather', target: 'Fish', count: 30, text: 'Trial of Wisdom: Catch 30 Fish' },
+                    { type: 'explore', x: 80, z: 80, range: 10, text: 'Trial of Courage: Reach the far lands (80, 80)' },
+                    { type: 'talk', target: 'Elder Marcus', text: 'Complete your journey' }
+                ],
+                reward: { xp: 3000, gold: 2000, pet: 'Ice Dragon' },
+                level: 18,
+                story: "Only those who complete all trials can truly call themselves heroes of FantasyQuest!"
             }
         ];
         
@@ -2361,6 +2502,8 @@
             }
 
             // Initialize game entities
+            createHouses();
+            createNPCs();
             initMonsters();
             initResources();
 
@@ -2705,6 +2848,249 @@
             playerGroup.add(weaponGroup);
             equippedWeaponMesh = weaponGroup;
         }
+        
+        function createHouses() {
+            HOUSES.forEach(houseData => {
+                const house = {
+                    x: houseData.x,
+                    z: houseData.z,
+                    width: houseData.width,
+                    depth: houseData.depth,
+                    height: houseData.height,
+                    name: houseData.name
+                };
+                
+                const houseGroup = new THREE.Group();
+                
+                // Walls
+                const wallMaterial = new THREE.MeshStandardMaterial({ 
+                    color: houseData.color,
+                    roughness: 0.8
+                });
+                const wallGeometry = new THREE.BoxGeometry(houseData.width, houseData.height, houseData.depth);
+                const walls = new THREE.Mesh(wallGeometry, wallMaterial);
+                walls.position.y = houseData.height / 2;
+                walls.castShadow = true;
+                walls.receiveShadow = true;
+                houseGroup.add(walls);
+                
+                // Roof (pyramid shape)
+                const roofGeometry = new THREE.ConeGeometry(
+                    Math.max(houseData.width, houseData.depth) * 0.7, 
+                    houseData.height * 0.4, 
+                    4
+                );
+                const roofMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x8b0000,
+                    roughness: 0.9
+                });
+                const roof = new THREE.Mesh(roofGeometry, roofMaterial);
+                roof.position.y = houseData.height + houseData.height * 0.2;
+                roof.rotation.y = Math.PI / 4;
+                roof.castShadow = true;
+                roof.receiveShadow = true;
+                roof.name = 'roof'; // Tag for making invisible
+                houseGroup.add(roof);
+                
+                // Door
+                const doorGeometry = new THREE.BoxGeometry(houseData.width * 0.3, houseData.height * 0.5, 0.1);
+                const doorMaterial = new THREE.MeshStandardMaterial({ color: 0x654321 });
+                const door = new THREE.Mesh(doorGeometry, doorMaterial);
+                door.position.set(0, houseData.height * 0.25, houseData.depth / 2 + 0.05);
+                door.castShadow = true;
+                houseGroup.add(door);
+                
+                // Windows
+                const windowGeometry = new THREE.BoxGeometry(houseData.width * 0.15, houseData.height * 0.2, 0.1);
+                const windowMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x87ceeb,
+                    transparent: true,
+                    opacity: 0.6
+                });
+                const leftWindow = new THREE.Mesh(windowGeometry, windowMaterial);
+                leftWindow.position.set(-houseData.width * 0.3, houseData.height * 0.6, houseData.depth / 2 + 0.05);
+                houseGroup.add(leftWindow);
+                
+                const rightWindow = new THREE.Mesh(windowGeometry, windowMaterial);
+                rightWindow.position.set(houseData.width * 0.3, houseData.height * 0.6, houseData.depth / 2 + 0.05);
+                houseGroup.add(rightWindow);
+                
+                houseGroup.position.set(houseData.x, 0, houseData.z);
+                houseGroup.userData = house;
+                houseMeshes.push(houseGroup);
+                scene.add(houseGroup);
+                houses.push(house);
+            });
+        }
+        
+        function updateHouseVisibility() {
+            // Make roof invisible if player is inside house
+            houseMeshes.forEach(houseGroup => {
+                const house = houseGroup.userData;
+                const playerInHouse = 
+                    currentPlayer.x > house.x - house.width/2 &&
+                    currentPlayer.x < house.x + house.width/2 &&
+                    currentPlayer.z > house.z - house.depth/2 &&
+                    currentPlayer.z < house.z + house.depth/2;
+                
+                // Find and toggle roof visibility
+                houseGroup.children.forEach(child => {
+                    if (child.name === 'roof') {
+                        child.visible = !playerInHouse;
+                    }
+                });
+            });
+        }
+        
+        function createNPCs() {
+            NPCS.forEach(npcData => {
+                const npc = {
+                    npcId: npcData.id,
+                    name: npcData.name,
+                    x: npcData.x,
+                    z: npcData.z,
+                    type: npcData.type,
+                    dialogue: npcData.dialogue
+                };
+                
+                const npcGroup = new THREE.Group();
+                
+                // Body
+                const bodyGeometry = new THREE.BoxGeometry(0.6, 1.0, 0.4);
+                const bodyMaterial = new THREE.MeshStandardMaterial({ color: npcData.color });
+                const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+                body.position.y = 0.8;
+                body.castShadow = true;
+                npcGroup.add(body);
+                
+                // Head
+                const headGeometry = new THREE.BoxGeometry(0.4, 0.4, 0.4);
+                const headMaterial = new THREE.MeshStandardMaterial({ color: 0xffdbac });
+                const head = new THREE.Mesh(headGeometry, headMaterial);
+                head.position.y = 1.5;
+                head.castShadow = true;
+                npcGroup.add(head);
+                
+                // Quest indicator
+                if (npcData.type === 'quest') {
+                    const indicatorGeometry = new THREE.SphereGeometry(0.15, 16, 16);
+                    const indicatorMaterial = new THREE.MeshStandardMaterial({ 
+                        color: 0xffff00,
+                        emissive: 0xffff00,
+                        emissiveIntensity: 0.5
+                    });
+                    const indicator = new THREE.Mesh(indicatorGeometry, indicatorMaterial);
+                    indicator.position.y = 2.2;
+                    npcGroup.add(indicator);
+                }
+                
+                npcGroup.position.set(npcData.x, 0, npcData.z);
+                npcGroup.userData = npc;
+                npcMeshes.push(npcGroup);
+                scene.add(npcGroup);
+                npcData.mesh = npcGroup;
+                
+                // Add name label
+                createNameLabel(npcGroup, npcData.name, 0x00ff00);
+            });
+        }
+        
+        function interactWithNPC(npc) {
+            addChatMessage(npc.name, npc.dialogue, 'npc');
+            
+            // Update quest progress for talking to this NPC
+            updateQuestProgress('talk', npc.name);
+            
+            if (npc.type === 'shop') {
+                openShop();
+            } else if (npc.type === 'pet') {
+                openPetShop();
+            } else if (npc.type === 'quest') {
+                openQuestDialogue(npc);
+            }
+        }
+        
+        function openPetShop() {
+            // Create pet shop UI
+            const panel = document.getElementById('shopPanel');
+            if (!panel) return;
+            
+            panel.classList.add('active');
+            const shopDiv = document.getElementById('shopItems');
+            document.getElementById('shopGold').textContent = currentPlayer.gold;
+            shopDiv.innerHTML = '<h3 style=\"color: #9370db; margin-bottom: 1rem;\">🐾 Pet Shop</h3>';
+            
+            Object.entries(PETS).forEach(([petName, petData]) => {
+                const itemEl = document.createElement('div');
+                itemEl.style.background = 'rgba(147, 112, 219, 0.2)';
+                itemEl.style.padding = '1rem';
+                itemEl.style.borderRadius = '5px';
+                itemEl.style.marginBottom = '0.5rem';
+                itemEl.style.border = currentPlayer.pet === petName ? '2px solid #9370db' : 'none';
+                
+                itemEl.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong>${petData.icon} ${petName}</strong> (Lv.${petData.level})
+                            <div style="font-size: 0.8rem; color: #95a5a6;">${petData.description}</div>
+                            <div style="font-size: 0.8rem; color: #95a5a6;">Damage: +${petData.damage}${petData.healing ? `, Healing: +${petData.healing}` : ''}</div>
+                        </div>
+                        <button class="action-btn" style="padding: 0.5rem 1rem; font-size: 0.9rem;" 
+                                onclick="buyPet('${petName}')" ${currentPlayer.pet === petName ? 'disabled' : ''}>
+                            ${currentPlayer.pet === petName ? '✓ Owned' : `💰 ${petData.cost}`}
+                        </button>
+                    </div>
+                `;
+                shopDiv.appendChild(itemEl);
+            });
+        }
+        
+        function buyPet(petName) {
+            const pet = PETS[petName];
+            
+            if (currentPlayer.level < pet.level) {
+                addChatMessage('Pet Shop', `You need to be level ${pet.level} to buy this pet!`, 'system');
+                return;
+            }
+            
+            if (currentPlayer.gold < pet.cost) {
+                addChatMessage('Pet Shop', 'Not enough gold!', 'system');
+                return;
+            }
+            
+            currentPlayer.gold -= pet.cost;
+            currentPlayer.pet = petName;
+            
+            addChatMessage('Pet Shop', `You adopted ${petName}! 🎉`, 'system');
+            
+            // Remove old pet mesh
+            if (petMesh) {
+                scene.remove(petMesh);
+                petMesh = null;
+            }
+            
+            // Create new pet mesh
+            createPetMesh();
+            
+            updateStats();
+            openPetShop(); // Refresh
+            saveGameToCloud();
+        }
+        
+        function openQuestDialogue(npc) {
+            // Find quests from this NPC
+            const npcQuests = QUESTS.filter(q => 
+                q.npc && (q.npc === npc.name || q.npc.replace(/\s+/g, '_').toLowerCase() === npc.npcId)
+            );
+            
+            if (npcQuests.length === 0) {
+                addChatMessage(npc.name, 'I have no quests for you right now.', 'npc');
+                return;
+            }
+            
+            // Open quest panel with this NPC's quests
+            toggleQuestPanel();
+        }
 
         function createNameLabel(parentMesh, name, color) {
             // Create canvas for name
@@ -2928,30 +3314,34 @@
             let moved = false;
             const moveSpeed = PLAYER_SPEED;
 
-            // Keyboard controls (WASD and Arrow Keys)
-            if (keys['w'] || keys['ArrowUp']) {
+            // Keyboard controls (WASD only - arrows removed for click-to-move)
+            if (keys['w']) {
                 currentPlayer.x += Math.sin(cameraAngle) * moveSpeed;
                 currentPlayer.z += Math.cos(cameraAngle) * moveSpeed;
                 currentPlayer.rotation = cameraAngle;
                 moved = true;
+                targetPosition = null; // Cancel auto-walk
             }
-            if (keys['s'] || keys['ArrowDown']) {
+            if (keys['s']) {
                 currentPlayer.x -= Math.sin(cameraAngle) * moveSpeed;
                 currentPlayer.z -= Math.cos(cameraAngle) * moveSpeed;
                 currentPlayer.rotation = cameraAngle + Math.PI;
                 moved = true;
+                targetPosition = null;
             }
-            if (keys['a'] || keys['ArrowLeft']) {
+            if (keys['a']) {
                 currentPlayer.x += Math.sin(cameraAngle + Math.PI/2) * moveSpeed;
                 currentPlayer.z += Math.cos(cameraAngle + Math.PI/2) * moveSpeed;
                 currentPlayer.rotation = cameraAngle + Math.PI/2;
                 moved = true;
+                targetPosition = null;
             }
-            if (keys['d'] || keys['ArrowRight']) {
+            if (keys['d']) {
                 currentPlayer.x += Math.sin(cameraAngle - Math.PI/2) * moveSpeed;
                 currentPlayer.z += Math.cos(cameraAngle - Math.PI/2) * moveSpeed;
                 currentPlayer.rotation = cameraAngle - Math.PI/2;
                 moved = true;
+                targetPosition = null;
             }
 
             // Camera rotation with Q/E
@@ -2977,6 +3367,22 @@
                 }
             }
 
+            // Click-to-move: Walk to clicked position
+            if (targetPosition) {
+                const dist = Math.hypot(currentPlayer.x - targetPosition.x, currentPlayer.z - targetPosition.z);
+                if (dist > 0.5) {
+                    // Walk towards position
+                    const angle = Math.atan2(targetPosition.x - currentPlayer.x, targetPosition.z - currentPlayer.z);
+                    currentPlayer.x += Math.sin(angle) * moveSpeed;
+                    currentPlayer.z += Math.cos(angle) * moveSpeed;
+                    currentPlayer.rotation = angle;
+                    moved = true;
+                } else {
+                    // Reached destination
+                    targetPosition = null;
+                }
+            }
+            
             // Auto-walk to target monster
             if (targetMonster && targetMonster.monster.currentHp > 0) {
                 const dist = Math.hypot(currentPlayer.x - targetMonster.monster.x, currentPlayer.z - targetMonster.monster.z);
@@ -3022,6 +3428,11 @@
                 playerMesh.position.set(currentPlayer.x, currentPlayer.y, currentPlayer.z);
                 playerMesh.rotation.y = currentPlayer.rotation;
             }
+            
+            // Check exploration quests
+            if (moved) {
+                updateQuestProgress('explore', null, { x: currentPlayer.x, z: currentPlayer.z });
+            }
 
             // Move monsters randomly - with null checks
             if (monsters && monsters.length > 0 && monsterMeshes && monsterMeshes.length > 0) {
@@ -3066,6 +3477,9 @@
                 });
             }
 
+            // Update house visibility (roof becomes invisible when inside)
+            updateHouseVisibility();
+            
             // Update camera position
             updateCameraPosition();
 
@@ -3124,6 +3538,29 @@
 
             raycaster.setFromCamera(mouse, camera);
 
+            // Check NPCs first
+            const npcIntersects = raycaster.intersectObjects(npcMeshes, true);
+            if (npcIntersects.length > 0) {
+                let npcGroup = npcIntersects[0].object;
+                while (npcGroup.parent && !npcGroup.userData.npcId) {
+                    npcGroup = npcGroup.parent;
+                }
+                const npc = npcGroup.userData;
+                if (npc && npc.npcId) {
+                    const dist = Math.hypot(currentPlayer.x - npc.x, currentPlayer.z - npc.z);
+                    if (dist < 4) {
+                        interactWithNPC(npc);
+                        return;
+                    } else {
+                        targetPosition = { x: npc.x, z: npc.z };
+                        targetMonster = null;
+                        targetResource = null;
+                        addChatMessage('System', `Walking to ${npc.name}...`, 'system');
+                        return;
+                    }
+                }
+            }
+
             // Check monsters
             const monsterIntersects = raycaster.intersectObjects(monsterMeshes, true);
             if (monsterIntersects.length > 0) {
@@ -3141,6 +3578,7 @@
                         // Too far - walk towards monster
                         targetMonster = { monster: monster, mesh: monsterGroup };
                         targetResource = null;
+                        targetPosition = null;
                         addChatMessage('System', `Walking to ${monster.name}...`, 'system');
                         return;
                     }
@@ -3164,9 +3602,21 @@
                         // Too far - walk towards resource
                         targetResource = { resource: resource, mesh: resourceMesh };
                         targetMonster = null;
+                        targetPosition = null;
                         addChatMessage('System', `Walking to ${resource.name}...`, 'system');
                         return;
                     }
+                }
+            }
+            
+            // Check ground - click to move
+            if (groundMesh) {
+                const groundIntersects = raycaster.intersectObject(groundMesh);
+                if (groundIntersects.length > 0) {
+                    const point = groundIntersects[0].point;
+                    targetPosition = { x: point.x, z: point.z };
+                    targetMonster = null;
+                    targetResource = null;
                 }
             }
         }
@@ -3664,10 +4114,35 @@
                     const questEl = document.createElement('div');
                     questEl.className = 'quest-item';
                     questEl.style.borderColor = '#2ecc71';
+                    
+                    let progressText = '';
+                    if (quest.steps) {
+                        const stepIndex = activeQuest.currentStep || 0;
+                        const step = quest.steps[stepIndex];
+                        if (step) {
+                            const stepProgress = activeQuest.stepProgress || 0;
+                            const stepRequired = step.count || 1;
+                            progressText = `<p style="font-size: 0.8rem; color: #2ecc71;">Step ${stepIndex + 1}/${quest.steps.length}: ${step.text} (${stepProgress}/${stepRequired})</p>`;
+                            
+                            // Show all steps with checkmarks
+                            progressText += '<div style="margin-top: 0.5rem; font-size: 0.75rem;">';
+                            quest.steps.forEach((s, i) => {
+                                const completed = i < stepIndex;
+                                const current = i === stepIndex;
+                                const icon = completed ? '✓' : current ? '→' : '○';
+                                const color = completed ? '#2ecc71' : current ? '#f39c12' : '#95a5a6';
+                                progressText += `<div style="color: ${color};">${icon} ${s.text}</div>`;
+                            });
+                            progressText += '</div>';
+                        }
+                    } else if (quest.objective) {
+                        progressText = `<p style="font-size: 0.8rem; color: #2ecc71;">Progress: ${activeQuest.progress || 0}/${quest.objective.count || 1}</p>`;
+                    }
+                    
                     questEl.innerHTML = `
                         <h4 style="color: #2ecc71; margin-bottom: 0.5rem;">${quest.name}</h4>
                         <p style="font-size: 0.9rem; margin-bottom: 0.5rem;">${quest.description}</p>
-                        <p style="font-size: 0.8rem; color: #2ecc71;">Progress: ${activeQuest.progress || 0}/${quest.objective.count || 1}</p>
+                        ${progressText}
                     `;
                     activeDiv.appendChild(questEl);
                 }
@@ -3677,23 +4152,84 @@
         function acceptQuest(questId) {
             const quest = QUESTS.find(q => q.id === questId);
             if (quest) {
-                currentPlayer.quests.active.push({ id: questId, progress: 0 });
+                if (quest.steps) {
+                    // Multi-step quest
+                    currentPlayer.quests.active.push({ id: questId, currentStep: 0, stepProgress: 0 });
+                    currentQuestStep[questId] = 0;
+                } else {
+                    // Legacy single-objective quest
+                    currentPlayer.quests.active.push({ id: questId, progress: 0 });
+                }
                 addChatMessage('Quest', `Accepted quest: ${quest.name}`, 'system');
+                if (quest.story) {
+                    addChatMessage('Quest', quest.story, 'system');
+                }
                 renderQuests();
             }
         }
         
-        function updateQuestProgress(type, target = null) {
+        function updateQuestProgress(type, target = null, position = null) {
             currentPlayer.quests.active.forEach(activeQuest => {
                 const quest = QUESTS.find(q => q.id === activeQuest.id);
-                if (quest && quest.objective.type === type) {
-                    if (!target || quest.objective.target === 'any' || quest.objective.target === target) {
-                        activeQuest.progress = (activeQuest.progress || 0) + 1;
+                if (!quest) return;
+                
+                if (quest.steps) {
+                    // Multi-step quest
+                    const stepIndex = activeQuest.currentStep || 0;
+                    const step = quest.steps[stepIndex];
+                    
+                    if (!step) return;
+                    
+                    let matches = false;
+                    if (step.type === type) {
+                        if (type === 'talk' && step.target === target) {
+                            matches = true;
+                        } else if (type === 'kill' && (step.target === 'any' || step.target === target)) {
+                            matches = true;
+                        } else if (type === 'gather' && step.target === target) {
+                            matches = true;
+                        } else if (type === 'craft' && step.target === target) {
+                            matches = true;
+                        } else if (type === 'explore' && position) {
+                            const dist = Math.hypot(position.x - step.x, position.z - step.z);
+                            if (dist < (step.range || 5)) {
+                                matches = true;
+                            }
+                        }
+                    }
+                    
+                    if (matches) {
+                        activeQuest.stepProgress = (activeQuest.stepProgress || 0) + 1;
+                        const required = step.count || 1;
                         
-                        if (activeQuest.progress >= (quest.objective.count || 1)) {
-                            completeQuest(quest);
+                        if (activeQuest.stepProgress >= required) {
+                            // Step complete - move to next step
+                            activeQuest.currentStep++;
+                            activeQuest.stepProgress = 0;
+                            
+                            if (activeQuest.currentStep >= quest.steps.length) {
+                                // All steps complete!
+                                completeQuest(quest);
+                            } else {
+                                const nextStep = quest.steps[activeQuest.currentStep];
+                                addChatMessage('Quest', `✓ Step complete! Next: ${nextStep.text}`, 'system');
+                            }
                         } else {
-                            addChatMessage('Quest', `Quest progress: ${activeQuest.progress}/${quest.objective.count}`, 'system');
+                            addChatMessage('Quest', `Progress: ${activeQuest.stepProgress}/${required} - ${step.text}`, 'system');
+                        }
+                        renderQuests();
+                    }
+                } else {
+                    // Legacy single-objective quest
+                    if (quest.objective && quest.objective.type === type) {
+                        if (!target || quest.objective.target === 'any' || quest.objective.target === target) {
+                            activeQuest.progress = (activeQuest.progress || 0) + 1;
+                            
+                            if (activeQuest.progress >= (quest.objective.count || 1)) {
+                                completeQuest(quest);
+                            } else {
+                                addChatMessage('Quest', `Quest progress: ${activeQuest.progress}/${quest.objective.count}`, 'system');
+                            }
                         }
                     }
                 }
@@ -3703,18 +4239,30 @@
         function completeQuest(quest) {
             currentPlayer.quests.active = currentPlayer.quests.active.filter(q => q.id !== quest.id);
             currentPlayer.quests.completed.push(quest.id);
+            delete currentQuestStep[quest.id];
             
             currentPlayer.xp += quest.reward.xp;
             currentPlayer.gold += quest.reward.gold;
             
             if (quest.reward.item) {
                 currentPlayer.inventory[quest.reward.item] = (currentPlayer.inventory[quest.reward.item] || 0) + 1;
+                // Auto-equip if it's a weapon
+                if (EQUIPMENT.weapons[quest.reward.item]) {
+                    equipItem(quest.reward.item, 'weapon');
+                }
+            }
+            
+            if (quest.reward.pet) {
+                currentPlayer.pet = quest.reward.pet;
+                createPetMesh();
+                addChatMessage('Quest Complete', `🎉 You received a ${quest.reward.pet}!`, 'system');
             }
             
             addChatMessage('Quest Complete', `🎉 ${quest.name} completed! +${quest.reward.xp} XP, +${quest.reward.gold} Gold`, 'system');
             checkLevelUp();
             updateStats();
             renderInventory();
+            renderQuests();
         }
         
         // Shop System
