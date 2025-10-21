@@ -1120,7 +1120,7 @@
             <div class="action-buttons">
                 <button class="action-btn craft" onclick="openCraftingPanel()">🔨 Craft</button>
                 <button class="action-btn" onclick="openShop()">🏪 Shop</button>
-                <button class="action-btn" onclick="openPetShop()">🐾 Pets</button>
+                <button class="action-btn" onclick="openQuestsPanel()">📜 Quests</button>
                 <button class="action-btn" style="background: linear-gradient(135deg, #e74c3c, #c0392b);" onclick="openEmoteMenu()">😊 Emote</button>
             </div>
             
@@ -1190,14 +1190,44 @@
     <!-- Pet Shop Panel -->
     <div class="quest-panel" id="petShopPanel">
         <button class="close-panel-btn" onclick="closePetShop()">×</button>
-        <h2 style="color: #f39c12; margin-bottom: 1rem;">🐾 Pet Shop</h2>
+        <h2 style="color: #f39c12; margin-bottom: 1rem;">🐾 Pet Shop & Management</h2>
         <div style="text-align: center; margin-bottom: 1rem; font-size: 1.2rem;">
             Your Gold: 💰 <span id="petShopGold">0</span>
         </div>
         <div id="currentPet" style="margin-bottom: 1rem; padding: 1rem; background: rgba(46, 204, 113, 0.2); border-radius: 10px; text-align: center;">
             Current Pet: <span id="activePet">None</span>
+            <br>
+            <button class="action-btn" onclick="respawnPet()" style="margin-top: 0.5rem; padding: 0.4rem 1rem;">🔄 Respawn Pet</button>
         </div>
         <div id="petShopItems"></div>
+    </div>
+
+    <!-- Quests Panel -->
+    <div class="quest-panel" id="questsPanel" style="max-width: 700px;">
+        <button class="close-panel-btn" onclick="closeQuestsPanel()">×</button>
+        <h2 style="color: #f39c12; margin-bottom: 1rem;">📜 Quest Journal</h2>
+        
+        <div style="margin-bottom: 1.5rem;">
+            <h3 style="color: #2ecc71; margin-bottom: 0.5rem;">🔥 Active Quests</h3>
+            <div id="activeQuestsList" style="margin-bottom: 1rem;"></div>
+        </div>
+        
+        <div style="margin-bottom: 1.5rem;">
+            <h3 style="color: #3498db; margin-bottom: 0.5rem;">📖 Available Quests</h3>
+            <div id="availableQuestsList"></div>
+        </div>
+        
+        <div>
+            <h3 style="color: #95a5a6; margin-bottom: 0.5rem;">✅ Completed Quests</h3>
+            <div id="completedQuestsList"></div>
+        </div>
+    </div>
+
+    <!-- Quest Details Modal -->
+    <div class="quest-panel" id="questDetailsPanel" style="max-width: 600px; display: none;">
+        <button class="close-panel-btn" onclick="closeQuestDetails()">×</button>
+        <h2 id="questDetailsTitle" style="color: #f39c12; margin-bottom: 1rem;"></h2>
+        <div id="questDetailsContent"></div>
     </div>
 
     <!-- Emote Menu -->
@@ -1443,6 +1473,7 @@
         let targetMonster = null; // Monster being walked to
         let targetResource = null; // Resource being walked to
         let targetPosition = null; // Position being walked to (click-to-move)
+        let pathToTarget = []; // A* pathfinding waypoints
         let isAttacking = false; // Continuous attack state
         let isGathering = false; // Continuous gathering state
         let attackCooldown = 0; // Attack cooldown timer
@@ -1550,7 +1581,7 @@
                 npc: 'Elder Marcus',
                 steps: [
                     { type: 'talk', target: 'Elder Marcus', text: 'Learn the basics from Elder Marcus' },
-                    { type: 'gather', target: 'Wood', count: 3, text: 'Gather 3 Wood from trees' },
+                    { type: 'gather', target: 'Logs', count: 3, text: 'Gather 3 Logs from Normal Trees' },
                     { type: 'kill', target: 'any', count: 2, text: 'Defeat 2 monsters to prove your strength' }
                 ],
                 reward: { xp: 100, gold: 50, item: 'Iron Sword' },
@@ -2825,6 +2856,7 @@
             
             // Set target position
             targetPosition = { x: worldX, z: worldZ };
+            pathToTarget = []; // Clear old path
             targetMonster = null;
             targetResource = null;
             
@@ -3101,60 +3133,148 @@
                 
                 const houseGroup = new THREE.Group();
                 
-                // Walls
+                // Foundation
+                const foundationGeometry = new THREE.BoxGeometry(houseData.width + 0.4, 0.3, houseData.depth + 0.4);
+                const foundationMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x696969,
+                    roughness: 0.95
+                });
+                const foundation = new THREE.Mesh(foundationGeometry, foundationMaterial);
+                foundation.position.y = 0.15;
+                foundation.receiveShadow = true;
+                houseGroup.add(foundation);
+                
+                // Walls with texture-like appearance
                 const wallMaterial = new THREE.MeshStandardMaterial({ 
                     color: houseData.color,
-                    roughness: 0.8
+                    roughness: 0.85,
+                    metalness: 0.1
                 });
                 const wallGeometry = new THREE.BoxGeometry(houseData.width, houseData.height, houseData.depth);
                 const walls = new THREE.Mesh(wallGeometry, wallMaterial);
-                walls.position.y = houseData.height / 2;
+                walls.position.y = houseData.height / 2 + 0.3;
                 walls.castShadow = true;
                 walls.receiveShadow = true;
                 walls.name = 'walls';
                 houseGroup.add(walls);
                 
-                // Roof (pyramid shape)
+                // Wall trim/borders
+                const trimMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x8B4513,
+                    roughness: 0.7
+                });
+                
+                // Bottom trim
+                const bottomTrimGeo = new THREE.BoxGeometry(houseData.width + 0.1, 0.1, houseData.depth + 0.1);
+                const bottomTrim = new THREE.Mesh(bottomTrimGeo, trimMaterial);
+                bottomTrim.position.y = 0.35;
+                houseGroup.add(bottomTrim);
+                
+                // Roof (pyramid shape with better proportions)
                 const roofGeometry = new THREE.ConeGeometry(
-                    Math.max(houseData.width, houseData.depth) * 0.7, 
-                    houseData.height * 0.4, 
+                    Math.max(houseData.width, houseData.depth) * 0.75, 
+                    houseData.height * 0.5, 
                     4
                 );
                 const roofMaterial = new THREE.MeshStandardMaterial({ 
                     color: 0x8b0000,
-                    roughness: 0.9
+                    roughness: 0.85,
+                    metalness: 0.05
                 });
                 const roof = new THREE.Mesh(roofGeometry, roofMaterial);
-                roof.position.y = houseData.height + houseData.height * 0.2;
+                roof.position.y = houseData.height + houseData.height * 0.25 + 0.3;
                 roof.rotation.y = Math.PI / 4;
                 roof.castShadow = true;
                 roof.receiveShadow = true;
-                roof.name = 'roof'; // Tag for making invisible
+                roof.name = 'roof';
                 houseGroup.add(roof);
                 
-                // Door
-                const doorGeometry = new THREE.BoxGeometry(houseData.width * 0.3, houseData.height * 0.5, 0.1);
-                const doorMaterial = new THREE.MeshStandardMaterial({ color: 0x654321 });
+                // Chimney (for some houses)
+                if (Math.random() > 0.5) {
+                    const chimneyGeo = new THREE.BoxGeometry(0.4, houseData.height * 0.6, 0.4);
+                    const chimneyMat = new THREE.MeshStandardMaterial({ 
+                        color: 0x8B4513,
+                        roughness: 0.9
+                    });
+                    const chimney = new THREE.Mesh(chimneyGeo, chimneyMat);
+                    chimney.position.set(houseData.width * 0.3, houseData.height + houseData.height * 0.3 + 0.3, -houseData.depth * 0.3);
+                    chimney.castShadow = true;
+                    houseGroup.add(chimney);
+                }
+                
+                // Enhanced Door with frame
+                const doorFrameGeo = new THREE.BoxGeometry(houseData.width * 0.35, houseData.height * 0.55, 0.15);
+                const doorFrameMat = new THREE.MeshStandardMaterial({ color: 0x4A4A4A });
+                const doorFrame = new THREE.Mesh(doorFrameGeo, doorFrameMat);
+                doorFrame.position.set(0, houseData.height * 0.275 + 0.3, houseData.depth / 2 + 0.08);
+                doorFrame.castShadow = true;
+                houseGroup.add(doorFrame);
+                
+                const doorGeometry = new THREE.BoxGeometry(houseData.width * 0.3, houseData.height * 0.5, 0.12);
+                const doorMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x654321,
+                    roughness: 0.6
+                });
                 const door = new THREE.Mesh(doorGeometry, doorMaterial);
-                door.position.set(0, houseData.height * 0.25, houseData.depth / 2 + 0.05);
+                door.position.set(0, houseData.height * 0.25 + 0.3, houseData.depth / 2 + 0.1);
                 door.castShadow = true;
                 door.name = 'door';
                 houseGroup.add(door);
                 
-                // Windows
-                const windowGeometry = new THREE.BoxGeometry(houseData.width * 0.15, houseData.height * 0.2, 0.1);
+                // Door handle
+                const handleGeo = new THREE.SphereGeometry(0.08, 8, 8);
+                const handleMat = new THREE.MeshStandardMaterial({ 
+                    color: 0xFFD700,
+                    metalness: 0.8,
+                    roughness: 0.2
+                });
+                const handle = new THREE.Mesh(handleGeo, handleMat);
+                handle.position.set(houseData.width * 0.12, houseData.height * 0.25 + 0.3, houseData.depth / 2 + 0.17);
+                houseGroup.add(handle);
+                
+                // Enhanced Windows with frames
+                const windowFrameGeo = new THREE.BoxGeometry(houseData.width * 0.18, houseData.height * 0.23, 0.15);
+                const windowFrameMat = new THREE.MeshStandardMaterial({ color: 0xFFFFFF });
+                
+                // Left window frame
+                const leftWindowFrame = new THREE.Mesh(windowFrameGeo, windowFrameMat);
+                leftWindowFrame.position.set(-houseData.width * 0.3, houseData.height * 0.6 + 0.3, houseData.depth / 2 + 0.08);
+                houseGroup.add(leftWindowFrame);
+                
+                // Left window pane
+                const windowGeometry = new THREE.BoxGeometry(houseData.width * 0.15, houseData.height * 0.2, 0.12);
                 const windowMaterial = new THREE.MeshStandardMaterial({ 
                     color: 0x87ceeb,
                     transparent: true,
-                    opacity: 0.6
+                    opacity: 0.7,
+                    metalness: 0.3,
+                    roughness: 0.1
                 });
                 const leftWindow = new THREE.Mesh(windowGeometry, windowMaterial);
-                leftWindow.position.set(-houseData.width * 0.3, houseData.height * 0.6, houseData.depth / 2 + 0.05);
+                leftWindow.position.set(-houseData.width * 0.3, houseData.height * 0.6 + 0.3, houseData.depth / 2 + 0.1);
                 houseGroup.add(leftWindow);
                 
+                // Right window frame
+                const rightWindowFrame = new THREE.Mesh(windowFrameGeo, windowFrameMat);
+                rightWindowFrame.position.set(houseData.width * 0.3, houseData.height * 0.6 + 0.3, houseData.depth / 2 + 0.08);
+                houseGroup.add(rightWindowFrame);
+                
+                // Right window pane
                 const rightWindow = new THREE.Mesh(windowGeometry, windowMaterial);
-                rightWindow.position.set(houseData.width * 0.3, houseData.height * 0.6, houseData.depth / 2 + 0.05);
+                rightWindow.position.set(houseData.width * 0.3, houseData.height * 0.6 + 0.3, houseData.depth / 2 + 0.1);
                 houseGroup.add(rightWindow);
+                
+                // Window cross dividers
+                const dividerGeo = new THREE.BoxGeometry(houseData.width * 0.15, 0.05, 0.05);
+                const dividerMat = new THREE.MeshStandardMaterial({ color: 0xFFFFFF });
+                
+                const leftDivider = new THREE.Mesh(dividerGeo, dividerMat);
+                leftDivider.position.set(-houseData.width * 0.3, houseData.height * 0.6 + 0.3, houseData.depth / 2 + 0.15);
+                houseGroup.add(leftDivider);
+                
+                const rightDivider = new THREE.Mesh(dividerGeo, dividerMat);
+                rightDivider.position.set(houseData.width * 0.3, houseData.height * 0.6 + 0.3, houseData.depth / 2 + 0.15);
+                houseGroup.add(rightDivider);
                 
                 houseGroup.position.set(houseData.x, 0, houseData.z);
                 houseGroup.userData = house;
@@ -3527,12 +3647,35 @@
 
         function initResources() {
             const resourceTypes = [
-                { name: 'Tree', color: 0x228B22, skill: 'woodcutting', item: 'Wood', height: 3 },
-                { name: 'Rock', color: 0x696969, skill: 'mining', item: 'Ore', height: 1.5 },
-                { name: 'Fish Spot', color: 0x4169E1, skill: 'fishing', item: 'Fish', height: 0.3 }
+                // Trees - Woodcutting
+                { name: 'Normal Tree', color: 0x228B22, skill: 'woodcutting', item: 'Logs', height: 3, levelRequired: 1, xp: 25 },
+                { name: 'Oak Tree', color: 0x8B7355, skill: 'woodcutting', item: 'Oak Logs', height: 3, levelRequired: 15, xp: 37 },
+                { name: 'Willow Tree', color: 0x9ACD32, skill: 'woodcutting', item: 'Willow Logs', height: 3, levelRequired: 30, xp: 67 },
+                { name: 'Maple Tree', color: 0xD2691E, skill: 'woodcutting', item: 'Maple Logs', height: 3, levelRequired: 45, xp: 100 },
+                { name: 'Yew Tree', color: 0x2F4F2F, skill: 'woodcutting', item: 'Yew Logs', height: 3, levelRequired: 60, xp: 175 },
+                { name: 'Magic Tree', color: 0x9370DB, skill: 'woodcutting', item: 'Magic Logs', height: 3, levelRequired: 75, xp: 250 },
+                
+                // Rocks - Mining
+                { name: 'Copper Rock', color: 0xB87333, skill: 'mining', item: 'Copper Ore', height: 1.5, levelRequired: 1, xp: 17 },
+                { name: 'Tin Rock', color: 0xC0C0C0, skill: 'mining', item: 'Tin Ore', height: 1.5, levelRequired: 1, xp: 17 },
+                { name: 'Iron Rock', color: 0x696969, skill: 'mining', item: 'Iron Ore', height: 1.5, levelRequired: 15, xp: 35 },
+                { name: 'Coal Rock', color: 0x1C1C1C, skill: 'mining', item: 'Coal', height: 1.5, levelRequired: 30, xp: 50 },
+                { name: 'Mithril Rock', color: 0x4169E1, skill: 'mining', item: 'Mithril Ore', height: 1.5, levelRequired: 55, xp: 80 },
+                { name: 'Adamant Rock', color: 0x228B22, skill: 'mining', item: 'Adamant Ore', height: 1.5, levelRequired: 70, xp: 95 },
+                { name: 'Runite Rock', color: 0x00CED1, skill: 'mining', item: 'Runite Ore', height: 1.5, levelRequired: 85, xp: 125 },
+                
+                // Fish - Fishing
+                { name: 'Shrimp Spot', color: 0xFFC0CB, skill: 'fishing', item: 'Raw Shrimp', height: 0.3, levelRequired: 1, xp: 10 },
+                { name: 'Sardine Spot', color: 0xC0C0C0, skill: 'fishing', item: 'Raw Sardine', height: 0.3, levelRequired: 5, xp: 20 },
+                { name: 'Trout Spot', color: 0x4169E1, skill: 'fishing', item: 'Raw Trout', height: 0.3, levelRequired: 20, xp: 50 },
+                { name: 'Salmon Spot', color: 0xFF6347, skill: 'fishing', item: 'Raw Salmon', height: 0.3, levelRequired: 30, xp: 70 },
+                { name: 'Tuna Spot', color: 0x191970, skill: 'fishing', item: 'Raw Tuna', height: 0.3, levelRequired: 35, xp: 80 },
+                { name: 'Lobster Spot', color: 0xDC143C, skill: 'fishing', item: 'Raw Lobster', height: 0.3, levelRequired: 40, xp: 90 },
+                { name: 'Swordfish Spot', color: 0x000080, skill: 'fishing', item: 'Raw Swordfish', height: 0.3, levelRequired: 50, xp: 100 },
+                { name: 'Shark Spot', color: 0x2F4F4F, skill: 'fishing', item: 'Raw Shark', height: 0.3, levelRequired: 76, xp: 110 }
             ];
 
-            for (let i = 0; i < 25; i++) {
+            for (let i = 0; i < 40; i++) {
                 const type = resourceTypes[Math.floor(Math.random() * resourceTypes.length)];
                 const resource = {
                     id: 'resource_' + i,
@@ -3594,6 +3737,157 @@
             }
         }
 
+        // === A* PATHFINDING SYSTEM ===
+        function isObstacle(x, z) {
+            // Check if position collides with houses (except at doors)
+            for (let house of houses) {
+                const inHouseBounds = 
+                    x > house.x - house.width/2 &&
+                    x < house.x + house.width/2 &&
+                    z > house.z - house.depth/2 &&
+                    z < house.z + house.depth/2;
+                
+                if (inHouseBounds) {
+                    // Check if at door
+                    const atDoor = 
+                        Math.abs(x - house.doorX) < house.doorWidth / 2 + 0.5 &&
+                        Math.abs(z - house.doorZ) < 1.5;
+                    
+                    if (!atDoor) return true; // Blocked by house
+                }
+            }
+            
+            // Check if position is near monsters (optional obstacle avoidance)
+            for (let monster of monsters) {
+                if (monster.currentHp > 0) {
+                    const distToMonster = Math.hypot(x - monster.x, z - monster.z);
+                    if (distToMonster < 1.5) return true; // Too close to monster
+                }
+            }
+            
+            return false;
+        }
+
+        function findPath(startX, startZ, endX, endZ) {
+            // Simple A* pathfinding implementation
+            const gridSize = 2; // Grid cell size
+            const maxIterations = 500; // Prevent infinite loops
+            
+            // Convert world coordinates to grid coordinates
+            const startNode = {
+                x: Math.round(startX / gridSize),
+                z: Math.round(startZ / gridSize),
+                g: 0,
+                h: 0,
+                f: 0,
+                parent: null
+            };
+            
+            const endNode = {
+                x: Math.round(endX / gridSize),
+                z: Math.round(endZ / gridSize)
+            };
+            
+            // Calculate heuristic (Manhattan distance)
+            function heuristic(node) {
+                return Math.abs(node.x - endNode.x) + Math.abs(node.z - endNode.z);
+            }
+            
+            const openList = [startNode];
+            const closedList = [];
+            const closedSet = new Set();
+            let iterations = 0;
+            
+            while (openList.length > 0 && iterations < maxIterations) {
+                iterations++;
+                
+                // Get node with lowest f cost
+                openList.sort((a, b) => a.f - b.f);
+                const currentNode = openList.shift();
+                closedList.push(currentNode);
+                closedSet.add(`${currentNode.x},${currentNode.z}`);
+                
+                // Check if reached destination
+                if (currentNode.x === endNode.x && currentNode.z === endNode.z) {
+                    // Reconstruct path
+                    const path = [];
+                    let current = currentNode;
+                    while (current.parent) {
+                        path.unshift({ 
+                            x: current.x * gridSize, 
+                            z: current.z * gridSize 
+                        });
+                        current = current.parent;
+                    }
+                    return path;
+                }
+                
+                // Check all 8 neighbors
+                const neighbors = [
+                    { x: 0, z: -1 },  // North
+                    { x: 1, z: -1 },  // Northeast
+                    { x: 1, z: 0 },   // East
+                    { x: 1, z: 1 },   // Southeast
+                    { x: 0, z: 1 },   // South
+                    { x: -1, z: 1 },  // Southwest
+                    { x: -1, z: 0 },  // West
+                    { x: -1, z: -1 }  // Northwest
+                ];
+                
+                for (let offset of neighbors) {
+                    const neighborX = currentNode.x + offset.x;
+                    const neighborZ = currentNode.z + offset.z;
+                    const neighborKey = `${neighborX},${neighborZ}`;
+                    
+                    // Skip if already checked
+                    if (closedSet.has(neighborKey)) continue;
+                    
+                    // Convert grid to world coords and check for obstacles
+                    const worldX = neighborX * gridSize;
+                    const worldZ = neighborZ * gridSize;
+                    
+                    // Skip if out of bounds
+                    if (Math.abs(worldX) > MAP_SIZE/2 || Math.abs(worldZ) > MAP_SIZE/2) continue;
+                    
+                    // Skip if obstacle (unless it's the destination)
+                    if (neighborX !== endNode.x || neighborZ !== endNode.z) {
+                        if (isObstacle(worldX, worldZ)) continue;
+                    }
+                    
+                    // Calculate costs
+                    const isDiagonal = offset.x !== 0 && offset.z !== 0;
+                    const moveCost = isDiagonal ? 1.414 : 1; // Diagonal costs more
+                    const g = currentNode.g + moveCost;
+                    const h = heuristic({ x: neighborX, z: neighborZ });
+                    const f = g + h;
+                    
+                    // Check if this neighbor is already in open list with better path
+                    const existingOpen = openList.find(n => n.x === neighborX && n.z === neighborZ);
+                    if (existingOpen && existingOpen.g <= g) continue;
+                    
+                    // Add to open list
+                    if (existingOpen) {
+                        existingOpen.g = g;
+                        existingOpen.h = h;
+                        existingOpen.f = f;
+                        existingOpen.parent = currentNode;
+                    } else {
+                        openList.push({
+                            x: neighborX,
+                            z: neighborZ,
+                            g: g,
+                            h: h,
+                            f: f,
+                            parent: currentNode
+                        });
+                    }
+                }
+            }
+            
+            // No path found - return straight line
+            return [{ x: endX, z: endZ }];
+        }
+
         function animate() {
             requestAnimationFrame(animate);
 
@@ -3633,17 +3927,47 @@
 
             // Click-to-move: Walk to clicked position
             if (targetPosition) {
-                const dist = Math.hypot(currentPlayer.x - targetPosition.x, currentPlayer.z - targetPosition.z);
-                if (dist > 0.5) {
-                    // Walk towards position
-                    const angle = Math.atan2(targetPosition.x - currentPlayer.x, targetPosition.z - currentPlayer.z);
-                    currentPlayer.x += Math.sin(angle) * moveSpeed;
-                    currentPlayer.z += Math.cos(angle) * moveSpeed;
-                    currentPlayer.rotation = angle;
-                    moved = true;
+                // If no path exists or path was completed, calculate new path
+                if (pathToTarget.length === 0) {
+                    pathToTarget = findPath(currentPlayer.x, currentPlayer.z, targetPosition.x, targetPosition.z);
+                }
+                
+                // Follow the path
+                if (pathToTarget.length > 0) {
+                    const nextWaypoint = pathToTarget[0];
+                    const dist = Math.hypot(currentPlayer.x - nextWaypoint.x, currentPlayer.z - nextWaypoint.z);
+                    
+                    if (dist > 0.5) {
+                        // Walk towards next waypoint
+                        const angle = Math.atan2(nextWaypoint.x - currentPlayer.x, nextWaypoint.z - currentPlayer.z);
+                        currentPlayer.x += Math.sin(angle) * moveSpeed;
+                        currentPlayer.z += Math.cos(angle) * moveSpeed;
+                        currentPlayer.rotation = angle;
+                        moved = true;
+                    } else {
+                        // Reached waypoint, move to next one
+                        pathToTarget.shift();
+                        
+                        // If no more waypoints, destination reached
+                        if (pathToTarget.length === 0) {
+                            const finalDist = Math.hypot(currentPlayer.x - targetPosition.x, currentPlayer.z - targetPosition.z);
+                            if (finalDist <= 1.0) {
+                                targetPosition = null;
+                            }
+                        }
+                    }
                 } else {
-                    // Reached destination
-                    targetPosition = null;
+                    // No valid path found, try direct movement
+                    const dist = Math.hypot(currentPlayer.x - targetPosition.x, currentPlayer.z - targetPosition.z);
+                    if (dist > 0.5) {
+                        const angle = Math.atan2(targetPosition.x - currentPlayer.x, targetPosition.z - currentPlayer.z);
+                        currentPlayer.x += Math.sin(angle) * moveSpeed;
+                        currentPlayer.z += Math.cos(angle) * moveSpeed;
+                        currentPlayer.rotation = angle;
+                        moved = true;
+                    } else {
+                        targetPosition = null;
+                    }
                 }
             }
             
@@ -3970,6 +4294,7 @@
                 if (groundIntersects.length > 0) {
                     const point = groundIntersects[0].point;
                     targetPosition = { x: point.x, z: point.z };
+                    pathToTarget = []; // Clear old path
                     targetMonster = null;
                     targetResource = null;
                 }
@@ -4020,16 +4345,24 @@
         }
 
         function harvestResource(resource, resourceMesh) {
+            // Check level requirement
+            const requiredLevel = resource.levelRequired || 1;
+            if (currentPlayer.skills[resource.skill] < requiredLevel) {
+                addChatMessage('System', `You need level ${requiredLevel} ${resource.skill} to gather from this ${resource.name}.`, 'error');
+                return;
+            }
+            
             resource.available = false;
-            currentPlayer.skills[resource.skill]++;
+            const xpGained = resource.xp || 25;
+            currentPlayer.skills[resource.skill] += xpGained;
             
             if (!currentPlayer.inventory[resource.item]) {
                 currentPlayer.inventory[resource.item] = 0;
             }
             currentPlayer.inventory[resource.item]++;
             
-            addChatMessage('Gathering', `You gathered ${resource.item}! ${resource.skill} +1`, 'system');
-            updateQuestProgress('gather');
+            addChatMessage('Gathering', `You gathered ${resource.item} from ${resource.name}! +${xpGained} ${resource.skill} XP`, 'system');
+            updateQuestProgress('gather', resource.item);
             
             // Check gathering achievement
             const totalGathered = Object.values(currentPlayer.inventory).reduce((a, b) => a + b, 0);
@@ -5565,6 +5898,200 @@
         
         function closePetShop() {
             document.getElementById('petShopPanel').style.display = 'none';
+        }
+        
+        function respawnPet() {
+            if (!currentPlayer.pet) {
+                addChatMessage('Pet System', 'You don\'t own any pets yet! Visit the Pet Shop.', 'system');
+                return;
+            }
+            
+            // Remove old pet mesh if exists
+            if (petMesh) {
+                scene.remove(petMesh);
+            }
+            
+            // Recreate pet mesh
+            createPetMesh();
+            addChatMessage('Pet System', `🐾 Your ${currentPlayer.pet} has been respawned!`, 'system');
+        }
+        
+        // QUEST SYSTEM FUNCTIONS
+        function openQuestsPanel() {
+            document.getElementById('questsPanel').style.display = 'block';
+            updateQuestsDisplay();
+        }
+        
+        function closeQuestsPanel() {
+            document.getElementById('questsPanel').style.display = 'none';
+        }
+        
+        function updateQuestsDisplay() {
+            // Active Quests
+            const activeContainer = document.getElementById('activeQuestsList');
+            activeContainer.innerHTML = '';
+            
+            if (!currentPlayer.quests) {
+                currentPlayer.quests = { active: [], completed: [] };
+            }
+            
+            if (currentPlayer.quests.active.length === 0) {
+                activeContainer.innerHTML = '<p style="color: #95a5a6; font-style: italic;">No active quests</p>';
+            } else {
+                currentPlayer.quests.active.forEach(activeQuest => {
+                    const quest = QUESTS.find(q => q.id === activeQuest.id);
+                    if (quest) {
+                        const progress = activeQuest.currentStep || 0;
+                        const totalSteps = quest.steps.length;
+                        
+                        activeContainer.innerHTML += `
+                            <div class="quest-item" onclick="showQuestDetails('${quest.id}')" style="cursor: pointer; border-left: 4px solid #2ecc71;">
+                                <div>
+                                    <strong style="color: #2ecc71;">${quest.name}</strong>
+                                    <p style="font-size: 0.85rem; color: #bdc3c7; margin: 0.3rem 0;">${quest.description}</p>
+                                    <div style="margin-top: 0.5rem;">
+                                        <div style="background: rgba(0,0,0,0.3); border-radius: 10px; height: 8px; overflow: hidden;">
+                                            <div style="background: #2ecc71; height: 100%; width: ${(progress / totalSteps) * 100}%;"></div>
+                                        </div>
+                                        <span style="font-size: 0.75rem; color: #95a5a6;">Step ${progress + 1}/${totalSteps}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+            }
+            
+            // Available Quests
+            const availableContainer = document.getElementById('availableQuestsList');
+            availableContainer.innerHTML = '';
+            
+            const availableQuests = QUESTS.filter(quest => {
+                const isCompleted = currentPlayer.quests.completed.includes(quest.id);
+                const isActive = currentPlayer.quests.active.find(q => q.id === quest.id);
+                const meetsLevel = currentPlayer.level >= (quest.level || 1);
+                return !isCompleted && !isActive && meetsLevel;
+            });
+            
+            if (availableQuests.length === 0) {
+                availableContainer.innerHTML = '<p style="color: #95a5a6; font-style: italic;">No available quests</p>';
+            } else {
+                availableQuests.forEach(quest => {
+                    const rewards = [];
+                    if (quest.reward.xp) rewards.push(`⭐ ${quest.reward.xp} XP`);
+                    if (quest.reward.gold) rewards.push(`💰 ${quest.reward.gold} Gold`);
+                    if (quest.reward.item) rewards.push(`🎁 ${quest.reward.item}`);
+                    
+                    availableContainer.innerHTML += `
+                        <div class="quest-item" onclick="showQuestDetails('${quest.id}')" style="cursor: pointer;">
+                            <div>
+                                <strong style="color: #3498db;">${quest.name}</strong>
+                                <p style="font-size: 0.85rem; color: #bdc3c7; margin: 0.3rem 0;">${quest.description}</p>
+                                <div style="font-size: 0.85rem; color: #f39c12; margin-top: 0.3rem;">
+                                    Rewards: ${rewards.join(' | ')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            // Completed Quests
+            const completedContainer = document.getElementById('completedQuestsList');
+            completedContainer.innerHTML = '';
+            
+            const completedQuests = QUESTS.filter(quest => 
+                currentPlayer.quests.completed.includes(quest.id)
+            );
+            
+            if (completedQuests.length === 0) {
+                completedContainer.innerHTML = '<p style="color: #95a5a6; font-style: italic;">No completed quests yet</p>';
+            } else {
+                completedQuests.forEach(quest => {
+                    completedContainer.innerHTML += `
+                        <div class="quest-item" style="opacity: 0.7;">
+                            <div>
+                                <strong style="color: #95a5a6;">✅ ${quest.name}</strong>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        }
+        
+        function showQuestDetails(questId) {
+            const quest = QUESTS.find(q => q.id === questId);
+            if (!quest) return;
+            
+            const isActive = currentPlayer.quests.active.find(q => q.id === questId);
+            const isCompleted = currentPlayer.quests.completed.includes(questId);
+            
+            const detailsPanel = document.getElementById('questDetailsPanel');
+            const titleEl = document.getElementById('questDetailsTitle');
+            const contentEl = document.getElementById('questDetailsContent');
+            
+            titleEl.textContent = quest.name;
+            
+            let stepsHTML = '<h3 style="color: #3498db; margin-top: 1rem;">Quest Steps:</h3><ul style="margin-left: 1.5rem;">';
+            quest.steps.forEach((step, index) => {
+                const stepCompleted = isActive && (isActive.currentStep || 0) > index;
+                const stepCurrent = isActive && (isActive.currentStep || 0) === index;
+                const stepColor = stepCompleted ? '#2ecc71' : stepCurrent ? '#f39c12' : '#95a5a6';
+                const stepIcon = stepCompleted ? '✅' : stepCurrent ? '🔸' : '⭕';
+                
+                stepsHTML += `<li style="color: ${stepColor}; margin: 0.5rem 0;">${stepIcon} ${step.text}</li>`;
+            });
+            stepsHTML += '</ul>';
+            
+            const rewards = [];
+            if (quest.reward.xp) rewards.push(`⭐ ${quest.reward.xp} XP`);
+            if (quest.reward.gold) rewards.push(`💰 ${quest.reward.gold} Gold`);
+            if (quest.reward.item) rewards.push(`🎁 ${quest.reward.item}`);
+            
+            contentEl.innerHTML = `
+                <p style="color: #bdc3c7; margin-bottom: 1rem;">${quest.description}</p>
+                ${stepsHTML}
+                <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(243, 156, 18, 0.2); border-radius: 10px;">
+                    <h3 style="color: #f39c12; margin-bottom: 0.5rem;">🎁 Rewards:</h3>
+                    <p style="color: #ecf0f1;">${rewards.join(' | ')}</p>
+                </div>
+                ${!isActive && !isCompleted ? `
+                    <button class="action-btn" onclick="acceptQuest('${quest.id}')" style="width: 100%; margin-top: 1rem; padding: 0.8rem;">
+                        Accept Quest
+                    </button>
+                ` : ''}
+                ${isCompleted ? `
+                    <div style="text-align: center; margin-top: 1rem; color: #2ecc71; font-size: 1.2rem;">
+                        ✅ Quest Completed!
+                    </div>
+                ` : ''}
+            `;
+            
+            detailsPanel.style.display = 'block';
+        }
+        
+        function closeQuestDetails() {
+            document.getElementById('questDetailsPanel').style.display = 'none';
+        }
+        
+        function acceptQuest(questId) {
+            const quest = QUESTS.find(q => q.id === questId);
+            if (!quest) return;
+            
+            if (currentPlayer.level < (quest.level || 1)) {
+                addChatMessage('Quests', `You need level ${quest.level} to accept this quest!`, 'system');
+                return;
+            }
+            
+            if (!currentPlayer.quests) {
+                currentPlayer.quests = { active: [], completed: [] };
+            }
+            
+            currentPlayer.quests.active.push({ id: questId, currentStep: 0 });
+            addChatMessage('Quests', `📜 Quest accepted: ${quest.name}`, 'system');
+            
+            closeQuestDetails();
+            updateQuestsDisplay();
         }
         
         // CRAFTING SYSTEM
