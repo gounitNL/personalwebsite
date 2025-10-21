@@ -762,6 +762,7 @@
             else if (gameName === 'minesweeper') initMinesweeper();
             else if (gameName === 'sliding') initSlidingPuzzle();
             else if (gameName === 'nonogram') initNonogram();
+            else if (gameName === 'tictactoe') initTicTacToe();
         }
 
         function closeGame() {
@@ -1986,6 +1987,14 @@
         document.addEventListener('DOMContentLoaded', () => {
             if (document.getElementById('game-tictactoe')) {
                 initTicTacToe();
+            }
+            
+            // Check if URL has hash to open specific game
+            if (window.location.hash) {
+                const gameName = window.location.hash.substring(1); // Remove # from hash
+                if (document.getElementById('game-' + gameName)) {
+                    openGame(gameName);
+                }
             }
         });
     </script>
