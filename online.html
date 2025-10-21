@@ -43,6 +43,150 @@
             width: 90%;
         }
 
+        /* Character Customization Screen */
+        #customizationScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            overflow-y: auto;
+        }
+
+        #customizationScreen.active { display: flex; }
+
+        .customization-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .customization-box h2 {
+            color: #667eea;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .customization-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .customization-section h3 {
+            color: #333;
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+        }
+
+        .color-options {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.5rem;
+        }
+
+        .color-option {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            border: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+
+        .color-option.selected {
+            border-color: #667eea;
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.5);
+        }
+
+        .color-option.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+
+        .style-options {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .style-option {
+            flex: 1;
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: #f5f5f5;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .style-option:hover {
+            background: #e0e0e0;
+        }
+
+        .style-option.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .character-preview {
+            width: 200px;
+            height: 250px;
+            margin: 1rem auto;
+            background: linear-gradient(135deg, #87CEEB 0%, #4682B4 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid #ddd;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .preview-character {
+            position: relative;
+            transform: scale(1.5);
+        }
+
+        .customize-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .customize-btn:hover {
+            transform: scale(1.05);
+        }
+
         .login-box h1 {
             color: #667eea;
             margin-bottom: 1rem;
@@ -747,7 +891,77 @@
         </div>
     </div>
 
-
+    <!-- Character Customization Screen -->
+    <div id="customizationScreen">
+        <div class="customization-box">
+            <h2>🎨 Customize Your Character</h2>
+            
+            <!-- Character Preview -->
+            <div class="character-preview" id="characterPreview">
+                <div class="preview-character" id="previewCharacter"></div>
+            </div>
+            
+            <!-- Skin Color -->
+            <div class="customization-section">
+                <h3>Skin Tone</h3>
+                <div class="color-options">
+                    <div class="color-option selected" style="background: #ffdbac;" data-color="0xffdbac" onclick="selectSkinColor(this, 0xffdbac)"></div>
+                    <div class="color-option" style="background: #f1c27d;" data-color="0xf1c27d" onclick="selectSkinColor(this, 0xf1c27d)"></div>
+                    <div class="color-option" style="background: #e0ac69;" data-color="0xe0ac69" onclick="selectSkinColor(this, 0xe0ac69)"></div>
+                    <div class="color-option" style="background: #c68642;" data-color="0xc68642" onclick="selectSkinColor(this, 0xc68642)"></div>
+                    <div class="color-option" style="background: #8d5524;" data-color="0x8d5524" onclick="selectSkinColor(this, 0x8d5524)"></div>
+                </div>
+            </div>
+            
+            <!-- Hair Color -->
+            <div class="customization-section">
+                <h3>Hair Color</h3>
+                <div class="color-options">
+                    <div class="color-option selected" style="background: #4a2511;" data-color="0x4a2511" onclick="selectHairColor(this, 0x4a2511)"></div>
+                    <div class="color-option" style="background: #2c1608;" data-color="0x2c1608" onclick="selectHairColor(this, 0x2c1608)"></div>
+                    <div class="color-option" style="background: #b58143;" data-color="0xb58143" onclick="selectHairColor(this, 0xb58143)"></div>
+                    <div class="color-option" style="background: #daa520;" data-color="0xdaa520" onclick="selectHairColor(this, 0xdaa520)"></div>
+                    <div class="color-option" style="background: #ff6347;" data-color="0xff6347" onclick="selectHairColor(this, 0xff6347)"></div>
+                </div>
+            </div>
+            
+            <!-- Outfit Color -->
+            <div class="customization-section">
+                <h3>Outfit Color</h3>
+                <div class="color-options">
+                    <div class="color-option selected" style="background: #3498db;" data-color="0x3498db" onclick="selectBodyColor(this, 0x3498db)"></div>
+                    <div class="color-option" style="background: #e74c3c;" data-color="0xe74c3c" onclick="selectBodyColor(this, 0xe74c3c)"></div>
+                    <div class="color-option" style="background: #2ecc71;" data-color="0x2ecc71" onclick="selectBodyColor(this, 0x2ecc71)"></div>
+                    <div class="color-option" style="background: #f39c12;" data-color="0xf39c12" onclick="selectBodyColor(this, 0xf39c12)"></div>
+                    <div class="color-option" style="background: #9b59b6;" data-color="0x9b59b6" onclick="selectBodyColor(this, 0x9b59b6)"></div>
+                </div>
+            </div>
+            
+            <!-- Pants Color -->
+            <div class="customization-section">
+                <h3>Pants Color</h3>
+                <div class="color-options">
+                    <div class="color-option selected" style="background: #2c3e50;" data-color="0x2c3e50" onclick="selectPantsColor(this, 0x2c3e50)"></div>
+                    <div class="color-option" style="background: #34495e;" data-color="0x34495e" onclick="selectPantsColor(this, 0x34495e)"></div>
+                    <div class="color-option" style="background: #7f8c8d;" data-color="0x7f8c8d" onclick="selectPantsColor(this, 0x7f8c8d)"></div>
+                    <div class="color-option" style="background: #2c2c2c;" data-color="0x2c2c2c" onclick="selectPantsColor(this, 0x2c2c2c)"></div>
+                    <div class="color-option" style="background: #16a085;" data-color="0x16a085" onclick="selectPantsColor(this, 0x16a085)"></div>
+                </div>
+            </div>
+            
+            <!-- Hair Style -->
+            <div class="customization-section">
+                <h3>Hair Style</h3>
+                <div class="style-options">
+                    <div class="style-option selected" data-style="short" onclick="selectHairStyle(this, 'short')">Short</div>
+                    <div class="style-option" data-style="long" onclick="selectHairStyle(this, 'long')">Long</div>
+                    <div class="style-option" data-style="spiky" onclick="selectHairStyle(this, 'spiky')">Spiky</div>
+                </div>
+            </div>
+            
+            <button class="customize-btn" onclick="finishCustomization()">Enter Game</button>
+        </div>
+    </div>
 
     <!-- Game Container -->
     <div id="gameContainer" class="hidden">
@@ -1126,6 +1340,13 @@
                 helmet: null,
                 boots: null
             },
+            appearance: { // NEW: Character customization
+                skinColor: 0xffdbac,
+                hairColor: 0x4a2511,
+                bodyColor: 0x3498db,
+                pantsColor: 0x2c3e50,
+                hairStyle: 'short'
+            },
             inventory: {},
             quests: { // NEW: Quest tracking
                 active: [],
@@ -1167,6 +1388,7 @@
         let chatMessageCount = 0; // For achievements
         let totalDistanceTraveled = 0; // For achievements
         let lastPlayerPos = { x: 0, z: 0 };
+        let equippedWeaponMesh = null; // Visual weapon mesh
 
         // Constants
         const PLAYER_SPEED = 0.15;
@@ -1575,6 +1797,316 @@
             }
         }
         
+        // ========== CHARACTER CUSTOMIZATION FUNCTIONS ==========
+        
+        let tempAppearance = {
+            skinColor: 0xffdbac,
+            hairColor: 0x4a2511,
+            bodyColor: 0x3498db,
+            pantsColor: 0x2c3e50,
+            hairStyle: 'short'
+        };
+        
+        function showCustomizationScreen() {
+            document.getElementById('customizationScreen').classList.add('active');
+            updateCharacterPreview();
+        }
+        
+        function selectSkinColor(element, color) {
+            document.querySelectorAll('[data-color]').forEach(el => {
+                if (el.parentElement.parentElement.querySelector('h3').textContent === 'Skin Tone') {
+                    el.classList.remove('selected');
+                }
+            });
+            element.classList.add('selected');
+            tempAppearance.skinColor = color;
+            updateCharacterPreview();
+        }
+        
+        function selectHairColor(element, color) {
+            document.querySelectorAll('[data-color]').forEach(el => {
+                if (el.parentElement.parentElement.querySelector('h3').textContent === 'Hair Color') {
+                    el.classList.remove('selected');
+                }
+            });
+            element.classList.add('selected');
+            tempAppearance.hairColor = color;
+            updateCharacterPreview();
+        }
+        
+        function selectBodyColor(element, color) {
+            document.querySelectorAll('[data-color]').forEach(el => {
+                if (el.parentElement.parentElement.querySelector('h3').textContent === 'Outfit Color') {
+                    el.classList.remove('selected');
+                }
+            });
+            element.classList.add('selected');
+            tempAppearance.bodyColor = color;
+            updateCharacterPreview();
+        }
+        
+        function selectPantsColor(element, color) {
+            document.querySelectorAll('[data-color]').forEach(el => {
+                if (el.parentElement.parentElement.querySelector('h3').textContent === 'Pants Color') {
+                    el.classList.remove('selected');
+                }
+            });
+            element.classList.add('selected');
+            tempAppearance.pantsColor = color;
+            updateCharacterPreview();
+        }
+        
+        function selectHairStyle(element, style) {
+            document.querySelectorAll('.style-option').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            tempAppearance.hairStyle = style;
+            updateCharacterPreview();
+        }
+        
+        function updateCharacterPreview() {
+            const previewContainer = document.getElementById('previewCharacter');
+            previewContainer.innerHTML = '';
+            
+            // Create mini character preview (simple HTML/CSS version)
+            const character = document.createElement('div');
+            character.style.position = 'relative';
+            character.style.width = '60px';
+            character.style.height = '100px';
+            
+            // Head
+            const head = document.createElement('div');
+            head.style.width = '25px';
+            head.style.height = '25px';
+            head.style.backgroundColor = '#' + tempAppearance.skinColor.toString(16).padStart(6, '0');
+            head.style.position = 'absolute';
+            head.style.top = '5px';
+            head.style.left = '17.5px';
+            head.style.border = '2px solid rgba(0,0,0,0.2)';
+            character.appendChild(head);
+            
+            // Hair
+            const hair = document.createElement('div');
+            hair.style.backgroundColor = '#' + tempAppearance.hairColor.toString(16).padStart(6, '0');
+            hair.style.position = 'absolute';
+            hair.style.left = '16px';
+            hair.style.border = '2px solid rgba(0,0,0,0.2)';
+            if (tempAppearance.hairStyle === 'short') {
+                hair.style.width = '29px';
+                hair.style.height = '8px';
+                hair.style.top = '3px';
+            } else if (tempAppearance.hairStyle === 'long') {
+                hair.style.width = '29px';
+                hair.style.height = '15px';
+                hair.style.top = '3px';
+            } else if (tempAppearance.hairStyle === 'spiky') {
+                hair.style.width = '29px';
+                hair.style.height = '12px';
+                hair.style.top = '0px';
+                hair.style.clipPath = 'polygon(0% 100%, 10% 0%, 20% 100%, 30% 0%, 40% 100%, 50% 0%, 60% 100%, 70% 0%, 80% 100%, 90% 0%, 100% 100%)';
+            }
+            character.appendChild(hair);
+            
+            // Body
+            const body = document.createElement('div');
+            body.style.width = '30px';
+            body.style.height = '35px';
+            body.style.backgroundColor = '#' + tempAppearance.bodyColor.toString(16).padStart(6, '0');
+            body.style.position = 'absolute';
+            body.style.top = '30px';
+            body.style.left = '15px';
+            body.style.border = '2px solid rgba(0,0,0,0.2)';
+            character.appendChild(body);
+            
+            // Pants
+            const pants = document.createElement('div');
+            pants.style.width = '30px';
+            pants.style.height = '30px';
+            pants.style.backgroundColor = '#' + tempAppearance.pantsColor.toString(16).padStart(6, '0');
+            pants.style.position = 'absolute';
+            pants.style.top = '65px';
+            pants.style.left = '15px';
+            pants.style.border = '2px solid rgba(0,0,0,0.2)';
+            character.appendChild(pants);
+            
+            previewContainer.appendChild(character);
+        }
+        
+        async function finishCustomization() {
+            try {
+                // Save appearance to current player
+                currentPlayer.appearance = { ...tempAppearance };
+                
+                // Save appearance to Firebase
+                const user = auth.currentUser;
+                if (user) {
+                    await database.ref('user_profiles/' + user.uid + '/appearance').set(tempAppearance);
+                }
+                
+                // Hide customization screen and start game
+                document.getElementById('customizationScreen').classList.remove('active');
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('gameContainer').classList.remove('hidden');
+                
+                // Initialize game
+                initGame();
+                
+                // Start auto-save interval (only if not already started)
+                if (!window.autoSaveInterval) {
+                    window.autoSaveInterval = setInterval(saveGameToCloud, 30000); // Save every 30 seconds
+                }
+            } catch (error) {
+                console.error('Failed to save customization:', error);
+                alert('Failed to save customization. Starting game with default appearance.');
+                document.getElementById('customizationScreen').classList.remove('active');
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('gameContainer').classList.remove('hidden');
+                initGame();
+            }
+        }
+        
+        // ========== EQUIPMENT MANAGEMENT FUNCTIONS ==========
+        
+        function equipItem(itemName, itemType) {
+            try {
+                // Validate item exists in equipment database
+                let itemData = null;
+                if (itemType === 'weapon' && EQUIPMENT.weapons[itemName]) {
+                    itemData = EQUIPMENT.weapons[itemName];
+                } else if (itemType === 'armor' && EQUIPMENT.armor[itemName]) {
+                    itemData = EQUIPMENT.armor[itemName];
+                } else if (itemType === 'helmet' && EQUIPMENT.helmets[itemName]) {
+                    itemData = EQUIPMENT.helmets[itemName];
+                } else if (itemType === 'boots' && EQUIPMENT.boots[itemName]) {
+                    itemData = EQUIPMENT.boots[itemName];
+                }
+                
+                if (!itemData) {
+                    addChatMessage('System', `Cannot equip ${itemName}: item not found`, 'system');
+                    return false;
+                }
+                
+                // Check level requirement
+                if (itemData.level > currentPlayer.level) {
+                    addChatMessage('System', `You need level ${itemData.level} to equip ${itemName}`, 'system');
+                    return false;
+                }
+                
+                // Equip the item
+                const oldItem = currentPlayer.equipment[itemType];
+                currentPlayer.equipment[itemType] = itemName;
+                
+                // Update visual equipment (for weapons)
+                if (itemType === 'weapon' && playerMesh) {
+                    addWeaponToPlayer(playerMesh, itemName);
+                }
+                
+                // Update equipment display
+                updateEquipmentDisplay();
+                
+                // Show message
+                addChatMessage('System', `✨ Equipped ${itemName}!`, 'system');
+                if (oldItem) {
+                    addChatMessage('System', `Unequipped ${oldItem}`, 'system');
+                }
+                
+                // Save to cloud
+                saveGameToCloud();
+                
+                return true;
+            } catch (error) {
+                console.error('Error equipping item:', error);
+                return false;
+            }
+        }
+        
+        function unequipItem(itemType) {
+            try {
+                const item = currentPlayer.equipment[itemType];
+                if (!item) {
+                    addChatMessage('System', `No ${itemType} equipped`, 'system');
+                    return false;
+                }
+                
+                currentPlayer.equipment[itemType] = null;
+                
+                // Remove visual equipment (for weapons)
+                if (itemType === 'weapon' && playerMesh && equippedWeaponMesh) {
+                    playerMesh.remove(equippedWeaponMesh);
+                    equippedWeaponMesh = null;
+                }
+                
+                // Update equipment display
+                updateEquipmentDisplay();
+                
+                addChatMessage('System', `Unequipped ${item}`, 'system');
+                
+                // Save to cloud
+                saveGameToCloud();
+                
+                return true;
+            } catch (error) {
+                console.error('Error unequipping item:', error);
+                return false;
+            }
+        }
+        
+        function updateEquipmentDisplay() {
+            // Update equipment slots display
+            const weaponSlot = document.getElementById('weaponSlot');
+            const armorSlot = document.getElementById('armorSlot');
+            const helmetSlot = document.getElementById('helmetSlot');
+            const bootsSlot = document.getElementById('bootsSlot');
+            
+            if (weaponSlot) {
+                weaponSlot.innerHTML = currentPlayer.equipment.weapon 
+                    ? `🗡️ ${currentPlayer.equipment.weapon}` 
+                    : '🗡️ Weapon';
+                weaponSlot.style.cursor = currentPlayer.equipment.weapon ? 'pointer' : 'default';
+                weaponSlot.onclick = currentPlayer.equipment.weapon 
+                    ? () => unequipItem('weapon') 
+                    : null;
+            }
+            
+            if (armorSlot) {
+                armorSlot.innerHTML = currentPlayer.equipment.armor 
+                    ? `🛡️ ${currentPlayer.equipment.armor}` 
+                    : '🛡️ Armor';
+                armorSlot.style.cursor = currentPlayer.equipment.armor ? 'pointer' : 'default';
+                armorSlot.onclick = currentPlayer.equipment.armor 
+                    ? () => unequipItem('armor') 
+                    : null;
+            }
+            
+            if (helmetSlot) {
+                helmetSlot.innerHTML = currentPlayer.equipment.helmet 
+                    ? `⛑️ ${currentPlayer.equipment.helmet}` 
+                    : '⛑️ Helmet';
+                helmetSlot.style.cursor = currentPlayer.equipment.helmet ? 'pointer' : 'default';
+                helmetSlot.onclick = currentPlayer.equipment.helmet 
+                    ? () => unequipItem('helmet') 
+                    : null;
+            }
+            
+            if (bootsSlot) {
+                bootsSlot.innerHTML = currentPlayer.equipment.boots 
+                    ? `👢 ${currentPlayer.equipment.boots}` 
+                    : '👢 Boots';
+                bootsSlot.style.cursor = currentPlayer.equipment.boots ? 'pointer' : 'default';
+                bootsSlot.onclick = currentPlayer.equipment.boots 
+                    ? () => unequipItem('boots') 
+                    : null;
+            }
+        }
+        
+        // Give player a starting weapon for testing
+        function giveStarterWeapon() {
+            if (!currentPlayer.equipment.weapon && currentPlayer.level === 1) {
+                currentPlayer.equipment.weapon = 'Wooden Sword';
+                equipItem('Wooden Sword', 'weapon');
+                addChatMessage('System', '🎁 You received a Wooden Sword to start your adventure!', 'system');
+            }
+        }
+        
         // ========== AUTH STATE LISTENER ==========
         
         function setupAuthListener() {
@@ -1614,18 +2146,33 @@
                         currentPlayer.quests = profileData.quests || { active: [], completed: [] };
                         currentPlayer.craftedItems = profileData.craftedItems || 0;
                         
+                        // Load appearance or show customization if not set
+                        if (profileData.appearance) {
+                            currentPlayer.appearance = profileData.appearance;
+                            tempAppearance = { ...profileData.appearance };
+                        }
+                        
                         // Set up profile reference for auto-save
                         userProfileRef = database.ref('user_profiles/' + user.uid);
                         
-                        // Hide login screen, show game
-                        document.getElementById('loginScreen').classList.add('hidden');
-                        document.getElementById('gameContainer').classList.remove('hidden');
-                        
-                        // Initialize game
-                        initGame();
-                        
-                        // Start auto-save interval
-                        setInterval(saveGameToCloud, 30000); // Save every 30 seconds
+                        // Check if appearance exists - if not, show customization screen
+                        if (!profileData.appearance) {
+                            // New user - show customization
+                            document.getElementById('loginScreen').classList.add('hidden');
+                            showCustomizationScreen();
+                        } else {
+                            // Existing user - go straight to game
+                            document.getElementById('loginScreen').classList.add('hidden');
+                            document.getElementById('gameContainer').classList.remove('hidden');
+                            
+                            // Initialize game
+                            initGame();
+                            
+                            // Start auto-save interval (only if not already started)
+                            if (!window.autoSaveInterval) {
+                                window.autoSaveInterval = setInterval(saveGameToCloud, 30000); // Save every 30 seconds
+                            }
+                        }
                         
                         console.log('Profile loaded successfully');
                     }
@@ -1668,6 +2215,7 @@
                     inventory: currentPlayer.inventory,
                     pet: currentPlayer.pet,
                     achievements: currentPlayer.achievements,
+                    appearance: currentPlayer.appearance,
                     quests: currentPlayer.quests,
                     craftedItems: currentPlayer.craftedItems,
                     lastSaved: Date.now()
@@ -1728,6 +2276,10 @@
             document.getElementById('playerName').textContent = currentPlayer.name;
             updateStats();
             renderInventory();
+            updateEquipmentDisplay();
+            
+            // Give starter weapon if new player
+            giveStarterWeapon();
 
             // Firebase references with error handling
             try {
@@ -1904,13 +2456,20 @@
         }
 
         function createPlayer() {
-            // Create more realistic player character with better proportions
+            // Create more realistic player character with customizable appearance
             const playerGroup = new THREE.Group();
+            const appearance = currentPlayer.appearance || {
+                skinColor: 0xffdbac,
+                hairColor: 0x4a2511,
+                bodyColor: 0x3498db,
+                pantsColor: 0x2c3e50,
+                hairStyle: 'short'
+            };
 
-            // Body - more realistic torso
+            // Body - more realistic torso with custom color
             const bodyGeometry = new THREE.BoxGeometry(0.8, 1.0, 0.5);
             const bodyMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0x3498db,
+                color: appearance.bodyColor,
                 roughness: 0.7,
                 metalness: 0.1
             });
@@ -1918,32 +2477,59 @@
             body.position.y = 1.0;
             body.castShadow = true;
             body.receiveShadow = true;
+            body.name = 'body';
             playerGroup.add(body);
 
-            // Head - more realistic size and shape
+            // Head - more realistic size and shape with custom skin color
             const headGeometry = new THREE.BoxGeometry(0.45, 0.45, 0.45);
             const headMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0xffdbac,
+                color: appearance.skinColor,
                 roughness: 0.8
             });
             const head = new THREE.Mesh(headGeometry, headMaterial);
             head.position.y = 1.73;
             head.castShadow = true;
             head.receiveShadow = true;
+            head.name = 'head';
             playerGroup.add(head);
 
-            // Hair/helmet detail
-            const hairGeometry = new THREE.BoxGeometry(0.48, 0.2, 0.48);
-            const hairMaterial = new THREE.MeshStandardMaterial({ color: 0x4a2511 });
-            const hair = new THREE.Mesh(hairGeometry, hairMaterial);
-            hair.position.y = 1.95;
-            hair.castShadow = true;
-            playerGroup.add(hair);
+            // Hair/helmet detail with custom style
+            if (appearance.hairStyle === 'short') {
+                const hairGeometry = new THREE.BoxGeometry(0.48, 0.2, 0.48);
+                const hairMaterial = new THREE.MeshStandardMaterial({ color: appearance.hairColor });
+                const hair = new THREE.Mesh(hairGeometry, hairMaterial);
+                hair.position.y = 1.95;
+                hair.castShadow = true;
+                hair.name = 'hair';
+                playerGroup.add(hair);
+            } else if (appearance.hairStyle === 'long') {
+                const hairGeometry = new THREE.BoxGeometry(0.48, 0.35, 0.48);
+                const hairMaterial = new THREE.MeshStandardMaterial({ color: appearance.hairColor });
+                const hair = new THREE.Mesh(hairGeometry, hairMaterial);
+                hair.position.y = 2.0;
+                hair.castShadow = true;
+                hair.name = 'hair';
+                playerGroup.add(hair);
+            } else if (appearance.hairStyle === 'spiky') {
+                // Create spiky hair with multiple boxes
+                const spikeGeometry = new THREE.BoxGeometry(0.15, 0.25, 0.15);
+                const hairMaterial = new THREE.MeshStandardMaterial({ color: appearance.hairColor });
+                for (let i = 0; i < 5; i++) {
+                    const spike = new THREE.Mesh(spikeGeometry, hairMaterial);
+                    const angle = (i / 5) * Math.PI * 2;
+                    spike.position.x = Math.cos(angle) * 0.15;
+                    spike.position.y = 2.05;
+                    spike.position.z = Math.sin(angle) * 0.15;
+                    spike.castShadow = true;
+                    spike.name = 'hair';
+                    playerGroup.add(spike);
+                }
+            }
 
-            // Arms - better proportions
+            // Arms - better proportions with custom color
             const armGeometry = new THREE.BoxGeometry(0.25, 0.9, 0.25);
             const armMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0x3498db,
+                color: appearance.bodyColor,
                 roughness: 0.7,
                 metalness: 0.1
             });
@@ -1952,32 +2538,36 @@
             leftArm.position.set(-0.55, 1.0, 0);
             leftArm.castShadow = true;
             leftArm.receiveShadow = true;
+            leftArm.name = 'leftArm';
             playerGroup.add(leftArm);
 
             const rightArm = new THREE.Mesh(armGeometry, armMaterial);
             rightArm.position.set(0.55, 1.0, 0);
             rightArm.castShadow = true;
             rightArm.receiveShadow = true;
+            rightArm.name = 'rightArm';
             playerGroup.add(rightArm);
 
-            // Hands
+            // Hands with custom skin color
             const handGeometry = new THREE.BoxGeometry(0.2, 0.15, 0.2);
-            const handMaterial = new THREE.MeshStandardMaterial({ color: 0xffdbac });
+            const handMaterial = new THREE.MeshStandardMaterial({ color: appearance.skinColor });
             
             const leftHand = new THREE.Mesh(handGeometry, handMaterial);
             leftHand.position.set(-0.55, 0.5, 0);
             leftHand.castShadow = true;
+            leftHand.name = 'leftHand';
             playerGroup.add(leftHand);
 
             const rightHand = new THREE.Mesh(handGeometry, handMaterial);
             rightHand.position.set(0.55, 0.5, 0);
             rightHand.castShadow = true;
+            rightHand.name = 'rightHand';
             playerGroup.add(rightHand);
 
-            // Legs - more realistic proportions
+            // Legs - more realistic proportions with custom pants color
             const legGeometry = new THREE.BoxGeometry(0.3, 0.9, 0.3);
             const legMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0x2c3e50,
+                color: appearance.pantsColor,
                 roughness: 0.9
             });
             
@@ -1985,12 +2575,14 @@
             leftLeg.position.set(-0.25, 0.45, 0);
             leftLeg.castShadow = true;
             leftLeg.receiveShadow = true;
+            leftLeg.name = 'leftLeg';
             playerGroup.add(leftLeg);
 
             const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
             rightLeg.position.set(0.25, 0.45, 0);
             rightLeg.castShadow = true;
             rightLeg.receiveShadow = true;
+            rightLeg.name = 'rightLeg';
             playerGroup.add(rightLeg);
 
             // Boots/feet
@@ -2000,11 +2592,13 @@
             const leftBoot = new THREE.Mesh(bootGeometry, bootMaterial);
             leftBoot.position.set(-0.25, 0.08, 0.05);
             leftBoot.castShadow = true;
+            leftBoot.name = 'leftBoot';
             playerGroup.add(leftBoot);
 
             const rightBoot = new THREE.Mesh(bootGeometry, bootMaterial);
             rightBoot.position.set(0.25, 0.08, 0.05);
             rightBoot.castShadow = true;
+            rightBoot.name = 'rightBoot';
             playerGroup.add(rightBoot);
 
             // Belt detail
@@ -2013,14 +2607,101 @@
             const belt = new THREE.Mesh(beltGeometry, beltMaterial);
             belt.position.y = 0.5;
             belt.castShadow = true;
+            belt.name = 'belt';
             playerGroup.add(belt);
 
             playerGroup.position.set(currentPlayer.x, currentPlayer.y, currentPlayer.z);
             playerMesh = playerGroup;
             scene.add(playerMesh);
 
+            // Add equipped weapon if any
+            if (currentPlayer.equipment.weapon) {
+                addWeaponToPlayer(playerMesh, currentPlayer.equipment.weapon);
+            }
+
             // Add name label
             createNameLabel(playerGroup, currentPlayer.name, 0xf39c12);
+        }
+        
+        function addWeaponToPlayer(playerGroup, weaponName) {
+            // Remove existing weapon if any
+            if (equippedWeaponMesh) {
+                playerGroup.remove(equippedWeaponMesh);
+                equippedWeaponMesh = null;
+            }
+            
+            if (!weaponName) return;
+            
+            // Create weapon mesh based on weapon type
+            const weaponGroup = new THREE.Group();
+            weaponGroup.name = 'weapon';
+            
+            if (weaponName.includes('Sword')) {
+                // Create sword
+                // Handle/grip
+                const handleGeometry = new THREE.CylinderGeometry(0.04, 0.04, 0.4, 8);
+                const handleMaterial = new THREE.MeshStandardMaterial({ color: 0x654321 });
+                const handle = new THREE.Mesh(handleGeometry, handleMaterial);
+                handle.castShadow = true;
+                weaponGroup.add(handle);
+                
+                // Guard
+                const guardGeometry = new THREE.BoxGeometry(0.3, 0.05, 0.08);
+                const guardMaterial = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.8 });
+                const guard = new THREE.Mesh(guardGeometry, guardMaterial);
+                guard.position.y = 0.2;
+                guard.castShadow = true;
+                weaponGroup.add(guard);
+                
+                // Blade
+                const bladeGeometry = new THREE.BoxGeometry(0.1, 0.8, 0.02);
+                const bladeMaterial = new THREE.MeshStandardMaterial({ 
+                    color: weaponName.includes('Dragon') ? 0xff4444 : weaponName.includes('Steel') ? 0xaaaaaa : 0x999999,
+                    metalness: 0.9,
+                    roughness: 0.2
+                });
+                const blade = new THREE.Mesh(bladeGeometry, bladeMaterial);
+                blade.position.y = 0.6;
+                blade.castShadow = true;
+                weaponGroup.add(blade);
+                
+                // Blade tip
+                const tipGeometry = new THREE.ConeGeometry(0.05, 0.15, 4);
+                const tip = new THREE.Mesh(tipGeometry, bladeMaterial);
+                tip.position.y = 1.075;
+                tip.castShadow = true;
+                weaponGroup.add(tip);
+                
+                // Position sword in right hand
+                weaponGroup.position.set(0.55, 0.5, 0.2);
+                weaponGroup.rotation.z = Math.PI / 4; // Angle it
+                
+            } else if (weaponName.includes('Staff')) {
+                // Create magic staff
+                const staffGeometry = new THREE.CylinderGeometry(0.05, 0.05, 1.2, 8);
+                const staffMaterial = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
+                const staff = new THREE.Mesh(staffGeometry, staffMaterial);
+                staff.castShadow = true;
+                weaponGroup.add(staff);
+                
+                // Magical orb on top
+                const orbGeometry = new THREE.SphereGeometry(0.12, 16, 16);
+                const orbMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x9966ff,
+                    emissive: 0x6633cc,
+                    emissiveIntensity: 0.5
+                });
+                const orb = new THREE.Mesh(orbGeometry, orbMaterial);
+                orb.position.y = 0.7;
+                orb.castShadow = true;
+                weaponGroup.add(orb);
+                
+                // Position staff in right hand
+                weaponGroup.position.set(0.55, 0.4, 0);
+            }
+            
+            playerGroup.add(weaponGroup);
+            equippedWeaponMesh = weaponGroup;
         }
 
         function createNameLabel(parentMesh, name, color) {
