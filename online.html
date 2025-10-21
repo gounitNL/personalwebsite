@@ -221,6 +221,77 @@
             font-size: 0.8rem;
         }
 
+        /* Mini-map */
+        .mini-map {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 150px;
+            height: 150px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        /* Day/Night Indicator */
+        .day-night-indicator {
+            position: absolute;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        /* Quest Panel */
+        .quest-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(44, 62, 80, 0.98);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            z-index: 1500;
+            display: none;
+        }
+
+        .quest-panel.active { display: block; }
+
+        .quest-item {
+            background: rgba(52, 73, 94, 0.5);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #f39c12;
+        }
+
+        .close-panel-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
         /* Right Sidebar */
         #rightSidebar {
             width: 300px;
@@ -619,7 +690,7 @@
             <div class="character-panel">
                 <div class="character-name" id="playerName">Adventurer</div>
                 <div class="stat-bar">
-                    <div class="stat-label">Combat Level: <span id="combatLevel">1</span></div>
+                    <div class="stat-label">Level: <span id="combatLevel">1</span> | 💰 <span id="goldCount">0</span></div>
                 </div>
                 <div class="stat-bar">
                     <div class="stat-label">HP</div>
@@ -628,10 +699,36 @@
                     </div>
                 </div>
                 <div class="stat-bar">
+                    <div class="stat-label">MP</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="mpBar" style="width: 100%; background: linear-gradient(90deg, #3498db, #2980b9)">100/100</div>
+                    </div>
+                </div>
+                <div class="stat-bar">
                     <div class="stat-label">XP</div>
                     <div class="progress-bar">
                         <div class="progress-fill xp-bar" id="xpBar" style="width: 0%">0/100</div>
                     </div>
+                </div>
+            </div>
+
+            <div class="skills-panel">
+                <h3 style="margin-bottom: 0.5rem; color: #f39c12;">📊 Stats</h3>
+                <div class="skill-item">
+                    <span class="skill-name">⚔️ Strength</span>
+                    <span class="skill-level" id="strengthStat">10</span>
+                </div>
+                <div class="skill-item">
+                    <span class="skill-name">🛡️ Defense</span>
+                    <span class="skill-level" id="defenseStat">10</span>
+                </div>
+                <div class="skill-item">
+                    <span class="skill-name">✨ Magic</span>
+                    <span class="skill-level" id="magicStat">10</span>
+                </div>
+                <div class="skill-item">
+                    <span class="skill-name">⚡ Speed</span>
+                    <span class="skill-level" id="speedStat">10</span>
                 </div>
             </div>
 
@@ -657,11 +754,35 @@
                     <span class="skill-name">Crafting</span>
                     <span class="skill-level" id="craftingSkill">1</span>
                 </div>
+                <div class="skill-item">
+                    <span class="skill-name">Magic</span>
+                    <span class="skill-level" id="magicSkill">1</span>
+                </div>
             </div>
 
             <div class="inventory-panel">
+                <h3 style="margin-bottom: 0.5rem; color: #f39c12;">🎒 Equipment</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem;">
+                    <div style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 5px; text-align: center; font-size: 0.8rem;">
+                        <div id="weaponSlot">🗡️ Weapon</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 5px; text-align: center; font-size: 0.8rem;">
+                        <div id="armorSlot">🛡️ Armor</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 5px; text-align: center; font-size: 0.8rem;">
+                        <div id="helmetSlot">⛑️ Helmet</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 5px; text-align: center; font-size: 0.8rem;">
+                        <div id="bootsSlot">👢 Boots</div>
+                    </div>
+                </div>
                 <h3 style="margin-bottom: 0.5rem; color: #f39c12;">🎒 Inventory</h3>
                 <div class="inventory-grid" id="inventoryGrid"></div>
+            </div>
+
+            <div class="skills-panel">
+                <h3 style="margin-bottom: 0.5rem; color: #f39c12;">📜 Quests (<span id="questCount">0</span>)</h3>
+                <div id="questList" style="max-height: 150px; overflow-y: auto;"></div>
             </div>
         </div>
 
@@ -675,10 +796,15 @@
                 <div id="onlineCount">🟢 0 players online</div>
             </div>
             <canvas id="renderCanvas"></canvas>
-            <div class="controls-hint">WASD: Move • Mouse: Rotate Camera • Click: Interact<br>Q/E: Rotate Camera • Scroll: Zoom</div>
+            <div class="controls-hint">WASD: Move • Mouse: Rotate Camera • Click: Interact<br>Q/E: Rotate Camera • Scroll: Zoom • 1/2/3: Abilities</div>
             <div class="camera-controls">
                 Camera: Q/E to rotate • Mouse drag to look around
             </div>
+            <div class="day-night-indicator">
+                <span id="timeIcon">☀️</span>
+                <span id="timeText">Day</span>
+            </div>
+            <canvas class="mini-map" id="miniMapCanvas" width="150" height="150"></canvas>
             
             <!-- Mobile Virtual Joystick -->
             <div id="mobileControls">
@@ -699,8 +825,26 @@
             <div class="action-buttons">
                 <button class="action-btn" onclick="attackNearestMonster()">⚔️ Attack</button>
                 <button class="action-btn gather" onclick="gatherResource()">⛏️ Gather</button>
-                <button class="action-btn craft" onclick="openCrafting()">🔨 Craft</button>
-                <button class="action-btn quest" onclick="openQuests()">📜 Quests</button>
+                <button class="action-btn craft" onclick="openShop()">🏪 Shop</button>
+                <button class="action-btn quest" onclick="toggleQuestPanel()">📜 Quests</button>
+            </div>
+            
+            <div style="padding: 1rem; border-top: 1px solid #34495e; border-bottom: 1px solid #34495e;">
+                <h3 style="margin-bottom: 0.5rem; color: #f39c12; font-size: 0.9rem;">⚡ Abilities</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                    <button class="action-btn" style="padding: 0.5rem; font-size: 0.8rem;" onclick="useAbility('fireball')" id="fireballBtn">
+                        🔥 Fireball<br><span style="font-size: 0.7rem;">20 MP</span>
+                    </button>
+                    <button class="action-btn craft" style="padding: 0.5rem; font-size: 0.8rem;" onclick="useAbility('heal')" id="healBtn">
+                        💚 Heal<br><span style="font-size: 0.7rem;">15 MP</span>
+                    </button>
+                    <button class="action-btn" style="padding: 0.5rem; font-size: 0.8rem; background: linear-gradient(135deg, #9b59b6, #8e44ad);" onclick="useAbility('lightning')" id="lightningBtn">
+                        ⚡ Lightning<br><span style="font-size: 0.7rem;">35 MP</span>
+                    </button>
+                    <button class="action-btn quest" style="padding: 0.5rem; font-size: 0.8rem;" onclick="openAchievements()">
+                        🏆 Achievements
+                    </button>
+                </div>
             </div>
             
             <div id="chatArea"></div>
@@ -710,6 +854,32 @@
                 <button onclick="sendMessage()">Send</button>
             </div>
         </div>
+    </div>
+
+    <!-- Quest Panel -->
+    <div class="quest-panel" id="questPanel">
+        <button class="close-panel-btn" onclick="toggleQuestPanel()">×</button>
+        <h2 style="color: #f39c12; margin-bottom: 1rem;">📜 Available Quests</h2>
+        <div id="availableQuests"></div>
+        <h3 style="color: #2ecc71; margin-top: 1.5rem; margin-bottom: 0.5rem;">✅ Active Quests</h3>
+        <div id="activeQuestsPanel"></div>
+    </div>
+
+    <!-- Shop Panel -->
+    <div class="quest-panel" id="shopPanel">
+        <button class="close-panel-btn" onclick="closeShop()">×</button>
+        <h2 style="color: #f39c12; margin-bottom: 1rem;">🏪 Equipment Shop</h2>
+        <div style="text-align: center; margin-bottom: 1rem; font-size: 1.2rem;">
+            Your Gold: 💰 <span id="shopGold">0</span>
+        </div>
+        <div id="shopItems"></div>
+    </div>
+
+    <!-- Achievements Panel -->
+    <div class="quest-panel" id="achievementsPanel">
+        <button class="close-panel-btn" onclick="closeAchievements()">×</button>
+        <h2 style="color: #f39c12; margin-bottom: 1rem;">🏆 Achievements</h2>
+        <div id="achievementsList"></div>
     </div>
 
     <!-- Three.js Library -->
@@ -759,21 +929,50 @@
             moving: false,
             hp: 100,
             maxHp: 100,
+            mp: 100, // NEW: Magic points
+            maxMp: 100,
             xp: 0,
             level: 1,
+            gold: 0, // NEW: Currency
             skills: {
                 combat: 1,
                 mining: 1,
                 woodcutting: 1,
                 fishing: 1,
-                crafting: 1
+                crafting: 1,
+                magic: 1 // NEW: Magic skill
             },
-            inventory: {}
+            stats: { // NEW: Character stats
+                strength: 10,
+                defense: 10,
+                magic: 10,
+                speed: 10
+            },
+            equipment: { // NEW: Equipment slots
+                weapon: null,
+                armor: null,
+                helmet: null,
+                boots: null
+            },
+            inventory: {},
+            quests: { // NEW: Quest tracking
+                active: [],
+                completed: []
+            },
+            achievements: [], // NEW: Achievements
+            abilities: { // NEW: Combat abilities
+                fireball: { cooldown: 0, maxCooldown: 5000, damage: 25, mpCost: 20 },
+                heal: { cooldown: 0, maxCooldown: 8000, healing: 30, mpCost: 15 },
+                lightning: { cooldown: 0, maxCooldown: 10000, damage: 50, mpCost: 35 }
+            }
         };
 
         let players = {};
         let monsters = [];
         let resources = [];
+        let npcs = []; // NEW: NPCs
+        let lootItems = []; // NEW: Dropped loot
+        let particles = []; // NEW: Visual effects
         let playersRef, chatRef;
         let keys = {};
         
@@ -785,6 +984,84 @@
         // Constants
         const PLAYER_SPEED = 0.15;
         const MAP_SIZE = 50;
+        
+        // NEW: Equipment Database
+        const EQUIPMENT = {
+            weapons: {
+                'Wooden Sword': { damage: 5, value: 10, level: 1 },
+                'Iron Sword': { damage: 10, value: 50, level: 5 },
+                'Steel Sword': { damage: 20, value: 150, level: 10 },
+                'Dragon Sword': { damage: 40, value: 500, level: 20 },
+                'Magic Staff': { damage: 15, magic: 25, value: 200, level: 10 }
+            },
+            armor: {
+                'Leather Armor': { defense: 5, value: 15, level: 1 },
+                'Iron Armor': { defense: 15, value: 80, level: 5 },
+                'Steel Armor': { defense: 30, value: 250, level: 10 },
+                'Dragon Armor': { defense: 60, value: 800, level: 20 }
+            },
+            helmets: {
+                'Leather Cap': { defense: 2, value: 8, level: 1 },
+                'Iron Helmet': { defense: 8, value: 40, level: 5 },
+                'Steel Helmet': { defense: 15, value: 120, level: 10 }
+            },
+            boots: {
+                'Leather Boots': { speed: 2, value: 10, level: 1 },
+                'Iron Boots': { defense: 5, speed: 3, value: 50, level: 5 },
+                'Dragon Boots': { defense: 10, speed: 5, value: 200, level: 10 }
+            }
+        };
+        
+        // NEW: Quest Database
+        const QUESTS = [
+            { 
+                id: 'tutorial_combat',
+                name: 'First Blood',
+                description: 'Defeat 3 monsters',
+                objective: { type: 'kill', target: 'any', count: 3 },
+                reward: { xp: 100, gold: 50, item: 'Iron Sword' },
+                level: 1
+            },
+            {
+                id: 'resource_gather',
+                name: 'Resource Collector',
+                description: 'Gather 10 resources',
+                objective: { type: 'gather', count: 10 },
+                reward: { xp: 150, gold: 75 },
+                level: 1
+            },
+            {
+                id: 'dragon_slayer',
+                name: 'Dragon Slayer',
+                description: 'Defeat the mighty Dragon',
+                objective: { type: 'kill', target: 'Dragon', count: 1 },
+                reward: { xp: 1000, gold: 500, item: 'Dragon Sword' },
+                level: 15
+            },
+            {
+                id: 'skill_master',
+                name: 'Skill Master',
+                description: 'Reach level 10 in any skill',
+                objective: { type: 'skill', level: 10 },
+                reward: { xp: 500, gold: 250 },
+                level: 5
+            }
+        ];
+        
+        // NEW: Achievement Database
+        const ACHIEVEMENTS = [
+            { id: 'first_kill', name: 'First Blood', description: 'Defeat your first monster', icon: '⚔️' },
+            { id: 'level_10', name: 'Veteran', description: 'Reach level 10', icon: '🎖️' },
+            { id: 'rich', name: 'Wealthy', description: 'Collect 1000 gold', icon: '💰' },
+            { id: 'master_gatherer', name: 'Master Gatherer', description: 'Gather 100 resources', icon: '🌲' },
+            { id: 'dragon_slayer', name: 'Dragon Slayer', description: 'Defeat a Dragon', icon: '🐉' },
+            { id: 'social', name: 'Social Butterfly', description: 'Chat 50 messages', icon: '💬' },
+            { id: 'explorer', name: 'Explorer', description: 'Travel 1000 units', icon: '🗺️' }
+        ];
+        
+        // NEW: Day/Night cycle
+        let timeOfDay = 0; // 0-24 hours
+        let dayNightSpeed = 0.01; // How fast time passes
 
         // Login
         function login() {
@@ -1621,18 +1898,43 @@
 
         function updateStats() {
             document.getElementById('combatLevel').textContent = currentPlayer.level;
+            document.getElementById('goldCount').textContent = currentPlayer.gold;
+            
             document.getElementById('hpBar').style.width = (currentPlayer.hp / currentPlayer.maxHp * 100) + '%';
-            document.getElementById('hpBar').textContent = `${currentPlayer.hp}/${currentPlayer.maxHp}`;
+            document.getElementById('hpBar').textContent = `${Math.floor(currentPlayer.hp)}/${currentPlayer.maxHp}`;
+            
+            document.getElementById('mpBar').style.width = (currentPlayer.mp / currentPlayer.maxMp * 100) + '%';
+            document.getElementById('mpBar').textContent = `${Math.floor(currentPlayer.mp)}/${currentPlayer.maxMp}`;
             
             const xpNeeded = currentPlayer.level * 100;
             document.getElementById('xpBar').style.width = (currentPlayer.xp / xpNeeded * 100) + '%';
             document.getElementById('xpBar').textContent = `${currentPlayer.xp}/${xpNeeded}`;
 
+            // Update stats
+            document.getElementById('strengthStat').textContent = currentPlayer.stats.strength;
+            document.getElementById('defenseStat').textContent = currentPlayer.stats.defense;
+            document.getElementById('magicStat').textContent = currentPlayer.stats.magic;
+            document.getElementById('speedStat').textContent = currentPlayer.stats.speed;
+
+            // Update skills
             document.getElementById('combatSkill').textContent = currentPlayer.skills.combat;
             document.getElementById('miningSkill').textContent = currentPlayer.skills.mining;
             document.getElementById('woodcuttingSkill').textContent = currentPlayer.skills.woodcutting;
             document.getElementById('fishingSkill').textContent = currentPlayer.skills.fishing;
             document.getElementById('craftingSkill').textContent = currentPlayer.skills.crafting;
+            document.getElementById('magicSkill').textContent = currentPlayer.skills.magic;
+            
+            // Update equipment slots
+            document.getElementById('weaponSlot').textContent = currentPlayer.equipment.weapon || '🗡️ Weapon';
+            document.getElementById('armorSlot').textContent = currentPlayer.equipment.armor || '🛡️ Armor';
+            document.getElementById('helmetSlot').textContent = currentPlayer.equipment.helmet || '⛑️ Helmet';
+            document.getElementById('bootsSlot').textContent = currentPlayer.equipment.boots || '👢 Boots';
+            
+            // Update quest count
+            document.getElementById('questCount').textContent = currentPlayer.quests.active.length;
+            
+            // Update ability cooldowns
+            updateAbilityButtons();
         }
 
         function renderInventory() {
@@ -1760,6 +2062,528 @@
             document.getElementById('rightSidebar').classList.remove('open');
             document.getElementById('sidebarOverlay').classList.remove('active');
         }
+
+        // ========== NEW GAMEPLAY SYSTEMS ==========
+        
+        // Ability System
+        function useAbility(abilityName) {
+            const ability = currentPlayer.abilities[abilityName];
+            
+            if (ability.cooldown > 0) {
+                addChatMessage('System', `Ability on cooldown! Wait ${Math.ceil(ability.cooldown/1000)}s`, 'system');
+                return;
+            }
+            
+            if (currentPlayer.mp < ability.mpCost) {
+                addChatMessage('System', 'Not enough MP!', 'system');
+                return;
+            }
+            
+            currentPlayer.mp -= ability.mpCost;
+            ability.cooldown = ability.maxCooldown;
+            
+            if (abilityName === 'fireball') {
+                castFireball();
+            } else if (abilityName === 'heal') {
+                castHeal();
+            } else if (abilityName === 'lightning') {
+                castLightning();
+            }
+            
+            updateStats();
+        }
+        
+        function castFireball() {
+            const nearest = findNearestMonster(10);
+            if (nearest) {
+                const damage = 25 + currentPlayer.stats.magic * 2;
+                nearest.currentHp -= damage;
+                createParticle(nearest.x, nearest.y, nearest.z, 0xff4500, '🔥');
+                addChatMessage('Combat', `Fireball hit ${nearest.name} for ${damage} damage!`, 'system');
+                if (nearest.currentHp <= 0) handleMonsterDeath(nearest);
+            } else {
+                addChatMessage('System', 'No targets in range!', 'system');
+            }
+        }
+        
+        function castHeal() {
+            const healing = 30 + currentPlayer.stats.magic;
+            currentPlayer.hp = Math.min(currentPlayer.maxHp, currentPlayer.hp + healing);
+            createParticle(currentPlayer.x, currentPlayer.y, currentPlayer.z, 0x00ff00, '💚');
+            addChatMessage('System', `Healed for ${healing} HP!`, 'system');
+        }
+        
+        function castLightning() {
+            const monstersInRange = monsters.filter(m => 
+                m.currentHp > 0 && Math.hypot(m.x - currentPlayer.x, m.z - currentPlayer.z) < 15
+            );
+            
+            const damage = 50 + currentPlayer.stats.magic * 3;
+            monstersInRange.forEach(monster => {
+                monster.currentHp -= damage;
+                createParticle(monster.x, monster.y, monster.z, 0xffff00, '⚡');
+                if (monster.currentHp <= 0) handleMonsterDeath(monster);
+            });
+            
+            addChatMessage('Combat', `Lightning struck ${monstersInRange.length} enemies for ${damage} damage each!`, 'system');
+        }
+        
+        function updateAbilityButtons() {
+            Object.keys(currentPlayer.abilities).forEach(name => {
+                const ability = currentPlayer.abilities[name];
+                const btn = document.getElementById(name + 'Btn');
+                if (btn) {
+                    if (ability.cooldown > 0) {
+                        btn.style.opacity = '0.5';
+                        btn.style.pointerEvents = 'none';
+                    } else {
+                        btn.style.opacity = '1';
+                        btn.style.pointerEvents = 'auto';
+                    }
+                }
+            });
+        }
+        
+        function findNearestMonster(maxDistance) {
+            let nearest = null;
+            let minDist = Infinity;
+            
+            monsters.forEach(monster => {
+                if (monster.currentHp > 0) {
+                    const dist = Math.hypot(monster.x - currentPlayer.x, monster.z - currentPlayer.z);
+                    if (dist < minDist && dist < maxDistance) {
+                        minDist = dist;
+                        nearest = monster;
+                    }
+                }
+            });
+            
+            return nearest;
+        }
+        
+        // Quest System
+        function toggleQuestPanel() {
+            const panel = document.getElementById('questPanel');
+            panel.classList.toggle('active');
+            if (panel.classList.contains('active')) {
+                renderQuests();
+            }
+        }
+        
+        function renderQuests() {
+            const availableDiv = document.getElementById('availableQuests');
+            const activeDiv = document.getElementById('activeQuestsPanel');
+            
+            availableDiv.innerHTML = '';
+            activeDiv.innerHTML = '';
+            
+            // Show available quests
+            QUESTS.forEach(quest => {
+                if (currentPlayer.level >= quest.level && 
+                    !currentPlayer.quests.completed.includes(quest.id) &&
+                    !currentPlayer.quests.active.some(q => q.id === quest.id)) {
+                    
+                    const questEl = document.createElement('div');
+                    questEl.className = 'quest-item';
+                    questEl.innerHTML = `
+                        <h4 style="color: #f39c12; margin-bottom: 0.5rem;">${quest.name}</h4>
+                        <p style="font-size: 0.9rem; margin-bottom: 0.5rem;">${quest.description}</p>
+                        <p style="font-size: 0.8rem; color: #95a5a6;">Rewards: ${quest.reward.xp} XP, ${quest.reward.gold} Gold</p>
+                        <button class="action-btn" style="margin-top: 0.5rem; padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="acceptQuest('${quest.id}')">Accept Quest</button>
+                    `;
+                    availableDiv.appendChild(questEl);
+                }
+            });
+            
+            // Show active quests
+            currentPlayer.quests.active.forEach(activeQuest => {
+                const quest = QUESTS.find(q => q.id === activeQuest.id);
+                if (quest) {
+                    const questEl = document.createElement('div');
+                    questEl.className = 'quest-item';
+                    questEl.style.borderColor = '#2ecc71';
+                    questEl.innerHTML = `
+                        <h4 style="color: #2ecc71; margin-bottom: 0.5rem;">${quest.name}</h4>
+                        <p style="font-size: 0.9rem; margin-bottom: 0.5rem;">${quest.description}</p>
+                        <p style="font-size: 0.8rem; color: #2ecc71;">Progress: ${activeQuest.progress || 0}/${quest.objective.count || 1}</p>
+                    `;
+                    activeDiv.appendChild(questEl);
+                }
+            });
+        }
+        
+        function acceptQuest(questId) {
+            const quest = QUESTS.find(q => q.id === questId);
+            if (quest) {
+                currentPlayer.quests.active.push({ id: questId, progress: 0 });
+                addChatMessage('Quest', `Accepted quest: ${quest.name}`, 'system');
+                renderQuests();
+            }
+        }
+        
+        function updateQuestProgress(type, target = null) {
+            currentPlayer.quests.active.forEach(activeQuest => {
+                const quest = QUESTS.find(q => q.id === activeQuest.id);
+                if (quest && quest.objective.type === type) {
+                    if (!target || quest.objective.target === 'any' || quest.objective.target === target) {
+                        activeQuest.progress = (activeQuest.progress || 0) + 1;
+                        
+                        if (activeQuest.progress >= (quest.objective.count || 1)) {
+                            completeQuest(quest);
+                        } else {
+                            addChatMessage('Quest', `Quest progress: ${activeQuest.progress}/${quest.objective.count}`, 'system');
+                        }
+                    }
+                }
+            });
+        }
+        
+        function completeQuest(quest) {
+            currentPlayer.quests.active = currentPlayer.quests.active.filter(q => q.id !== quest.id);
+            currentPlayer.quests.completed.push(quest.id);
+            
+            currentPlayer.xp += quest.reward.xp;
+            currentPlayer.gold += quest.reward.gold;
+            
+            if (quest.reward.item) {
+                currentPlayer.inventory[quest.reward.item] = (currentPlayer.inventory[quest.reward.item] || 0) + 1;
+            }
+            
+            addChatMessage('Quest Complete', `🎉 ${quest.name} completed! +${quest.reward.xp} XP, +${quest.reward.gold} Gold`, 'system');
+            checkLevelUp();
+            updateStats();
+            renderInventory();
+        }
+        
+        // Shop System
+        function openShop() {
+            document.getElementById('shopPanel').classList.add('active');
+            renderShop();
+        }
+        
+        function closeShop() {
+            document.getElementById('shopPanel').classList.remove('active');
+        }
+        
+        function renderShop() {
+            const shopDiv = document.getElementById('shopItems');
+            document.getElementById('shopGold').textContent = currentPlayer.gold;
+            shopDiv.innerHTML = '';
+            
+            Object.entries(EQUIPMENT).forEach(([category, items]) => {
+                const categoryEl = document.createElement('div');
+                categoryEl.style.marginBottom = '1.5rem';
+                categoryEl.innerHTML = `<h3 style="color: #3498db; margin-bottom: 0.5rem;">${category.charAt(0).toUpperCase() + category.slice(1)}</h3>`;
+                
+                Object.entries(items).forEach(([name, stats]) => {
+                    const itemEl = document.createElement('div');
+                    itemEl.style.background = 'rgba(52, 73, 94, 0.5)';
+                    itemEl.style.padding = '1rem';
+                    itemEl.style.borderRadius = '5px';
+                    itemEl.style.marginBottom = '0.5rem';
+                    
+                    const statsText = Object.entries(stats).filter(([k, v]) => k !== 'value' && k !== 'level').map(([k, v]) => `+${v} ${k}`).join(', ');
+                    
+                    itemEl.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>${name}</strong> (Lv.${stats.level})
+                                <div style="font-size: 0.8rem; color: #95a5a6;">${statsText}</div>
+                            </div>
+                            <button class="action-btn" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="buyItem('${category}', '${name}')">
+                                💰 ${stats.value}
+                            </button>
+                        </div>
+                    `;
+                    categoryEl.appendChild(itemEl);
+                });
+                
+                shopDiv.appendChild(categoryEl);
+            });
+        }
+        
+        function buyItem(category, itemName) {
+            const item = EQUIPMENT[category][itemName];
+            
+            if (currentPlayer.level < item.level) {
+                addChatMessage('Shop', `You need to be level ${item.level} to buy this!`, 'system');
+                return;
+            }
+            
+            if (currentPlayer.gold < item.value) {
+                addChatMessage('Shop', 'Not enough gold!', 'system');
+                return;
+            }
+            
+            currentPlayer.gold -= item.value;
+            
+            const slot = category.slice(0, -1); // Remove 's' from category
+            currentPlayer.equipment[slot] = itemName;
+            
+            // Apply stats
+            if (item.damage) currentPlayer.stats.strength += item.damage;
+            if (item.defense) currentPlayer.stats.defense += item.defense;
+            if (item.magic) currentPlayer.stats.magic += item.magic;
+            if (item.speed) currentPlayer.stats.speed += item.speed;
+            
+            addChatMessage('Shop', `Purchased ${itemName}!`, 'system');
+            updateStats();
+            renderShop();
+        }
+        
+        // Achievement System
+        function openAchievements() {
+            document.getElementById('achievementsPanel').classList.add('active');
+            renderAchievements();
+        }
+        
+        function closeAchievements() {
+            document.getElementById('achievementsPanel').classList.remove('active');
+        }
+        
+        function renderAchievements() {
+            const list = document.getElementById('achievementsList');
+            list.innerHTML = '';
+            
+            ACHIEVEMENTS.forEach(achievement => {
+                const unlocked = currentPlayer.achievements.includes(achievement.id);
+                const achEl = document.createElement('div');
+                achEl.style.background = unlocked ? 'rgba(46, 204, 113, 0.2)' : 'rgba(52, 73, 94, 0.5)';
+                achEl.style.padding = '1rem';
+                achEl.style.borderRadius = '10px';
+                achEl.style.marginBottom = '0.5rem';
+                achEl.style.borderLeft = unlocked ? '4px solid #2ecc71' : '4px solid #34495e';
+                
+                achEl.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div style="font-size: 2rem;">${achievement.icon}</div>
+                        <div style="flex: 1;">
+                            <strong style="color: ${unlocked ? '#2ecc71' : '#95a5a6'};">${achievement.name}</strong>
+                            <div style="font-size: 0.9rem; color: #95a5a6;">${achievement.description}</div>
+                        </div>
+                        ${unlocked ? '<div style="color: #2ecc71; font-size: 1.5rem;">✓</div>' : ''}
+                    </div>
+                `;
+                list.appendChild(achEl);
+            });
+        }
+        
+        function checkAchievement(id) {
+            if (!currentPlayer.achievements.includes(id)) {
+                currentPlayer.achievements.push(id);
+                const achievement = ACHIEVEMENTS.find(a => a.id === id);
+                if (achievement) {
+                    addChatMessage('Achievement', `🏆 Unlocked: ${achievement.name}!`, 'system');
+                }
+            }
+        }
+        
+        // Particle System
+        function createParticle(x, y, z, color, emoji) {
+            const particle = {
+                mesh: null,
+                x, y, z,
+                lifetime: 1000,
+                created: Date.now()
+            };
+            
+            // Create visual particle
+            const geometry = new THREE.SphereGeometry(0.3, 8, 8);
+            const material = new THREE.MeshBasicMaterial({ color: color });
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.position.set(x, y + 1, z);
+            particle.mesh = mesh;
+            scene.add(mesh);
+            
+            particles.push(particle);
+        }
+        
+        function updateParticles() {
+            const now = Date.now();
+            particles = particles.filter(particle => {
+                const age = now - particle.created;
+                if (age > particle.lifetime) {
+                    scene.remove(particle.mesh);
+                    return false;
+                }
+                
+                // Animate particle
+                particle.mesh.position.y += 0.02;
+                particle.mesh.material.opacity = 1 - (age / particle.lifetime);
+                particle.mesh.material.transparent = true;
+                
+                return true;
+            });
+        }
+        
+        // Day/Night Cycle
+        function updateDayNightCycle() {
+            timeOfDay += dayNightSpeed;
+            if (timeOfDay >= 24) timeOfDay = 0;
+            
+            // Update lighting based on time
+            const hour = Math.floor(timeOfDay);
+            let intensity, color;
+            
+            if (hour >= 6 && hour < 18) {
+                // Day
+                intensity = 0.8;
+                color = 0xffffff;
+                scene.background = new THREE.Color(0x87CEEB);
+                document.getElementById('timeIcon').textContent = '☀️';
+                document.getElementById('timeText').textContent = 'Day';
+            } else {
+                // Night
+                intensity = 0.3;
+                color = 0x6666ff;
+                scene.background = new THREE.Color(0x001a33);
+                document.getElementById('timeIcon').textContent = '🌙';
+                document.getElementById('timeText').textContent = 'Night';
+            }
+            
+            scene.children.forEach(child => {
+                if (child instanceof THREE.DirectionalLight) {
+                    child.intensity = intensity;
+                    child.color.setHex(color);
+                }
+            });
+        }
+        
+        // Mini-map
+        function updateMiniMap() {
+            const miniMapCanvas = document.getElementById('miniMapCanvas');
+            if (!miniMapCanvas) return;
+            
+            const ctx = miniMapCanvas.getContext('2d');
+            ctx.clearRect(0, 0, 150, 150);
+            
+            // Draw background
+            ctx.fillStyle = '#2d5016';
+            ctx.fillRect(0, 0, 150, 150);
+            
+            const scale = 150 / (MAP_SIZE * 2);
+            const centerX = 75;
+            const centerY = 75;
+            
+            // Draw monsters
+            monsters.forEach(monster => {
+                if (monster.currentHp > 0) {
+                    const x = centerX + (monster.x - currentPlayer.x) * scale;
+                    const y = centerY + (monster.z - currentPlayer.z) * scale;
+                    ctx.fillStyle = '#ff0000';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+            
+            // Draw resources
+            resources.forEach(resource => {
+                if (resource.available) {
+                    const x = centerX + (resource.x - currentPlayer.x) * scale;
+                    const y = centerY + (resource.z - currentPlayer.z) * scale;
+                    ctx.fillStyle = '#00ff00';
+                    ctx.fillRect(x - 2, y - 2, 4, 4);
+                }
+            });
+            
+            // Draw other players
+            Object.values(players).forEach(player => {
+                const x = centerX + (player.x - currentPlayer.x) * scale;
+                const y = centerY + (player.z - currentPlayer.z) * scale;
+                ctx.fillStyle = '#3498db';
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            // Draw player (center)
+            ctx.fillStyle = '#f39c12';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 4, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw direction
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(centerX + Math.sin(currentPlayer.rotation) * 10, centerY + Math.cos(currentPlayer.rotation) * 10);
+            ctx.stroke();
+        }
+        
+        // Loot System
+        function handleMonsterDeath(monster) {
+            updateQuestProgress('kill', monster.name);
+            checkAchievement('first_kill');
+            if (monster.name === 'Dragon') checkAchievement('dragon_slayer');
+            
+            // Drop loot
+            const goldDrop = Math.floor(monster.xp * 0.5 + Math.random() * 20);
+            currentPlayer.gold += goldDrop;
+            addChatMessage('Loot', `+${goldDrop} gold!`, 'system');
+            
+            // Chance to drop equipment
+            if (Math.random() < 0.1) {
+                const rareDrop = ['Iron Sword', 'Steel Armor', 'Magic Staff'][Math.floor(Math.random() * 3)];
+                currentPlayer.inventory[rareDrop] = (currentPlayer.inventory[rareDrop] || 0) + 1;
+                addChatMessage('Loot', `Found ${rareDrop}!`, 'system');
+            }
+            
+            if (currentPlayer.gold >= 1000) checkAchievement('rich');
+        }
+        
+        function checkLevelUp() {
+            const xpNeeded = currentPlayer.level * 100;
+            if (currentPlayer.xp >= xpNeeded) {
+                currentPlayer.level++;
+                currentPlayer.xp = 0;
+                currentPlayer.maxHp += 10;
+                currentPlayer.maxMp += 10;
+                currentPlayer.hp = currentPlayer.maxHp;
+                currentPlayer.mp = currentPlayer.maxMp;
+                currentPlayer.stats.strength += 2;
+                currentPlayer.stats.defense += 2;
+                currentPlayer.stats.magic += 2;
+                currentPlayer.stats.speed += 1;
+                
+                addChatMessage('Level Up!', `🎉 You are now level ${currentPlayer.level}!`, 'system');
+                createParticle(currentPlayer.x, currentPlayer.y, currentPlayer.z, 0xffd700, '🌟');
+                
+                if (currentPlayer.level >= 10) checkAchievement('level_10');
+            }
+        }
+        
+        // Enhanced game loop additions
+        setInterval(() => {
+            // Update ability cooldowns
+            Object.values(currentPlayer.abilities).forEach(ability => {
+                if (ability.cooldown > 0) {
+                    ability.cooldown = Math.max(0, ability.cooldown - 100);
+                }
+            });
+            
+            // Regenerate MP
+            currentPlayer.mp = Math.min(currentPlayer.maxMp, currentPlayer.mp + 0.5);
+            
+            // Update particles
+            updateParticles();
+            
+            // Update day/night
+            updateDayNightCycle();
+            
+            // Update mini-map
+            updateMiniMap();
+            
+            updateStats();
+        }, 100);
+        
+        // Keyboard shortcuts for abilities
+        window.addEventListener('keydown', (e) => {
+            if (e.key === '1') useAbility('fireball');
+            if (e.key === '2') useAbility('heal');
+            if (e.key === '3') useAbility('lightning');
+        });
 
         // Cleanup on page unload
         window.addEventListener('beforeunload', () => {
