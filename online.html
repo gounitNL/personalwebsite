@@ -14,7 +14,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
             color: #ecf0f1;
-            overflow: hidden;
+            overflow: auto;
         }
 
         #loginScreen {
@@ -28,6 +28,7 @@
             align-items: center;
             justify-content: center;
             z-index: 2000;
+            overflow-y: auto;
         }
 
         #loginScreen.hidden { display: none; }
@@ -1008,21 +1009,37 @@ const analytics = getAnalytics(app);
         function initFirebase() {
             try {
                 if (typeof firebase === 'undefined') {
-                    console.error('Firebase SDK not loaded yet!');
+                    console.log('Firebase SDK not loaded yet, retrying...');
                     setTimeout(initFirebase, 100); // Retry after 100ms
                     return;
                 }
                 
-                firebase.initializeApp(firebaseConfig);
+                // Check if already initialized
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                    console.log('Firebase initialized successfully!');
+                } else {
+                    console.log('Firebase already initialized');
+                }
+                
                 database = firebase.database();
                 auth = firebase.auth();
-                console.log('Firebase initialized successfully!');
+                console.log('Firebase services ready!');
                 
                 // Setup auth state listener after initialization
                 setupAuthListener();
             } catch (error) {
                 console.error('Firebase initialization error:', error);
-                alert('Failed to connect to Firebase. Please refresh the page.');
+                // Don't alert immediately, retry a few times
+                if (!window.firebaseRetryCount) window.firebaseRetryCount = 0;
+                window.firebaseRetryCount++;
+                
+                if (window.firebaseRetryCount < 10) {
+                    console.log('Retrying Firebase initialization...');
+                    setTimeout(initFirebase, 200);
+                } else {
+                    alert('Failed to connect to Firebase. Please refresh the page.');
+                }
             }
         }
 
