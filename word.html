@@ -172,6 +172,9 @@
         <div class="game-header">
             <div class="game-title">🎯 Hangman</div>
             <div class="game-controls">
+                <button onclick="setHangmanDifficulty('easy')">Easy</button>
+                <button onclick="setHangmanDifficulty('medium')">Medium</button>
+                <button onclick="setHangmanDifficulty('hard')">Hard</button>
                 <div class="score">Lives: <span id="hangman-lives">6</span></div>
                 <button onclick="initHangman()">New Game</button>
                 <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
@@ -190,6 +193,9 @@
         <div class="game-header">
             <div class="game-title">🔤 Wordle</div>
             <div class="game-controls">
+                <button onclick="setWordleLength(4)">4 Letters</button>
+                <button onclick="setWordleLength(5)">5 Letters</button>
+                <button onclick="setWordleLength(6)">6 Letters</button>
                 <div class="score">Attempts: <span id="wordle-attempts">0</span> / 6</div>
                 <button onclick="initWordle()">New Game</button>
                 <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
@@ -208,6 +214,9 @@
         <div class="game-header">
             <div class="game-title">🔀 Anagram</div>
             <div class="game-controls">
+                <button onclick="setAnagramDifficulty('easy')">Easy</button>
+                <button onclick="setAnagramDifficulty('medium')">Medium</button>
+                <button onclick="setAnagramDifficulty('hard')">Hard</button>
                 <div class="score">Score: <span id="anagram-score">0</span></div>
                 <button onclick="initAnagram()">New Word</button>
                 <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
@@ -227,6 +236,9 @@
         <div class="game-header">
             <div class="game-title">⌨️ Typing Test</div>
             <div class="game-controls">
+                <button onclick="setTypingDifficulty('easy')">Short</button>
+                <button onclick="setTypingDifficulty('medium')">Medium</button>
+                <button onclick="setTypingDifficulty('hard')">Long</button>
                 <button onclick="initTypingTest()">New Test</button>
                 <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
             </div>
@@ -282,13 +294,24 @@
         }
 
         // HANGMAN
-        const hangmanWords = ['JAVASCRIPT', 'PYTHON', 'PROGRAMMING', 'DEVELOPER', 'COMPUTER', 'KEYBOARD', 'ALGORITHM', 'DATABASE'];
+        const hangmanWordsByDifficulty = {
+            easy: ['CAT', 'DOG', 'BIRD', 'FISH', 'BOOK', 'TREE', 'MOON', 'STAR', 'RAIN', 'SNOW', 'WIND', 'FIRE', 'HOME', 'LOVE', 'PLAY'],
+            medium: ['COFFEE', 'GUITAR', 'LAPTOP', 'PLANET', 'GARDEN', 'PUZZLE', 'ROCKET', 'CASTLE', 'JUNGLE', 'MUSEUM', 'BANANA', 'ISLAND'],
+            hard: ['JAVASCRIPT', 'PYTHON', 'PROGRAMMING', 'DEVELOPER', 'COMPUTER', 'KEYBOARD', 'ALGORITHM', 'DATABASE', 'PHILOSOPHY', 'CHEMISTRY', 'MYTHOLOGY']
+        };
+        let hangmanDifficulty = 'medium';
         let hangmanWord = '', hangmanGuessed = [], hangmanLives = 6;
 
+        function setHangmanDifficulty(diff) {
+            hangmanDifficulty = diff;
+            initHangman();
+        }
+
         function initHangman() {
-            hangmanWord = hangmanWords[Math.floor(Math.random() * hangmanWords.length)];
+            const words = hangmanWordsByDifficulty[hangmanDifficulty];
+            hangmanWord = words[Math.floor(Math.random() * words.length)];
             hangmanGuessed = [];
-            hangmanLives = 6;
+            hangmanLives = hangmanDifficulty === 'easy' ? 8 : hangmanDifficulty === 'medium' ? 6 : 5;
             document.getElementById('hangman-lives').textContent = hangmanLives;
             document.getElementById('hangman-message').innerHTML = '';
             renderHangman();
@@ -344,15 +367,27 @@
         }
 
         // WORDLE
-        const wordleWords = ['REACT', 'SWIFT', 'FLASK', 'REDIS', 'NGINX', 'LINUX', 'BADGE', 'CRANE'];
+        const wordleWordsByLength = {
+            4: ['BOAT', 'MASK', 'DUCK', 'FROG', 'JUMP', 'KITE', 'LAMP', 'NEST', 'PIPE', 'QUIZ', 'ROCK', 'SILK', 'TENT', 'VASE', 'WAVE', 'YOGA', 'ZOOM'],
+            5: ['REACT', 'SWIFT', 'FLASK', 'REDIS', 'NGINX', 'LINUX', 'BADGE', 'CRANE', 'FLAME', 'GLOBE', 'HEART', 'JOKER', 'LASER', 'MUSIC', 'OCEAN', 'PEARL', 'QUEEN', 'SCALE', 'TRAIN', 'UNITY', 'VILLA', 'WORLD'],
+            6: ['JUNGLE', 'MIRROR', 'PUZZLE', 'RHYTHM', 'SAMPLE', 'TEMPLE', 'UNIQUE', 'VECTOR', 'WIZARD', 'YELLOW', 'ZENITH', 'BRIDGE', 'CREATE', 'DRAGON', 'EMPIRE', 'FLOWER']
+        };
+        let wordleLength = 5;
         let wordleTarget = '', wordleAttempts = 0;
 
+        function setWordleLength(length) {
+            wordleLength = length;
+            initWordle();
+        }
+
         function initWordle() {
-            wordleTarget = wordleWords[Math.floor(Math.random() * wordleWords.length)];
+            const words = wordleWordsByLength[wordleLength];
+            wordleTarget = words[Math.floor(Math.random() * words.length)];
             wordleAttempts = 0;
             document.getElementById('wordle-attempts').textContent = '0';
             document.getElementById('wordle-input').value = '';
             document.getElementById('wordle-input').disabled = false;
+            document.getElementById('wordle-input').maxLength = wordleLength;
             renderWordleGrid();
         }
 
@@ -362,7 +397,8 @@
             for (let i = 0; i < 6; i++) {
                 const row = document.createElement('div');
                 row.className = 'wordle-row';
-                for (let j = 0; j < 5; j++) {
+                row.style.gridTemplateColumns = `repeat(${wordleLength}, min(60px, 15vw))`;
+                for (let j = 0; j < wordleLength; j++) {
                     const cell = document.createElement('div');
                     cell.className = 'wordle-cell';
                     row.appendChild(cell);
@@ -375,15 +411,15 @@
             const input = document.getElementById('wordle-input');
             const guess = input.value.toUpperCase();
             
-            if (guess.length !== 5) {
-                alert('Please enter a 5-letter word!');
+            if (guess.length !== wordleLength) {
+                alert(`Please enter a ${wordleLength}-letter word!`);
                 return;
             }
             
             const row = document.querySelectorAll('.wordle-row')[wordleAttempts];
             const cells = row.querySelectorAll('.wordle-cell');
             
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < wordleLength; i++) {
                 cells[i].textContent = guess[i];
                 if (guess[i] === wordleTarget[i]) {
                     cells[i].classList.add('correct');
@@ -412,17 +448,46 @@
         });
 
         // ANAGRAM
-        const anagramWords = [
-            { word: 'LISTEN', scrambled: 'SILENT' },
-            { word: 'EARTH', scrambled: 'HEART' },
-            { word: 'NIGHT', scrambled: 'THING' },
-            { word: 'BELOW', scrambled: 'ELBOW' },
-            { word: 'STUDY', scrambled: 'DUSTY' }
-        ];
+        const anagramWordsByDifficulty = {
+            easy: [
+                { word: 'CAT', scrambled: 'ACT' },
+                { word: 'DOG', scrambled: 'GOD' },
+                { word: 'STOP', scrambled: 'POTS' },
+                { word: 'RAIL', scrambled: 'LIAR' },
+                { word: 'MEAT', scrambled: 'TEAM' },
+                { word: 'ARTS', scrambled: 'STAR' },
+                { word: 'LOOP', scrambled: 'POOL' }
+            ],
+            medium: [
+                { word: 'LISTEN', scrambled: 'SILENT' },
+                { word: 'EARTH', scrambled: 'HEART' },
+                { word: 'NIGHT', scrambled: 'THING' },
+                { word: 'BELOW', scrambled: 'ELBOW' },
+                { word: 'STUDY', scrambled: 'DUSTY' },
+                { word: 'ANGEL', scrambled: 'GLEAN' },
+                { word: 'PEACH', scrambled: 'CHEAP' }
+            ],
+            hard: [
+                { word: 'DESEGREGATION', scrambled: 'GETARANDOGESE' },
+                { word: 'CONVERSATION', scrambled: 'CONSERVATIONAL' },
+                { word: 'LEGISLATION', scrambled: 'ALLEGIATIONS' },
+                { word: 'DICTIONARY', scrambled: 'INDICATORY' },
+                { word: 'GENERATION', scrambled: 'REGENERATION' }
+            ]
+        };
+        let anagramDifficulty = 'medium';
         let currentAnagram = null, anagramScore = 0;
 
+        function setAnagramDifficulty(diff) {
+            anagramDifficulty = diff;
+            anagramScore = 0;
+            document.getElementById('anagram-score').textContent = '0';
+            initAnagram();
+        }
+
         function initAnagram() {
-            currentAnagram = anagramWords[Math.floor(Math.random() * anagramWords.length)];
+            const words = anagramWordsByDifficulty[anagramDifficulty];
+            currentAnagram = words[Math.floor(Math.random() * words.length)];
             const scrambled = currentAnagram.word.split('').sort(() => Math.random() - 0.5).join('');
             document.getElementById('anagram-word').textContent = scrambled;
             document.getElementById('anagram-input').value = '';
@@ -448,15 +513,35 @@
         });
 
         // TYPING TEST
-        const typingTexts = [
-            "The quick brown fox jumps over the lazy dog.",
-            "Programming is the art of telling a computer what to do.",
-            "Practice makes perfect. Keep typing every day!"
-        ];
+        const typingTextsByDifficulty = {
+            easy: [
+                "The quick brown fox jumps over the lazy dog.",
+                "Pack my box with five dozen liquor jugs.",
+                "How vexingly quick daft zebras jump!"
+            ],
+            medium: [
+                "Programming is the art of telling a computer what to do.",
+                "Practice makes perfect. Keep typing every day!",
+                "Technology is best when it brings people together.",
+                "The only way to do great work is to love what you do."
+            ],
+            hard: [
+                "In the rapidly evolving landscape of modern technology, innovation drives progress and shapes our collective future.",
+                "Computational complexity theory examines the intrinsic difficulty of computational problems and classifies them according to their resource requirements.",
+                "Artificial intelligence and machine learning algorithms continue to revolutionize industries by automating complex decision-making processes."
+            ]
+        };
+        let typingDifficulty = 'medium';
         let typingStartTime = null, typingTimerInterval = null, typingTargetText = '';
 
+        function setTypingDifficulty(diff) {
+            typingDifficulty = diff;
+            initTypingTest();
+        }
+
         function initTypingTest() {
-            typingTargetText = typingTexts[Math.floor(Math.random() * typingTexts.length)];
+            const texts = typingTextsByDifficulty[typingDifficulty];
+            typingTargetText = texts[Math.floor(Math.random() * texts.length)];
             document.getElementById('typing-text').textContent = typingTargetText;
             document.getElementById('typing-input').value = '';
             document.getElementById('typing-input').disabled = false;
