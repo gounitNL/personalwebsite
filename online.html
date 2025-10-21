@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FantasyQuest MMORPG - PlayZone</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: #ecf0f1;
+            overflow: hidden;
+        }
+
+        #loginScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        #loginScreen.hidden { display: none; }
+
+        .login-box {
+            background: white;
+            padding: 3rem;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .login-box h1 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-size: 2rem;
+        }
+
+        .login-box p {
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+
+        .login-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .login-box button {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .login-box button:hover {
+            transform: scale(1.05);
+        }
+
+        #gameContainer {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        #gameContainer.hidden { display: none; }
+
+        /* Left Sidebar - Character Info */
+        #leftSidebar {
+            width: 250px;
+            background: rgba(44, 62, 80, 0.95);
+            padding: 1rem;
+            overflow-y: auto;
+            border-right: 2px solid #34495e;
+        }
+
+        .character-panel {
+            background: rgba(52, 73, 94, 0.8);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .character-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-bar {
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #34495e;
+        }
+
+        .progress-fill {
+            height: 100%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .hp-bar { background: linear-gradient(90deg, #e74c3c, #c0392b); }
+        .xp-bar { background: linear-gradient(90deg, #3498db, #2980b9); }
+
+        .skills-panel {
+            background: rgba(52, 73, 94, 0.8);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .skill-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem;
+            margin-bottom: 0.3rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+        }
+
+        .skill-name { font-weight: bold; }
+        .skill-level { color: #f39c12; }
+
+        /* Center Game Area */
+        #gameArea {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        #gameHeader {
+            background: rgba(44, 62, 80, 0.95);
+            padding: 1rem 2rem;
+            border-bottom: 2px solid #34495e;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #gameTitle {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(90deg, #f39c12, #e67e22);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        #onlineCount {
+            font-size: 0.9rem;
+            color: #2ecc71;
+        }
+
+        #canvas {
+            flex: 1;
+            background: #1e2a33;
+            cursor: crosshair;
+        }
+
+        /* Right Sidebar - Chat & Actions */
+        #rightSidebar {
+            width: 300px;
+            background: rgba(44, 62, 80, 0.95);
+            display: flex;
+            flex-direction: column;
+            border-left: 2px solid #34495e;
+        }
+
+        #chatArea {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .chat-message {
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            background: rgba(52, 73, 94, 0.5);
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+
+        .chat-player {
+            color: #3498db;
+            font-weight: bold;
+        }
+
+        .chat-system {
+            color: #f39c12;
+            font-style: italic;
+        }
+
+        #chatInput {
+            display: flex;
+            padding: 1rem;
+            border-top: 1px solid #34495e;
+        }
+
+        #chatInput input {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid #34495e;
+            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+        }
+
+        #chatInput button {
+            margin-left: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #chatInput button:hover {
+            background: #2980b9;
+        }
+
+        .action-buttons {
+            padding: 1rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            border-top: 1px solid #34495e;
+        }
+
+        .action-btn {
+            padding: 0.8rem;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .action-btn.gather {
+            background: linear-gradient(135deg, #27ae60, #229954);
+        }
+
+        .action-btn.craft {
+            background: linear-gradient(135deg, #8e44ad, #71368a);
+        }
+
+        .action-btn.quest {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+
+        .inventory-panel {
+            background: rgba(52, 73, 94, 0.8);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+        }
+
+        .inventory-slot {
+            aspect-ratio: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid #34495e;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            position: relative;
+        }
+
+        .inventory-slot.has-item {
+            border-color: #f39c12;
+            background: rgba(243, 156, 18, 0.1);
+        }
+
+        .item-count {
+            position: absolute;
+            bottom: 2px;
+            right: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        /* Player sprite on canvas */
+        .sprite {
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            transition: all 0.2s;
+        }
+
+        .nameplate {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            white-space: nowrap;
+            transform: translateX(-50%);
+        }
+
+        @media (max-width: 768px) {
+            #leftSidebar { width: 200px; }
+            #rightSidebar { width: 250px; }
+        }
+
+        @media (max-width: 480px) {
+            #leftSidebar, #rightSidebar { display: none; }
+            #gameHeader { padding: 0.5rem; }
+            #gameTitle { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen">
+        <div class="login-box">
+            <h1>⚔️ FantasyQuest MMORPG</h1>
+            <p>Enter your character name to begin your adventure!</p>
+            <input type="text" id="usernameInput" placeholder="Enter character name" maxlength="20">
+            <button onclick="login()">Start Adventure</button>
+            <p style="margin-top: 1rem; font-size: 0.8rem; color: #999;">Play with other players in real-time!</p>
+        </div>
+    </div>
+
+    <!-- Game Container -->
+    <div id="gameContainer" class="hidden">
+        <!-- Left Sidebar -->
+        <div id="leftSidebar">
+            <div class="character-panel">
+                <div class="character-name" id="playerName">Adventurer</div>
+                <div class="stat-bar">
+                    <div class="stat-label">Combat Level: <span id="combatLevel">1</span></div>
+                </div>
+                <div class="stat-bar">
+                    <div class="stat-label">HP</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill hp-bar" id="hpBar" style="width: 100%">100/100</div>
+                    </div>
+                </div>
+                <div class="stat-bar">
+                    <div class="stat-label">XP</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill xp-bar" id="xpBar" style="width: 0%">0/100</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="skills-panel">
+                <h3 style="margin-bottom: 0.5rem; color: #f39c12;">⚔️ Skills</h3>
+                <div class="skill-item">
+                    <span class="skill-name">Combat</span>
+                    <span class="skill-level" id="combatSkill">1</span>
+                </div>
+                <div class="skill-item">
+                    <span class="skill-name">Mining</span>
+                    <span class="skill-level" id="miningSkill">1</span>
+                </div>
+                <div class="skill-item">
+                    <span class="skill-name">Woodcutting</span>
+                    <span class="skill-level" id="woodcuttingSkill">1</span>
+                </div>
+                <div class="skill-item">
+                    <span class="skill-name">Fishing</span>
+                    <span class="skill-level" id="fishingSkill">1</span>
+                </div>
+                <div class="skill-item">
+                    <span class="skill-name">Crafting</span>
+                    <span class="skill-level" id="craftingSkill">1</span>
+                </div>
+            </div>
+
+            <div class="inventory-panel">
+                <h3 style="margin-bottom: 0.5rem; color: #f39c12;">🎒 Inventory</h3>
+                <div class="inventory-grid" id="inventoryGrid"></div>
+            </div>
+        </div>
+
+        <!-- Center Game Area -->
+        <div id="gameArea">
+            <div id="gameHeader">
+                <div>
+                    <div id="gameTitle">⚔️ FantasyQuest Online</div>
+                    <a href="index.html" style="color: #95a5a6; text-decoration: none; font-size: 0.9rem;">← Back to Home</a>
+                </div>
+                <div id="onlineCount">🟢 0 players online</div>
+            </div>
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div id="rightSidebar">
+            <div class="action-buttons">
+                <button class="action-btn" onclick="attackNearestMonster()">⚔️ Attack</button>
+                <button class="action-btn gather" onclick="gatherResource()">⛏️ Gather</button>
+                <button class="action-btn craft" onclick="openCrafting()">🔨 Craft</button>
+                <button class="action-btn quest" onclick="openQuests()">📜 Quests</button>
+            </div>
+            
+            <div id="chatArea"></div>
+            
+            <div id="chatInput">
+                <input type="text" id="messageInput" placeholder="Type a message..." maxlength="200">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBqZL5fJ9K7nX8yQ2wM4vH6dR3tP5cE8aG",
+            authDomain: "fantasyquest-mmorpg.firebaseapp.com",
+            databaseURL: "https://fantasyquest-mmorpg-default-rtdb.firebaseio.com",
+            projectId: "fantasyquest-mmorpg",
+            storageBucket: "fantasyquest-mmorpg.appspot.com",
+            messagingSenderId: "123456789012",
+            appId: "1:123456789012:web:abcdef123456"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Game State
+        let currentPlayer = {
+            id: null,
+            name: '',
+            x: 400,
+            y: 300,
+            hp: 100,
+            maxHp: 100,
+            xp: 0,
+            level: 1,
+            skills: {
+                combat: 1,
+                mining: 1,
+                woodcutting: 1,
+                fishing: 1,
+                crafting: 1
+            },
+            inventory: {}
+        };
+
+        let players = {};
+        let monsters = [];
+        let resources = [];
+        let canvas, ctx;
+        let playersRef, chatRef;
+
+        // Login
+        function login() {
+            const username = document.getElementById('usernameInput').value.trim();
+            if (!username || username.length < 3) {
+                alert('Please enter a name with at least 3 characters!');
+                return;
+            }
+
+            currentPlayer.name = username;
+            currentPlayer.id = 'player_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('gameContainer').classList.remove('hidden');
+            
+            initGame();
+        }
+
+        // Initialize Game
+        function initGame() {
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            
+            // Set canvas size
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            // Update UI
+            document.getElementById('playerName').textContent = currentPlayer.name;
+            updateStats();
+            renderInventory();
+
+            // Firebase references
+            playersRef = database.ref('players');
+            chatRef = database.ref('chat');
+
+            // Add player to database
+            const playerRef = playersRef.child(currentPlayer.id);
+            playerRef.set({
+                name: currentPlayer.name,
+                x: currentPlayer.x,
+                y: currentPlayer.y,
+                level: currentPlayer.level,
+                lastActive: Date.now()
+            });
+
+            // Remove player on disconnect
+            playerRef.onDisconnect().remove();
+
+            // Listen for other players
+            playersRef.on('value', (snapshot) => {
+                players = {};
+                let onlineCount = 0;
+                snapshot.forEach((child) => {
+                    const player = child.val();
+                    if (child.key !== currentPlayer.id) {
+                        players[child.key] = player;
+                    }
+                    onlineCount++;
+                });
+                document.getElementById('onlineCount').textContent = `🟢 ${onlineCount} players online`;
+            });
+
+            // Listen for chat messages
+            chatRef.limitToLast(20).on('child_added', (snapshot) => {
+                const msg = snapshot.val();
+                addChatMessage(msg.player, msg.message, msg.type || 'player');
+            });
+
+            // Initialize game entities
+            initMonsters();
+            initResources();
+
+            // Controls
+            canvas.addEventListener('click', handleCanvasClick);
+            document.getElementById('messageInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendMessage();
+            });
+
+            // Game loop
+            setInterval(gameLoop, 1000 / 30); // 30 FPS
+            setInterval(updatePlayerPosition, 100);
+
+            // Add system message
+            addChatMessage('System', `${currentPlayer.name} joined the adventure!`, 'system');
+        }
+
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+
+        function updateStats() {
+            document.getElementById('combatLevel').textContent = currentPlayer.level;
+            document.getElementById('hpBar').style.width = (currentPlayer.hp / currentPlayer.maxHp * 100) + '%';
+            document.getElementById('hpBar').textContent = `${currentPlayer.hp}/${currentPlayer.maxHp}`;
+            
+            const xpNeeded = currentPlayer.level * 100;
+            document.getElementById('xpBar').style.width = (currentPlayer.xp / xpNeeded * 100) + '%';
+            document.getElementById('xpBar').textContent = `${currentPlayer.xp}/${xpNeeded}`;
+
+            document.getElementById('combatSkill').textContent = currentPlayer.skills.combat;
+            document.getElementById('miningSkill').textContent = currentPlayer.skills.mining;
+            document.getElementById('woodcuttingSkill').textContent = currentPlayer.skills.woodcutting;
+            document.getElementById('fishingSkill').textContent = currentPlayer.skills.fishing;
+            document.getElementById('craftingSkill').textContent = currentPlayer.skills.crafting;
+        }
+
+        function renderInventory() {
+            const grid = document.getElementById('inventoryGrid');
+            grid.innerHTML = '';
+            const items = ['⚔️', '🛡️', '💎', '🪓', '🎣', '🪵', '🪨', '🐟'];
+            
+            for (let i = 0; i < 16; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'inventory-slot';
+                
+                const itemName = Object.keys(currentPlayer.inventory)[i];
+                if (itemName && currentPlayer.inventory[itemName]) {
+                    slot.classList.add('has-item');
+                    slot.innerHTML = items[i % items.length];
+                    const count = document.createElement('div');
+                    count.className = 'item-count';
+                    count.textContent = currentPlayer.inventory[itemName];
+                    slot.appendChild(count);
+                }
+                
+                grid.appendChild(slot);
+            }
+        }
+
+        function initMonsters() {
+            const monsterTypes = [
+                { name: 'Goblin', emoji: '👺', hp: 30, xp: 20, level: 1 },
+                { name: 'Skeleton', emoji: '💀', hp: 50, xp: 35, level: 2 },
+                { name: 'Orc', emoji: '👹', hp: 80, xp: 50, level: 3 },
+                { name: 'Dragon', emoji: '🐉', hp: 200, xp: 150, level: 5 }
+            ];
+
+            for (let i = 0; i < 10; i++) {
+                const type = monsterTypes[Math.floor(Math.random() * monsterTypes.length)];
+                monsters.push({
+                    id: 'monster_' + i,
+                    ...type,
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    currentHp: type.hp,
+                    maxHp: type.hp
+                });
+            }
+        }
+
+        function initResources() {
+            const resourceTypes = [
+                { name: 'Tree', emoji: '🌲', skill: 'woodcutting', item: 'Wood' },
+                { name: 'Rock', emoji: '🪨', skill: 'mining', item: 'Ore' },
+                { name: 'Fish Spot', emoji: '🌊', skill: 'fishing', item: 'Fish' }
+            ];
+
+            for (let i = 0; i < 15; i++) {
+                const type = resourceTypes[Math.floor(Math.random() * resourceTypes.length)];
+                resources.push({
+                    id: 'resource_' + i,
+                    ...type,
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    available: true
+                });
+            }
+        }
+
+        function gameLoop() {
+            // Clear canvas
+            ctx.fillStyle = '#1e2a33';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw grid
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            // Draw resources
+            resources.forEach(resource => {
+                if (resource.available) {
+                    ctx.font = '24px Arial';
+                    ctx.fillText(resource.emoji, resource.x, resource.y);
+                }
+            });
+
+            // Draw monsters
+            monsters.forEach(monster => {
+                if (monster.currentHp > 0) {
+                    ctx.font = '32px Arial';
+                    ctx.fillText(monster.emoji, monster.x, monster.y);
+                    
+                    // HP bar
+                    const hpPercent = monster.currentHp / monster.maxHp;
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                    ctx.fillRect(monster.x - 20, monster.y - 40, 40, 6);
+                    ctx.fillStyle = hpPercent > 0.5 ? '#2ecc71' : hpPercent > 0.25 ? '#f39c12' : '#e74c3c';
+                    ctx.fillRect(monster.x - 20, monster.y - 40, 40 * hpPercent, 6);
+                    
+                    // Name
+                    ctx.fillStyle = 'white';
+                    ctx.font = '10px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(monster.name + ' Lv.' + monster.level, monster.x, monster.y - 45);
+                }
+            });
+
+            // Draw current player
+            ctx.font = '32px Arial';
+            ctx.fillText('🧙', currentPlayer.x, currentPlayer.y);
+            ctx.fillStyle = '#3498db';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(currentPlayer.name, currentPlayer.x, currentPlayer.y - 35);
+
+            // Draw other players
+            Object.keys(players).forEach(playerId => {
+                const player = players[playerId];
+                ctx.font = '32px Arial';
+                ctx.fillText('🧙', player.x, player.y);
+                ctx.fillStyle = '#2ecc71';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(player.name, player.x, player.y - 35);
+            });
+
+            ctx.textAlign = 'left';
+        }
+
+        function handleCanvasClick(e) {
+            const rect = canvas.getBoundingClientRect();
+            const targetX = e.clientX - rect.left;
+            const targetY = e.clientY - rect.top;
+            
+            // Move player towards click
+            const dx = targetX - currentPlayer.x;
+            const dy = targetY - currentPlayer.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance > 5) {
+                currentPlayer.x += (dx / distance) * 10;
+                currentPlayer.y += (dy / distance) * 10;
+                
+                // Keep in bounds
+                currentPlayer.x = Math.max(20, Math.min(canvas.width - 20, currentPlayer.x));
+                currentPlayer.y = Math.max(40, Math.min(canvas.height - 20, currentPlayer.y));
+            }
+        }
+
+        function updatePlayerPosition() {
+            if (currentPlayer.id) {
+                playersRef.child(currentPlayer.id).update({
+                    x: currentPlayer.x,
+                    y: currentPlayer.y,
+                    lastActive: Date.now()
+                });
+            }
+        }
+
+        function attackNearestMonster() {
+            let nearest = null;
+            let minDist = Infinity;
+            
+            monsters.forEach(monster => {
+                if (monster.currentHp > 0) {
+                    const dist = Math.hypot(monster.x - currentPlayer.x, monster.y - currentPlayer.y);
+                    if (dist < minDist && dist < 150) {
+                        minDist = dist;
+                        nearest = monster;
+                    }
+                }
+            });
+            
+            if (nearest) {
+                const damage = 10 + currentPlayer.skills.combat * 2;
+                nearest.currentHp -= damage;
+                addChatMessage('Combat', `You hit ${nearest.name} for ${damage} damage!`, 'system');
+                
+                if (nearest.currentHp <= 0) {
+                    currentPlayer.xp += nearest.xp;
+                    currentPlayer.skills.combat++;
+                    addChatMessage('Victory', `You defeated ${nearest.name}! +${nearest.xp} XP`, 'system');
+                    
+                    // Check level up
+                    const xpNeeded = currentPlayer.level * 100;
+                    if (currentPlayer.xp >= xpNeeded) {
+                        currentPlayer.level++;
+                        currentPlayer.xp = 0;
+                        currentPlayer.maxHp += 10;
+                        currentPlayer.hp = currentPlayer.maxHp;
+                        addChatMessage('Level Up!', `You are now level ${currentPlayer.level}!`, 'system');
+                    }
+                    
+                    // Respawn monster
+                    setTimeout(() => {
+                        nearest.currentHp = nearest.maxHp;
+                        nearest.x = Math.random() * canvas.width;
+                        nearest.y = Math.random() * canvas.height;
+                    }, 5000);
+                }
+                
+                updateStats();
+            } else {
+                addChatMessage('Combat', 'No monsters nearby!', 'system');
+            }
+        }
+
+        function gatherResource() {
+            let nearest = null;
+            let minDist = Infinity;
+            
+            resources.forEach(resource => {
+                if (resource.available) {
+                    const dist = Math.hypot(resource.x - currentPlayer.x, resource.y - currentPlayer.y);
+                    if (dist < minDist && dist < 100) {
+                        minDist = dist;
+                        nearest = resource;
+                    }
+                }
+            });
+            
+            if (nearest) {
+                nearest.available = false;
+                currentPlayer.skills[nearest.skill]++;
+                
+                if (!currentPlayer.inventory[nearest.item]) {
+                    currentPlayer.inventory[nearest.item] = 0;
+                }
+                currentPlayer.inventory[nearest.item]++;
+                
+                addChatMessage('Gathering', `You gathered ${nearest.item}! ${nearest.skill} +1`, 'system');
+                renderInventory();
+                updateStats();
+                
+                // Respawn resource
+                setTimeout(() => {
+                    nearest.available = true;
+                }, 10000);
+            } else {
+                addChatMessage('Gathering', 'No resources nearby!', 'system');
+            }
+        }
+
+        function openCrafting() {
+            addChatMessage('Crafting', 'Crafting system coming soon! Collect resources to craft items.', 'system');
+        }
+
+        function openQuests() {
+            addChatMessage('Quests', 'Quest system coming soon! Complete quests for rewards and XP.', 'system');
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                chatRef.push({
+                    player: currentPlayer.name,
+                    message: message,
+                    type: 'player',
+                    timestamp: Date.now()
+                });
+                input.value = '';
+            }
+        }
+
+        function addChatMessage(player, message, type = 'player') {
+            const chatArea = document.getElementById('chatArea');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'chat-message';
+            
+            if (type === 'system') {
+                msgDiv.innerHTML = `<span class="chat-system">[${player}] ${message}</span>`;
+            } else {
+                msgDiv.innerHTML = `<span class="chat-player">${player}:</span> ${message}`;
+            }
+            
+            chatArea.appendChild(msgDiv);
+            chatArea.scrollTop = chatArea.scrollHeight;
+            
+            // Limit messages
+            while (chatArea.children.length > 50) {
+                chatArea.removeChild(chatArea.firstChild);
+            }
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (currentPlayer.id) {
+                playersRef.child(currentPlayer.id).remove();
+            }
+        });
+    </script>
+</body>
+</html>
