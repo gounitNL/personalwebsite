@@ -432,6 +432,77 @@
                 font-size: 0.9rem;
             }
         }
+
+        /* Tic Tac Toe Styles */
+        .ttt-cell {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border: none;
+            border-radius: 15px;
+            font-size: 3rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ttt-cell:hover:not(.taken) {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .ttt-cell.taken {
+            cursor: not-allowed;
+        }
+
+        .ttt-cell.x {
+            color: #e74c3c;
+            background: linear-gradient(135deg, #ffe8e8 0%, #ffd4d4 100%);
+        }
+
+        .ttt-cell.o {
+            color: #3498db;
+            background: linear-gradient(135deg, #e8f4ff 0%, #d4e9ff 100%);
+        }
+
+        .ttt-cell.winning {
+            animation: winPulse 0.6s ease-in-out;
+            background: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%) !important;
+            color: white !important;
+        }
+
+        @keyframes winPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        @media (max-width: 768px) {
+            #tttBoard {
+                grid-template-columns: repeat(3, 100px) !important;
+                grid-template-rows: repeat(3, 100px) !important;
+                gap: 8px !important;
+            }
+
+            .ttt-cell {
+                font-size: 2.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #tttBoard {
+                grid-template-columns: repeat(3, 80px) !important;
+                grid-template-rows: repeat(3, 80px) !important;
+                gap: 6px !important;
+            }
+
+            .ttt-cell {
+                font-size: 2rem;
+                border-radius: 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -473,10 +544,51 @@
                 <h3>Nonogram</h3>
                 <p>Reveal the hidden picture</p>
             </div>
+
+            <div class="game-menu-card" onclick="openGame('tictactoe')">
+                <div class="icon">❌⭕</div>
+                <h3>Tic Tac Toe</h3>
+                <p>Classic X's and O's game</p>
+            </div>
         </div>
     </div>
 
     <!-- Game Views -->
+    <!-- Tic Tac Toe Game -->
+    <div class="game-view" id="game-tictactoe">
+        <div class="game-header">
+            <div class="game-title">❌⭕ Tic Tac Toe</div>
+            <div class="game-controls">
+                <div class="difficulty-selector">
+                    <span style="font-weight: 600; color: #667eea;">Mode:</span>
+                    <button class="difficulty-btn active" onclick="setTicTacToeMode('ai')" id="tttModeAI">vs Computer</button>
+                    <button class="difficulty-btn" onclick="setTicTacToeMode('2player')" id="tttMode2P">2 Player</button>
+                </div>
+                <div class="difficulty-selector" id="tttDifficultyDiv">
+                    <span style="font-weight: 600; color: #667eea;">Difficulty:</span>
+                    <button class="difficulty-btn" onclick="setTicTacToeDifficulty('easy')" id="tttDiffEasy">Easy</button>
+                    <button class="difficulty-btn active" onclick="setTicTacToeDifficulty('medium')" id="tttDiffMed">Medium</button>
+                    <button class="difficulty-btn" onclick="setTicTacToeDifficulty('hard')" id="tttDiffHard">Hard</button>
+                </div>
+                <button onclick="initTicTacToe()">New Game</button>
+                <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
+            </div>
+        </div>
+        <div class="game-content">
+            <div class="game-area">
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <div id="tttStatus" style="font-size: 1.5rem; font-weight: bold; color: #667eea; margin-bottom: 1rem;">X's Turn</div>
+                    <div id="tttScore" style="font-size: 1.1rem; color: #666;">
+                        <span style="color: #e74c3c;">X: <span id="scoreX">0</span></span> | 
+                        <span style="color: #999;">Draws: <span id="scoreDraw">0</span></span> | 
+                        <span style="color: #3498db;">O: <span id="scoreO">0</span></span>
+                    </div>
+                </div>
+                <div id="tttBoard" style="display: grid; grid-template-columns: repeat(3, 120px); grid-template-rows: repeat(3, 120px); gap: 10px; margin: 0 auto; width: fit-content;"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- 2048 Game -->
     <div class="game-view" id="game-2048">
         <div class="game-header">
@@ -1296,6 +1408,215 @@
                 alert('Not quite right. Check the clues and try again!');
             }
         }
+
+        // ========== TIC TAC TOE GAME ==========
+        let tttBoard = ['', '', '', '', '', '', '', '', ''];
+        let tttCurrentPlayer = 'X';
+        let tttGameActive = true;
+        let tttMode = 'ai'; // 'ai' or '2player'
+        let tttDifficulty = 'medium'; // 'easy', 'medium', 'hard'
+        let tttScores = { X: 0, O: 0, draw: 0 };
+
+        const tttWinningConditions = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+            [0, 4, 8], [2, 4, 6]              // Diagonals
+        ];
+
+        function initTicTacToe() {
+            tttBoard = ['', '', '', '', '', '', '', '', ''];
+            tttCurrentPlayer = 'X';
+            tttGameActive = true;
+            
+            const boardDiv = document.getElementById('tttBoard');
+            boardDiv.innerHTML = '';
+            
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('button');
+                cell.className = 'ttt-cell';
+                cell.dataset.index = i;
+                cell.onclick = () => handleTicTacToeClick(i);
+                boardDiv.appendChild(cell);
+            }
+            
+            updateTicTacToeStatus();
+        }
+
+        function setTicTacToeMode(mode) {
+            tttMode = mode;
+            document.getElementById('tttModeAI').classList.toggle('active', mode === 'ai');
+            document.getElementById('tttMode2P').classList.toggle('active', mode === '2player');
+            document.getElementById('tttDifficultyDiv').style.display = mode === 'ai' ? 'flex' : 'none';
+            initTicTacToe();
+        }
+
+        function setTicTacToeDifficulty(difficulty) {
+            tttDifficulty = difficulty;
+            document.getElementById('tttDiffEasy').classList.toggle('active', difficulty === 'easy');
+            document.getElementById('tttDiffMed').classList.toggle('active', difficulty === 'medium');
+            document.getElementById('tttDiffHard').classList.toggle('active', difficulty === 'hard');
+        }
+
+        function handleTicTacToeClick(index) {
+            if (!tttGameActive || tttBoard[index] !== '') return;
+            
+            makeMove(index, tttCurrentPlayer);
+            
+            if (tttGameActive && tttMode === 'ai' && tttCurrentPlayer === 'O') {
+                setTimeout(() => {
+                    makeAIMove();
+                }, 500);
+            }
+        }
+
+        function makeMove(index, player) {
+            tttBoard[index] = player;
+            const cell = document.querySelector(`[data-index="${index}"]`);
+            cell.textContent = player;
+            cell.classList.add('taken', player.toLowerCase());
+            
+            if (checkTicTacToeWin()) {
+                handleTicTacToeWin();
+            } else if (tttBoard.every(cell => cell !== '')) {
+                handleTicTacToeDraw();
+            } else {
+                tttCurrentPlayer = tttCurrentPlayer === 'X' ? 'O' : 'X';
+                updateTicTacToeStatus();
+            }
+        }
+
+        function checkTicTacToeWin() {
+            for (let condition of tttWinningConditions) {
+                const [a, b, c] = condition;
+                if (tttBoard[a] && tttBoard[a] === tttBoard[b] && tttBoard[a] === tttBoard[c]) {
+                    return condition;
+                }
+            }
+            return null;
+        }
+
+        function handleTicTacToeWin() {
+            const winningCondition = checkTicTacToeWin();
+            tttGameActive = false;
+            
+            // Highlight winning cells
+            winningCondition.forEach(index => {
+                document.querySelector(`[data-index="${index}"]`).classList.add('winning');
+            });
+            
+            const winner = tttBoard[winningCondition[0]];
+            tttScores[winner]++;
+            updateTicTacToeScore();
+            
+            const winnerText = tttMode === 'ai' && winner === 'O' ? 'Computer Wins!' : `${winner} Wins!`;
+            document.getElementById('tttStatus').textContent = `🎉 ${winnerText}`;
+            document.getElementById('tttStatus').style.color = winner === 'X' ? '#e74c3c' : '#3498db';
+            
+            // Vibrate on mobile
+            if (navigator.vibrate) navigator.vibrate(200);
+        }
+
+        function handleTicTacToeDraw() {
+            tttGameActive = false;
+            tttScores.draw++;
+            updateTicTacToeScore();
+            document.getElementById('tttStatus').textContent = "🤝 It's a Draw!";
+            document.getElementById('tttStatus').style.color = '#f39c12';
+        }
+
+        function updateTicTacToeStatus() {
+            if (!tttGameActive) return;
+            
+            let statusText;
+            if (tttMode === 'ai') {
+                statusText = tttCurrentPlayer === 'X' ? "Your Turn (X)" : "Computer's Turn (O)";
+            } else {
+                statusText = `${tttCurrentPlayer}'s Turn`;
+            }
+            
+            document.getElementById('tttStatus').textContent = statusText;
+            document.getElementById('tttStatus').style.color = tttCurrentPlayer === 'X' ? '#e74c3c' : '#3498db';
+        }
+
+        function updateTicTacToeScore() {
+            document.getElementById('scoreX').textContent = tttScores.X;
+            document.getElementById('scoreO').textContent = tttScores.O;
+            document.getElementById('scoreDraw').textContent = tttScores.draw;
+        }
+
+        // AI Logic
+        function makeAIMove() {
+            if (!tttGameActive) return;
+            
+            let move;
+            if (tttDifficulty === 'easy') {
+                move = getRandomMove();
+            } else if (tttDifficulty === 'medium') {
+                move = Math.random() < 0.5 ? getBestMove() : getRandomMove();
+            } else { // hard
+                move = getBestMove();
+            }
+            
+            if (move !== null) {
+                makeMove(move, 'O');
+            }
+        }
+
+        function getRandomMove() {
+            const availableMoves = tttBoard
+                .map((cell, index) => cell === '' ? index : null)
+                .filter(index => index !== null);
+            
+            return availableMoves.length > 0 
+                ? availableMoves[Math.floor(Math.random() * availableMoves.length)]
+                : null;
+        }
+
+        function getBestMove() {
+            // Check if AI can win
+            for (let i = 0; i < 9; i++) {
+                if (tttBoard[i] === '') {
+                    tttBoard[i] = 'O';
+                    if (checkTicTacToeWin()) {
+                        tttBoard[i] = '';
+                        return i;
+                    }
+                    tttBoard[i] = '';
+                }
+            }
+            
+            // Check if player can win (block)
+            for (let i = 0; i < 9; i++) {
+                if (tttBoard[i] === '') {
+                    tttBoard[i] = 'X';
+                    if (checkTicTacToeWin()) {
+                        tttBoard[i] = '';
+                        return i;
+                    }
+                    tttBoard[i] = '';
+                }
+            }
+            
+            // Take center if available
+            if (tttBoard[4] === '') return 4;
+            
+            // Take corners
+            const corners = [0, 2, 6, 8];
+            const availableCorners = corners.filter(i => tttBoard[i] === '');
+            if (availableCorners.length > 0) {
+                return availableCorners[Math.floor(Math.random() * availableCorners.length)];
+            }
+            
+            // Take any available space
+            return getRandomMove();
+        }
+
+        // Initialize Tic Tac Toe when game opens
+        document.addEventListener('DOMContentLoaded', () => {
+            if (document.getElementById('game-tictactoe')) {
+                initTicTacToe();
+            }
+        });
     </script>
 </body>
 </html>

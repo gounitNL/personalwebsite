@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FantasyQuest 3D MMORPG - PlayZone</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>FantasyQuest 3D MMORPG - PlayZone v2.0</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -997,10 +1000,38 @@
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-        const auth = firebase.auth();
+        // Global variables for Firebase (declared early)
+        var database = null;
+        var auth = null;
+
+        // Initialize Firebase when ready
+        function initFirebase() {
+            try {
+                if (typeof firebase === 'undefined') {
+                    console.error('Firebase SDK not loaded yet!');
+                    setTimeout(initFirebase, 100); // Retry after 100ms
+                    return;
+                }
+                
+                firebase.initializeApp(firebaseConfig);
+                database = firebase.database();
+                auth = firebase.auth();
+                console.log('Firebase initialized successfully!');
+                
+                // Setup auth state listener after initialization
+                setupAuthListener();
+            } catch (error) {
+                console.error('Firebase initialization error:', error);
+                alert('Failed to connect to Firebase. Please refresh the page.');
+            }
+        }
+
+        // Call initialization when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initFirebase);
+        } else {
+            initFirebase();
+        }
         
         // ========== FIREBASE AUTHENTICATION SYSTEM ==========
         
@@ -1263,6 +1294,12 @@ const analytics = getAnalytics(app);
         
         // Login with Email/Password
         async function loginWithEmail() {
+            // Check if Firebase is initialized
+            if (!auth || !database) {
+                showAuthError('Firebase not initialized yet. Please wait a moment and try again.');
+                return;
+            }
+            
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
             
@@ -1300,6 +1337,12 @@ const analytics = getAnalytics(app);
         
         // Sign up with Email/Password
         async function signupWithEmail() {
+            // Check if Firebase is initialized
+            if (!auth || !database) {
+                showAuthError('Firebase not initialized yet. Please wait a moment and try again.');
+                return;
+            }
+            
             const characterName = document.getElementById('signupCharacterName').value.trim();
             const email = document.getElementById('signupEmail').value.trim();
             const password = document.getElementById('signupPassword').value;
@@ -1400,6 +1443,12 @@ const analytics = getAnalytics(app);
         
         // Login with Google
         async function loginWithGoogle() {
+            // Check if Firebase is initialized
+            if (!auth || !database) {
+                showAuthError('Firebase not initialized yet. Please wait a moment and try again.');
+                return;
+            }
+            
             try {
                 showAuthSuccess('Opening Google sign-in...');
                 const provider = new firebase.auth.GoogleAuthProvider();
@@ -1489,7 +1538,13 @@ const analytics = getAnalytics(app);
         
         // ========== AUTH STATE LISTENER ==========
         
-        auth.onAuthStateChanged(async (user) => {
+        function setupAuthListener() {
+            if (!auth) {
+                console.error('Auth not initialized yet!');
+                return;
+            }
+            
+            auth.onAuthStateChanged(async (user) => {
             if (user) {
                 // User is logged in
                 currentUser = user;
@@ -1550,7 +1605,8 @@ const analytics = getAnalytics(app);
                 document.getElementById('loginScreen').classList.remove('hidden');
                 document.getElementById('gameContainer').classList.add('hidden');
             }
-        });
+            });
+        }
         
         // ========== CLOUD SAVE FUNCTIONS ==========
         
