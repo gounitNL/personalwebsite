@@ -134,6 +134,30 @@
             flex-wrap: wrap;
         }
 
+        .difficulty-selector {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            background: rgba(102, 126, 234, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+        }
+
+        .difficulty-btn {
+            padding: 0.4rem 1rem;
+            font-size: 0.9rem;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            margin: 0;
+        }
+
+        .difficulty-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
         .close-game-btn {
             background: #f44336;
             color: white;
@@ -458,6 +482,13 @@
         <div class="game-header">
             <div class="game-title">🎯 2048</div>
             <div class="game-controls">
+                <div class="difficulty-selector">
+                    <span style="font-weight: 600; color: #667eea;">Grid Size:</span>
+                    <button class="difficulty-btn" onclick="set2048Size(3)">3×3</button>
+                    <button class="difficulty-btn active" onclick="set2048Size(4)">4×4</button>
+                    <button class="difficulty-btn" onclick="set2048Size(5)">5×5</button>
+                    <button class="difficulty-btn" onclick="set2048Size(6)">6×6</button>
+                </div>
                 <div class="score">Score: <span id="score-2048">0</span></div>
                 <button onclick="init2048()">New Game</button>
                 <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
@@ -476,6 +507,12 @@
         <div class="game-header">
             <div class="game-title">🔢 Sudoku</div>
             <div class="game-controls">
+                <div class="difficulty-selector">
+                    <span style="font-weight: 600; color: #667eea;">Difficulty:</span>
+                    <button class="difficulty-btn active" onclick="setSudokuDifficulty('easy')">Easy</button>
+                    <button class="difficulty-btn" onclick="setSudokuDifficulty('medium')">Medium</button>
+                    <button class="difficulty-btn" onclick="setSudokuDifficulty('hard')">Hard</button>
+                </div>
                 <button onclick="checkSudoku()">Check Solution</button>
                 <button onclick="initSudoku()">New Puzzle</button>
                 <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
@@ -494,7 +531,13 @@
         <div class="game-header">
             <div class="game-title">💣 Minesweeper</div>
             <div class="game-controls">
-                <div class="score">Flags: <span id="flags-count">10</span> | Mines: 10</div>
+                <div class="difficulty-selector">
+                    <span style="font-weight: 600; color: #667eea;">Difficulty:</span>
+                    <button class="difficulty-btn" onclick="setMinesweeperDifficulty('easy')">Easy</button>
+                    <button class="difficulty-btn active" onclick="setMinesweeperDifficulty('medium')">Medium</button>
+                    <button class="difficulty-btn" onclick="setMinesweeperDifficulty('hard')">Hard</button>
+                </div>
+                <div class="score">Flags: <span id="flags-count">10</span> | Mines: <span id="mine-count">10</span></div>
                 <button onclick="initMinesweeper()">New Game</button>
                 <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
             </div>
@@ -512,6 +555,12 @@
         <div class="game-header">
             <div class="game-title">🧩 Sliding Puzzle</div>
             <div class="game-controls">
+                <div class="difficulty-selector">
+                    <span style="font-weight: 600; color: #667eea;">Grid Size:</span>
+                    <button class="difficulty-btn" onclick="setSlidingSize(3)">3×3</button>
+                    <button class="difficulty-btn active" onclick="setSlidingSize(4)">4×4</button>
+                    <button class="difficulty-btn" onclick="setSlidingSize(5)">5×5</button>
+                </div>
                 <div class="score">Moves: <span id="moves-count">0</span></div>
                 <button onclick="initSlidingPuzzle()">Shuffle</button>
                 <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
@@ -520,7 +569,7 @@
         <div class="game-content">
             <div class="game-area">
                 <div class="sliding-grid" id="sliding-grid"></div>
-                <div class="instructions">Arrange the numbers in order from 1 to 15!</div>
+                <div class="instructions" id="sliding-instructions">Arrange the numbers in order!</div>
             </div>
         </div>
     </div>
@@ -530,6 +579,12 @@
         <div class="game-header">
             <div class="game-title">🖼️ Nonogram (Picross)</div>
             <div class="game-controls">
+                <div class="difficulty-selector">
+                    <span style="font-weight: 600; color: #667eea;">Puzzle:</span>
+                    <button class="difficulty-btn active" onclick="setNonogramPuzzle(0)">5×5</button>
+                    <button class="difficulty-btn" onclick="setNonogramPuzzle(1)">7×7</button>
+                    <button class="difficulty-btn" onclick="setNonogramPuzzle(2)">10×10</button>
+                </div>
                 <button onclick="checkNonogram()">Check Solution</button>
                 <button onclick="initNonogram()">Clear</button>
                 <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
@@ -537,10 +592,7 @@
         </div>
         <div class="game-content">
             <div class="game-area">
-                <div class="nonogram-clues">
-                    <div><strong>Rows:</strong> [5], [1,1], [5], [1,1], [5]</div>
-                    <div><strong>Cols:</strong> [5], [1,1], [5], [1,1], [5]</div>
-                </div>
+                <div class="nonogram-clues" id="nonogram-clues"></div>
                 <div class="nonogram-grid" id="nonogram-grid"></div>
                 <div class="instructions">Click cells to fill. Use clues to reveal the hidden picture!</div>
             </div>
@@ -571,9 +623,25 @@
         // ========== 2048 GAME ==========
         let grid2048 = [];
         let score2048 = 0;
+        let gridSize2048 = 4;
+
+        function set2048Size(size) {
+            gridSize2048 = size;
+            document.querySelectorAll('#game-2048 .difficulty-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update grid styling
+            const gridEl = document.getElementById('grid-2048');
+            const cellSize = size <= 4 ? 'min(80px, 18vw)' : size === 5 ? 'min(65px, 15vw)' : 'min(55px, 13vw)';
+            gridEl.style.gridTemplateColumns = `repeat(${size}, ${cellSize})`;
+            
+            init2048();
+        }
 
         function init2048() {
-            grid2048 = Array(4).fill().map(() => Array(4).fill(0));
+            grid2048 = Array(gridSize2048).fill().map(() => Array(gridSize2048).fill(0));
             score2048 = 0;
             addNewTile();
             addNewTile();
@@ -582,8 +650,8 @@
 
         function addNewTile() {
             let empty = [];
-            for (let i = 0; i < 4; i++) {
-                for (let j = 0; j < 4; j++) {
+            for (let i = 0; i < gridSize2048; i++) {
+                for (let j = 0; j < gridSize2048; j++) {
                     if (grid2048[i][j] === 0) empty.push({i, j});
                 }
             }
@@ -596,10 +664,15 @@
         function render2048() {
             const gridEl = document.getElementById('grid-2048');
             gridEl.innerHTML = '';
-            for (let i = 0; i < 4; i++) {
-                for (let j = 0; j < 4; j++) {
+            const cellSize = gridSize2048 <= 4 ? 'min(80px, 18vw)' : gridSize2048 === 5 ? 'min(65px, 15vw)' : 'min(55px, 13vw)';
+            gridEl.style.gridTemplateColumns = `repeat(${gridSize2048}, ${cellSize})`;
+            
+            for (let i = 0; i < gridSize2048; i++) {
+                for (let j = 0; j < gridSize2048; j++) {
                     const cell = document.createElement('div');
                     cell.className = 'cell-2048';
+                    cell.style.width = cellSize;
+                    cell.style.height = cellSize;
                     const val = grid2048[i][j];
                     if (val > 0) {
                         cell.textContent = val;
@@ -616,7 +689,7 @@
             const oldGrid = JSON.stringify(grid2048);
 
             if (direction === 'left' || direction === 'right') {
-                for (let i = 0; i < 4; i++) {
+                for (let i = 0; i < gridSize2048; i++) {
                     let row = grid2048[i].filter(x => x !== 0);
                     if (direction === 'right') row.reverse();
                     
@@ -628,14 +701,14 @@
                         }
                     }
                     
-                    while (row.length < 4) row.push(0);
+                    while (row.length < gridSize2048) row.push(0);
                     if (direction === 'right') row.reverse();
                     grid2048[i] = row;
                 }
             } else {
-                for (let j = 0; j < 4; j++) {
+                for (let j = 0; j < gridSize2048; j++) {
                     let col = [];
-                    for (let i = 0; i < 4; i++) {
+                    for (let i = 0; i < gridSize2048; i++) {
                         if (grid2048[i][j] !== 0) col.push(grid2048[i][j]);
                     }
                     if (direction === 'down') col.reverse();
@@ -648,10 +721,10 @@
                         }
                     }
                     
-                    while (col.length < 4) col.push(0);
+                    while (col.length < gridSize2048) col.push(0);
                     if (direction === 'down') col.reverse();
                     
-                    for (let i = 0; i < 4; i++) {
+                    for (let i = 0; i < gridSize2048; i++) {
                         grid2048[i][j] = col[i];
                     }
                 }
@@ -674,20 +747,95 @@
 
         // ========== SUDOKU GAME ==========
         let sudokuPuzzle = [];
+        let sudokuDifficulty = 'easy';
+
+        const sudokuPuzzles = {
+            easy: [
+                [
+                    [5,3,0,0,7,0,0,0,0],
+                    [6,0,0,1,9,5,0,0,0],
+                    [0,9,8,0,0,0,0,6,0],
+                    [8,0,0,0,6,0,0,0,3],
+                    [4,0,0,8,0,3,0,0,1],
+                    [7,0,0,0,2,0,0,0,6],
+                    [0,6,0,0,0,0,2,8,0],
+                    [0,0,0,4,1,9,0,0,5],
+                    [0,0,0,0,8,0,0,7,9]
+                ],
+                [
+                    [0,0,3,0,2,0,6,0,0],
+                    [9,0,0,3,0,5,0,0,1],
+                    [0,0,1,8,0,6,4,0,0],
+                    [0,0,8,1,0,2,9,0,0],
+                    [7,0,0,0,0,0,0,0,8],
+                    [0,0,6,7,0,8,2,0,0],
+                    [0,0,2,6,0,9,5,0,0],
+                    [8,0,0,2,0,3,0,0,9],
+                    [0,0,5,0,1,0,3,0,0]
+                ]
+            ],
+            medium: [
+                [
+                    [0,0,0,6,0,0,4,0,0],
+                    [7,0,0,0,0,3,6,0,0],
+                    [0,0,0,0,9,1,0,8,0],
+                    [0,0,0,0,0,0,0,0,0],
+                    [0,5,0,1,8,0,0,0,3],
+                    [0,0,0,3,0,6,0,4,5],
+                    [0,4,0,2,0,0,0,6,0],
+                    [9,0,3,0,0,0,0,0,0],
+                    [0,2,0,0,0,0,1,0,0]
+                ],
+                [
+                    [0,0,5,3,0,0,0,0,0],
+                    [8,0,0,0,0,0,0,2,0],
+                    [0,7,0,0,1,0,5,0,0],
+                    [4,0,0,0,0,5,3,0,0],
+                    [0,1,0,0,7,0,0,0,6],
+                    [0,0,3,2,0,0,0,8,0],
+                    [0,6,0,5,0,0,0,0,9],
+                    [0,0,4,0,0,0,0,3,0],
+                    [0,0,0,0,0,9,7,0,0]
+                ]
+            ],
+            hard: [
+                [
+                    [0,0,0,0,0,0,6,8,0],
+                    [0,0,0,0,7,3,0,0,9],
+                    [3,0,9,0,0,0,0,4,5],
+                    [4,9,0,0,0,0,0,0,0],
+                    [8,0,3,0,5,0,9,0,2],
+                    [0,0,0,0,0,0,0,3,6],
+                    [9,6,0,0,0,0,3,0,8],
+                    [7,0,0,6,8,0,0,0,0],
+                    [0,2,8,0,0,0,0,0,0]
+                ],
+                [
+                    [0,0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,3,0,8,5],
+                    [0,0,1,0,2,0,0,0,0],
+                    [0,0,0,5,0,7,0,0,0],
+                    [0,0,4,0,0,0,1,0,0],
+                    [0,9,0,0,0,0,0,0,0],
+                    [5,0,0,0,0,0,0,7,3],
+                    [0,0,2,0,1,0,0,0,0],
+                    [0,0,0,0,4,0,0,0,9]
+                ]
+            ]
+        };
+
+        function setSudokuDifficulty(diff) {
+            sudokuDifficulty = diff;
+            document.querySelectorAll('#game-sudoku .difficulty-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            initSudoku();
+        }
 
         function initSudoku() {
-            const puzzle = [
-                [5,3,0,0,7,0,0,0,0],
-                [6,0,0,1,9,5,0,0,0],
-                [0,9,8,0,0,0,0,6,0],
-                [8,0,0,0,6,0,0,0,3],
-                [4,0,0,8,0,3,0,0,1],
-                [7,0,0,0,2,0,0,0,6],
-                [0,6,0,0,0,0,2,8,0],
-                [0,0,0,4,1,9,0,0,5],
-                [0,0,0,0,8,0,0,7,9]
-            ];
-            
+            const puzzles = sudokuPuzzles[sudokuDifficulty];
+            const puzzle = puzzles[Math.floor(Math.random() * puzzles.length)];
             sudokuPuzzle = puzzle.map(row => [...row]);
             renderSudoku();
         }
@@ -753,8 +901,33 @@
         let mineField = [];
         let mineRevealed = [];
         let mineFlagged = [];
-        const MINE_SIZE = 10;
-        const MINE_COUNT = 10;
+        let MINE_SIZE = 12;
+        let MINE_COUNT = 25;
+
+        const minesweeperDifficulties = {
+            easy: { size: 8, mines: 10 },
+            medium: { size: 12, mines: 25 },
+            hard: { size: 16, mines: 40 }
+        };
+
+        function setMinesweeperDifficulty(diff) {
+            const config = minesweeperDifficulties[diff];
+            MINE_SIZE = config.size;
+            MINE_COUNT = config.mines;
+            
+            document.querySelectorAll('#game-minesweeper .difficulty-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update grid styling
+            const gridEl = document.getElementById('minesweeper-grid');
+            const cellSize = MINE_SIZE <= 10 ? 'min(35px, 8vw)' : MINE_SIZE <= 12 ? 'min(30px, 7vw)' : 'min(25px, 5.5vw)';
+            gridEl.style.gridTemplateColumns = `repeat(${MINE_SIZE}, ${cellSize})`;
+            
+            document.getElementById('mine-count').textContent = MINE_COUNT;
+            initMinesweeper();
+        }
 
         function initMinesweeper() {
             mineField = Array(MINE_SIZE).fill().map(() => Array(MINE_SIZE).fill(0));
@@ -795,12 +968,17 @@
             const gridEl = document.getElementById('minesweeper-grid');
             gridEl.innerHTML = '';
             
+            const cellSize = MINE_SIZE <= 10 ? 'min(35px, 8vw)' : MINE_SIZE <= 12 ? 'min(30px, 7vw)' : 'min(25px, 5.5vw)';
+            gridEl.style.gridTemplateColumns = `repeat(${MINE_SIZE}, ${cellSize})`;
+            
             for (let i = 0; i < MINE_SIZE; i++) {
                 for (let j = 0; j < MINE_SIZE; j++) {
                     const cell = document.createElement('div');
                     cell.className = 'mine-cell';
                     cell.dataset.i = i;
                     cell.dataset.j = j;
+                    cell.style.width = cellSize;
+                    cell.style.height = cellSize;
                     
                     if (mineRevealed[i][j]) {
                         cell.classList.add('revealed');
@@ -828,6 +1006,7 @@
             
             const flagCount = mineFlagged.flat().filter(x => x).length;
             document.getElementById('flags-count').textContent = MINE_COUNT - flagCount;
+            document.getElementById('mine-count').textContent = MINE_COUNT;
         }
 
         function revealCell(i, j) {
@@ -866,23 +1045,50 @@
         let slidingPuzzle = [];
         let emptyPos = {i: 3, j: 3};
         let moveCount = 0;
+        let slidingSize = 4;
+
+        function setSlidingSize(size) {
+            slidingSize = size;
+            document.querySelectorAll('#game-sliding .difficulty-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update grid styling
+            const gridEl = document.getElementById('sliding-grid');
+            const cellSize = size === 3 ? 'min(100px, 25vw)' : size === 4 ? 'min(80px, 20vw)' : 'min(65px, 16vw)';
+            gridEl.style.gridTemplateColumns = `repeat(${size}, ${cellSize})`;
+            
+            // Update instructions
+            const maxNum = size * size - 1;
+            document.getElementById('sliding-instructions').textContent = `Arrange the numbers in order from 1 to ${maxNum}!`;
+            
+            initSlidingPuzzle();
+        }
 
         function initSlidingPuzzle() {
-            slidingPuzzle = [
-                [1, 2, 3, 4],
-                [5, 6, 7, 8],
-                [9, 10, 11, 12],
-                [13, 14, 15, 0]
-            ];
-            emptyPos = {i: 3, j: 3};
+            slidingPuzzle = [];
+            let num = 1;
+            for (let i = 0; i < slidingSize; i++) {
+                slidingPuzzle[i] = [];
+                for (let j = 0; j < slidingSize; j++) {
+                    if (i === slidingSize - 1 && j === slidingSize - 1) {
+                        slidingPuzzle[i][j] = 0;
+                    } else {
+                        slidingPuzzle[i][j] = num++;
+                    }
+                }
+            }
+            emptyPos = {i: slidingSize - 1, j: slidingSize - 1};
             moveCount = 0;
             
+            // Shuffle
             for (let i = 0; i < 100; i++) {
                 const moves = [];
                 if (emptyPos.i > 0) moves.push({i: emptyPos.i - 1, j: emptyPos.j});
-                if (emptyPos.i < 3) moves.push({i: emptyPos.i + 1, j: emptyPos.j});
+                if (emptyPos.i < slidingSize - 1) moves.push({i: emptyPos.i + 1, j: emptyPos.j});
                 if (emptyPos.j > 0) moves.push({i: emptyPos.i, j: emptyPos.j - 1});
-                if (emptyPos.j < 3) moves.push({i: emptyPos.i, j: emptyPos.j + 1});
+                if (emptyPos.j < slidingSize - 1) moves.push({i: emptyPos.i, j: emptyPos.j + 1});
                 
                 const move = moves[Math.floor(Math.random() * moves.length)];
                 slidingPuzzle[emptyPos.i][emptyPos.j] = slidingPuzzle[move.i][move.j];
@@ -897,10 +1103,15 @@
             const gridEl = document.getElementById('sliding-grid');
             gridEl.innerHTML = '';
             
-            for (let i = 0; i < 4; i++) {
-                for (let j = 0; j < 4; j++) {
+            const cellSize = slidingSize === 3 ? 'min(100px, 25vw)' : slidingSize === 4 ? 'min(80px, 20vw)' : 'min(65px, 16vw)';
+            gridEl.style.gridTemplateColumns = `repeat(${slidingSize}, ${cellSize})`;
+            
+            for (let i = 0; i < slidingSize; i++) {
+                for (let j = 0; j < slidingSize; j++) {
                     const tile = document.createElement('div');
                     tile.className = 'sliding-tile';
+                    tile.style.width = cellSize;
+                    tile.style.height = cellSize;
                     
                     if (slidingPuzzle[i][j] === 0) {
                         tile.classList.add('empty');
@@ -917,9 +1128,9 @@
             
             let won = true;
             let num = 1;
-            for (let i = 0; i < 4; i++) {
-                for (let j = 0; j < 4; j++) {
-                    if (i === 3 && j === 3) {
+            for (let i = 0; i < slidingSize; i++) {
+                for (let j = 0; j < slidingSize; j++) {
+                    if (i === slidingSize - 1 && j === slidingSize - 1) {
                         if (slidingPuzzle[i][j] !== 0) won = false;
                     } else {
                         if (slidingPuzzle[i][j] !== num) won = false;
@@ -944,28 +1155,96 @@
         }
 
         // ========== NONOGRAM GAME ==========
-        const nonogramSolution = [
-            [1, 1, 1, 1, 1],
-            [1, 0, 0, 0, 1],
-            [1, 1, 1, 1, 1],
-            [1, 0, 0, 0, 1],
-            [1, 1, 1, 1, 1]
+        const nonogramPuzzles = [
+            {
+                size: 5,
+                solution: [
+                    [1, 1, 1, 1, 1],
+                    [1, 0, 0, 0, 1],
+                    [1, 1, 1, 1, 1],
+                    [1, 0, 0, 0, 1],
+                    [1, 1, 1, 1, 1]
+                ],
+                rowClues: [[5], [1,1], [5], [1,1], [5]],
+                colClues: [[5], [1,1], [5], [1,1], [5]]
+            },
+            {
+                size: 7,
+                solution: [
+                    [0, 1, 1, 1, 1, 1, 0],
+                    [1, 1, 0, 0, 0, 1, 1],
+                    [1, 0, 1, 0, 1, 0, 1],
+                    [1, 0, 0, 1, 0, 0, 1],
+                    [1, 0, 1, 0, 1, 0, 1],
+                    [1, 1, 0, 0, 0, 1, 1],
+                    [0, 1, 1, 1, 1, 1, 0]
+                ],
+                rowClues: [[5], [2,2], [1,1,1], [1,1,1], [1,1,1], [2,2], [5]],
+                colClues: [[5], [2,2], [1,1,1], [1,1,1], [1,1,1], [2,2], [5]]
+            },
+            {
+                size: 10,
+                solution: [
+                    [0, 0, 1, 1, 1, 1, 1, 1, 0, 0],
+                    [0, 1, 1, 0, 0, 0, 0, 1, 1, 0],
+                    [1, 1, 0, 1, 0, 0, 1, 0, 1, 1],
+                    [1, 0, 1, 0, 0, 0, 0, 1, 0, 1],
+                    [1, 0, 0, 1, 0, 0, 1, 0, 0, 1],
+                    [1, 0, 0, 1, 0, 0, 1, 0, 0, 1],
+                    [1, 0, 1, 0, 0, 0, 0, 1, 0, 1],
+                    [1, 1, 0, 1, 0, 0, 1, 0, 1, 1],
+                    [0, 1, 1, 0, 0, 0, 0, 1, 1, 0],
+                    [0, 0, 1, 1, 1, 1, 1, 1, 0, 0]
+                ],
+                rowClues: [[6], [2,2], [2,1,1,2], [1,1,1,1], [1,1,1,1], [1,1,1,1], [1,1,1,1], [2,1,1,2], [2,2], [6]],
+                colClues: [[6], [2,2], [2,1,1,2], [1,1,1,1], [1,1,1,1], [1,1,1,1], [1,1,1,1], [2,1,1,2], [2,2], [6]]
+            }
         ];
+
+        let currentNonogramPuzzle = 0;
         let nonogramGrid = [];
 
+        function setNonogramPuzzle(index) {
+            currentNonogramPuzzle = index;
+            document.querySelectorAll('#game-nonogram .difficulty-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            initNonogram();
+        }
+
         function initNonogram() {
-            nonogramGrid = Array(5).fill().map(() => Array(5).fill(0));
+            const puzzle = nonogramPuzzles[currentNonogramPuzzle];
+            nonogramGrid = Array(puzzle.size).fill().map(() => Array(puzzle.size).fill(0));
+            
+            // Update clues display
+            const cluesEl = document.getElementById('nonogram-clues');
+            cluesEl.innerHTML = `
+                <div><strong>Rows:</strong> ${puzzle.rowClues.map(c => '[' + c.join(',') + ']').join(', ')}</div>
+                <div><strong>Columns:</strong> ${puzzle.colClues.map(c => '[' + c.join(',') + ']').join(', ')}</div>
+            `;
+            
+            // Update grid styling
+            const gridEl = document.getElementById('nonogram-grid');
+            const cellSize = puzzle.size <= 5 ? 'min(40px, 15vw)' : puzzle.size <= 7 ? 'min(35px, 12vw)' : 'min(30px, 8vw)';
+            gridEl.style.gridTemplateColumns = `repeat(${puzzle.size}, ${cellSize})`;
+            
             renderNonogram();
         }
 
         function renderNonogram() {
+            const puzzle = nonogramPuzzles[currentNonogramPuzzle];
             const gridEl = document.getElementById('nonogram-grid');
             gridEl.innerHTML = '';
             
-            for (let i = 0; i < 5; i++) {
-                for (let j = 0; j < 5; j++) {
+            const cellSize = puzzle.size <= 5 ? 'min(40px, 15vw)' : puzzle.size <= 7 ? 'min(35px, 12vw)' : 'min(30px, 8vw)';
+            
+            for (let i = 0; i < puzzle.size; i++) {
+                for (let j = 0; j < puzzle.size; j++) {
                     const cell = document.createElement('div');
                     cell.className = 'nonogram-cell';
+                    cell.style.width = cellSize;
+                    cell.style.height = cellSize;
                     if (nonogramGrid[i][j] === 1) {
                         cell.classList.add('filled');
                     }
@@ -979,10 +1258,11 @@
         }
 
         function checkNonogram() {
+            const puzzle = nonogramPuzzles[currentNonogramPuzzle];
             let correct = true;
-            for (let i = 0; i < 5; i++) {
-                for (let j = 0; j < 5; j++) {
-                    if (nonogramGrid[i][j] !== nonogramSolution[i][j]) {
+            for (let i = 0; i < puzzle.size; i++) {
+                for (let j = 0; j < puzzle.size; j++) {
+                    if (nonogramGrid[i][j] !== puzzle.solution[i][j]) {
                         correct = false;
                         break;
                     }
