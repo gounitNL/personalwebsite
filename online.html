@@ -674,7 +674,7 @@
         </div>
     </div>
 
-    <div id="loading" class="loading hidden">Loading 3D World...</div>
+
 
     <!-- Game Container -->
     <div id="gameContainer" class="hidden">
@@ -825,8 +825,11 @@
             <div class="action-buttons">
                 <button class="action-btn" onclick="attackNearestMonster()">⚔️ Attack</button>
                 <button class="action-btn gather" onclick="gatherResource()">⛏️ Gather</button>
-                <button class="action-btn craft" onclick="openShop()">🏪 Shop</button>
+                <button class="action-btn craft" onclick="openCraftingPanel()">🔨 Craft</button>
                 <button class="action-btn quest" onclick="toggleQuestPanel()">📜 Quests</button>
+                <button class="action-btn" onclick="openShop()">🏪 Shop</button>
+                <button class="action-btn" onclick="openPetShop()">🐾 Pets</button>
+                <button class="action-btn" style="background: linear-gradient(135deg, #e74c3c, #c0392b);" onclick="openEmoteMenu()">😊 Emote</button>
             </div>
             
             <div style="padding: 1rem; border-top: 1px solid #34495e; border-bottom: 1px solid #34495e;">
@@ -881,6 +884,45 @@
         <h2 style="color: #f39c12; margin-bottom: 1rem;">🏆 Achievements</h2>
         <div id="achievementsList"></div>
     </div>
+
+    <!-- Crafting Panel -->
+    <div class="quest-panel" id="craftingPanel">
+        <button class="close-panel-btn" onclick="closeCraftingPanel()">×</button>
+        <h2 style="color: #f39c12; margin-bottom: 1rem;">🔨 Crafting Station</h2>
+        <div style="text-align: center; margin-bottom: 1rem;">
+            <span style="color: #3498db;">Crafting Level: <span id="craftingLevel">1</span></span>
+        </div>
+        <div id="craftingRecipes"></div>
+    </div>
+
+    <!-- Pet Shop Panel -->
+    <div class="quest-panel" id="petShopPanel">
+        <button class="close-panel-btn" onclick="closePetShop()">×</button>
+        <h2 style="color: #f39c12; margin-bottom: 1rem;">🐾 Pet Shop</h2>
+        <div style="text-align: center; margin-bottom: 1rem; font-size: 1.2rem;">
+            Your Gold: 💰 <span id="petShopGold">0</span>
+        </div>
+        <div id="currentPet" style="margin-bottom: 1rem; padding: 1rem; background: rgba(46, 204, 113, 0.2); border-radius: 10px; text-align: center;">
+            Current Pet: <span id="activePet">None</span>
+        </div>
+        <div id="petShopItems"></div>
+    </div>
+
+    <!-- Emote Menu -->
+    <div class="quest-panel" id="emotePanel" style="max-width: 400px;">
+        <button class="close-panel-btn" onclick="closeEmoteMenu()">×</button>
+        <h2 style="color: #f39c12; margin-bottom: 1rem;">😊 Emotes</h2>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;" id="emoteGrid"></div>
+    </div>
+
+    <!-- Weather Indicator -->
+    <div id="weatherIndicator" style="position: fixed; top: 120px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.5); padding: 0.5rem 1rem; border-radius: 20px; display: flex; align-items: center; gap: 0.5rem; z-index: 100;">
+        <span id="weatherIcon">☀️</span>
+        <span id="weatherText">Clear</span>
+    </div>
+
+    <!-- Active Buffs Display -->
+    <div id="buffsContainer" style="position: fixed; top: 170px; left: 50%; transform: translateX(-50%); display: flex; gap: 0.5rem; z-index: 100;"></div>
 
     <!-- Three.js Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -964,7 +1006,11 @@
                 fireball: { cooldown: 0, maxCooldown: 5000, damage: 25, mpCost: 20 },
                 heal: { cooldown: 0, maxCooldown: 8000, healing: 30, mpCost: 15 },
                 lightning: { cooldown: 0, maxCooldown: 10000, damage: 50, mpCost: 35 }
-            }
+            },
+            pet: null, // NEW: Pet companion
+            buffs: [], // NEW: Active buffs
+            emote: null, // NEW: Current emote
+            craftedItems: 0 // NEW: Crafting counter
         };
 
         let players = {};
@@ -980,6 +1026,17 @@
         let joystickActive = false;
         let joystickDirection = { x: 0, y: 0 };
         let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        // NEW CREATIVE FEATURES
+        let playerPet = null; // Pet companion
+        let petMesh = null;
+        let currentWeather = 'clear'; // Weather system
+        let weatherParticles = [];
+        let activeBuffs = []; // Buff/debuff system
+        let bossMonsters = []; // Special boss spawns
+        let chatMessageCount = 0; // For achievements
+        let totalDistanceTraveled = 0; // For achievements
+        let lastPlayerPos = { x: 0, z: 0 };
 
         // Constants
         const PLAYER_SPEED = 0.15;
@@ -1058,6 +1115,39 @@
             { id: 'social', name: 'Social Butterfly', description: 'Chat 50 messages', icon: '💬' },
             { id: 'explorer', name: 'Explorer', description: 'Travel 1000 units', icon: '🗺️' }
         ];
+        
+        // NEW: Pet Database
+        const PETS = {
+            'Wolf Pup': { damage: 5, icon: '🐺', cost: 100, level: 1, description: 'A loyal wolf companion' },
+            'Fire Spirit': { damage: 10, icon: '🔥', cost: 300, level: 5, description: 'A magical fire elemental' },
+            'Ice Dragon': { damage: 20, icon: '🐉', cost: 1000, level: 15, description: 'A powerful dragon ally' },
+            'Phoenix': { damage: 15, healing: 5, icon: '🦅', cost: 800, level: 12, description: 'Heals you in battle' }
+        };
+        
+        // NEW: Crafting Recipes
+        const CRAFTING_RECIPES = {
+            'Wooden Sword': { materials: { Wood: 5 }, level: 1, craftingXP: 20 },
+            'Leather Armor': { materials: { 'Fish': 10 }, level: 1, craftingXP: 25 },
+            'Health Potion': { materials: { 'Fish': 3, 'Wood': 2 }, level: 1, craftingXP: 15 },
+            'Mana Potion': { materials: { 'Ore': 3, 'Wood': 2 }, level: 3, craftingXP: 20 },
+            'Iron Sword': { materials: { 'Ore': 10, 'Wood': 5 }, level: 5, craftingXP: 50 },
+            'Steel Armor': { materials: { 'Ore': 20, 'Wood': 10 }, level: 10, craftingXP: 100 }
+        };
+        
+        // NEW: Buff Database
+        const BUFFS = {
+            'strength': { name: 'Strength Boost', icon: '💪', duration: 30000, effect: { strength: 5 } },
+            'defense': { name: 'Iron Skin', icon: '🛡️', duration: 30000, effect: { defense: 5 } },
+            'speed': { name: 'Swift Feet', icon: '⚡', duration: 20000, effect: { speed: 5 } },
+            'regen': { name: 'Regeneration', icon: '💚', duration: 60000, effect: { hpRegen: 1 } },
+            'wisdom': { name: 'Arcane Wisdom', icon: '🔮', duration: 30000, effect: { magic: 10 } }
+        };
+        
+        // NEW: Emotes
+        const EMOTES = ['wave', 'dance', 'cheer', 'laugh', 'cry', 'angry', 'sleep', 'think'];
+        
+        // NEW: Weather types
+        const WEATHER_TYPES = ['clear', 'rain', 'snow', 'fog', 'storm'];
         
         // NEW: Day/Night cycle
         let timeOfDay = 0; // 0-24 hours
@@ -1570,15 +1660,15 @@
                 moved = true;
             }
             if (keys['a']) {
-                currentPlayer.x += Math.sin(cameraAngle - Math.PI/2) * moveSpeed;
-                currentPlayer.z += Math.cos(cameraAngle - Math.PI/2) * moveSpeed;
-                currentPlayer.rotation = cameraAngle - Math.PI/2;
-                moved = true;
-            }
-            if (keys['d']) {
                 currentPlayer.x += Math.sin(cameraAngle + Math.PI/2) * moveSpeed;
                 currentPlayer.z += Math.cos(cameraAngle + Math.PI/2) * moveSpeed;
                 currentPlayer.rotation = cameraAngle + Math.PI/2;
+                moved = true;
+            }
+            if (keys['d']) {
+                currentPlayer.x += Math.sin(cameraAngle - Math.PI/2) * moveSpeed;
+                currentPlayer.z += Math.cos(cameraAngle - Math.PI/2) * moveSpeed;
+                currentPlayer.rotation = cameraAngle - Math.PI/2;
                 moved = true;
             }
 
@@ -1781,9 +1871,20 @@
             currentPlayer.inventory[resource.item]++;
             
             addChatMessage('Gathering', `You gathered ${resource.item}! ${resource.skill} +1`, 'system');
+            updateQuestProgress('gather');
+            
+            // Check gathering achievement
+            const totalGathered = Object.values(currentPlayer.inventory).reduce((a, b) => a + b, 0);
+            if (totalGathered >= 100) checkAchievement('master_gatherer');
+            
+            // Rare buff drop from gathering
+            if (Math.random() < 0.1) {
+                applyBuff(['strength', 'speed', 'defense'][Math.floor(Math.random() * 3)]);
+            }
             
             // Visual feedback
             resourceMesh.visible = false;
+            createParticle(resource.x, resource.y, resource.z, 0x2ecc71, '✨');
             
             renderInventory();
             updateStats();
@@ -1873,6 +1974,8 @@
                     timestamp: Date.now()
                 });
                 input.value = '';
+                chatMessageCount++;
+                if (chatMessageCount >= 50) checkAchievement('social');
             }
         }
 
@@ -2530,6 +2633,9 @@
                 addChatMessage('Loot', `Found ${rareDrop}!`, 'system');
             }
             
+            // Buff drops from monsters
+            maybeDropBuff();
+            
             if (currentPlayer.gold >= 1000) checkAchievement('rich');
         }
         
@@ -2583,14 +2689,460 @@
             if (e.key === '1') useAbility('fireball');
             if (e.key === '2') useAbility('heal');
             if (e.key === '3') useAbility('lightning');
+            if (e.key === '4') changeWeather(); // Debug: Change weather
         });
+
+        // ========== NEW CREATIVE FEATURES ==========
+        
+        // PET SYSTEM
+        function openPetShop() {
+            document.getElementById('petShopPanel').style.display = 'block';
+            document.getElementById('petShopGold').textContent = currentPlayer.gold;
+            document.getElementById('activePet').textContent = currentPlayer.pet || 'None';
+            
+            const container = document.getElementById('petShopItems');
+            container.innerHTML = '';
+            
+            Object.entries(PETS).forEach(([name, pet]) => {
+                const canBuy = currentPlayer.level >= pet.level && currentPlayer.gold >= pet.cost;
+                const owned = currentPlayer.pet === name;
+                
+                container.innerHTML += `
+                    <div class="quest-item" style="opacity: ${canBuy || owned ? 1 : 0.5};">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-size: 2rem;">${pet.icon}</div>
+                                <strong>${name}</strong>
+                                <p style="font-size: 0.85rem; color: #bdc3c7; margin: 0.3rem 0;">${pet.description}</p>
+                                <span style="color: #e74c3c;">💥 ${pet.damage} damage</span>
+                                ${pet.healing ? `<span style="color: #2ecc71;"> | 💚 ${pet.healing} healing</span>` : ''}
+                                <br><span style="color: #95a5a6;">Level ${pet.level} required</span>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="color: #f39c12; font-size: 1.1rem; margin-bottom: 0.5rem;">💰 ${pet.cost}</div>
+                                ${owned ? '<span style="color: #2ecc71;">✓ Active</span>' : 
+                                  canBuy ? `<button class="action-btn" style="padding: 0.5rem 1rem;" onclick="buyPet('${name}')">Buy</button>` : 
+                                  '<span style="color: #e74c3c;">Locked</span>'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        
+        function buyPet(petName) {
+            const pet = PETS[petName];
+            if (currentPlayer.level < pet.level) {
+                addChatMessage('Pet Shop', `You need level ${pet.level} to buy this pet!`, 'system');
+                return;
+            }
+            if (currentPlayer.gold < pet.cost) {
+                addChatMessage('Pet Shop', 'Not enough gold!', 'system');
+                return;
+            }
+            
+            currentPlayer.gold -= pet.cost;
+            currentPlayer.pet = petName;
+            addChatMessage('Pet Shop', `🐾 You bought ${petName}!`, 'system');
+            createPetMesh();
+            openPetShop(); // Refresh display
+            saveGame();
+        }
+        
+        function createPetMesh() {
+            if (!currentPlayer.pet) return;
+            
+            // Remove old pet
+            if (petMesh) {
+                scene.remove(petMesh);
+            }
+            
+            const pet = PETS[currentPlayer.pet];
+            const geometry = new THREE.SphereGeometry(0.3, 8, 8);
+            const material = new THREE.MeshStandardMaterial({ 
+                color: pet.icon === '🐺' ? 0x808080 : pet.icon === '🔥' ? 0xff4500 : pet.icon === '🐉' ? 0x4169E1 : 0xff6347,
+                emissive: pet.icon === '🔥' ? 0xff4500 : 0x000000,
+                emissiveIntensity: 0.3
+            });
+            petMesh = new THREE.Mesh(geometry, material);
+            petMesh.castShadow = true;
+            scene.add(petMesh);
+        }
+        
+        function updatePet() {
+            if (!petMesh || !currentPlayer.pet) return;
+            
+            // Pet follows player with offset
+            const offsetDistance = 2;
+            const offsetAngle = currentPlayer.rotation + Math.PI;
+            petMesh.position.x = currentPlayer.x + Math.sin(offsetAngle) * offsetDistance;
+            petMesh.position.y = currentPlayer.y + 0.5 + Math.sin(Date.now() * 0.003) * 0.2;
+            petMesh.position.z = currentPlayer.z + Math.cos(offsetAngle) * offsetDistance;
+            
+            // Pet attacks nearby monsters
+            if (Math.random() < 0.05) {
+                const pet = PETS[currentPlayer.pet];
+                const nearbyMonster = findNearestMonster(5);
+                if (nearbyMonster) {
+                    nearbyMonster.currentHp -= pet.damage;
+                    createParticle(nearbyMonster.x, nearbyMonster.y, nearbyMonster.z, 0xff6347, '💥');
+                }
+            }
+        }
+        
+        function closePetShop() {
+            document.getElementById('petShopPanel').style.display = 'none';
+        }
+        
+        // CRAFTING SYSTEM
+        function openCraftingPanel() {
+            document.getElementById('craftingPanel').style.display = 'block';
+            document.getElementById('craftingLevel').textContent = currentPlayer.skills.crafting;
+            
+            const container = document.getElementById('craftingRecipes');
+            container.innerHTML = '';
+            
+            Object.entries(CRAFTING_RECIPES).forEach(([itemName, recipe]) => {
+                const canCraft = currentPlayer.skills.crafting >= recipe.level && 
+                                 Object.entries(recipe.materials).every(([mat, qty]) => 
+                                     (currentPlayer.inventory[mat] || 0) >= qty);
+                
+                const materialsText = Object.entries(recipe.materials)
+                    .map(([mat, qty]) => {
+                        const has = currentPlayer.inventory[mat] || 0;
+                        const color = has >= qty ? '#2ecc71' : '#e74c3c';
+                        return `<span style="color: ${color};">${mat} ${has}/${qty}</span>`;
+                    }).join(', ');
+                
+                container.innerHTML += `
+                    <div class="quest-item" style="opacity: ${canCraft ? 1 : 0.5};">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>Craft ${itemName}</strong>
+                                <p style="font-size: 0.85rem; margin: 0.3rem 0;">${materialsText}</p>
+                                <span style="color: #3498db;">+${recipe.craftingXP} Crafting XP</span>
+                                <span style="color: #95a5a6;"> | Level ${recipe.level}</span>
+                            </div>
+                            <button class="action-btn craft" style="padding: 0.5rem 1rem;" 
+                                    onclick="craftItem('${itemName}')" ${!canCraft ? 'disabled' : ''}>
+                                Craft
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        
+        function craftItem(itemName) {
+            const recipe = CRAFTING_RECIPES[itemName];
+            if (!recipe) return;
+            
+            if (currentPlayer.skills.crafting < recipe.level) {
+                addChatMessage('Crafting', `You need crafting level ${recipe.level}!`, 'system');
+                return;
+            }
+            
+            // Check materials
+            for (let [mat, qty] of Object.entries(recipe.materials)) {
+                if ((currentPlayer.inventory[mat] || 0) < qty) {
+                    addChatMessage('Crafting', `Not enough ${mat}!`, 'system');
+                    return;
+                }
+            }
+            
+            // Consume materials
+            for (let [mat, qty] of Object.entries(recipe.materials)) {
+                currentPlayer.inventory[mat] -= qty;
+                if (currentPlayer.inventory[mat] <= 0) delete currentPlayer.inventory[mat];
+            }
+            
+            // Create item
+            currentPlayer.inventory[itemName] = (currentPlayer.inventory[itemName] || 0) + 1;
+            currentPlayer.skills.crafting += recipe.craftingXP / 100;
+            currentPlayer.craftedItems++;
+            
+            addChatMessage('Crafting', `🔨 Crafted ${itemName}!`, 'system');
+            createParticle(currentPlayer.x, currentPlayer.y, currentPlayer.z, 0xffa500, '✨');
+            updateQuestProgress('craft');
+            
+            if (isMobile && navigator.vibrate) navigator.vibrate(50);
+            
+            openCraftingPanel(); // Refresh
+            renderInventory();
+            saveGame();
+        }
+        
+        function closeCraftingPanel() {
+            document.getElementById('craftingPanel').style.display = 'none';
+        }
+        
+        // WEATHER SYSTEM
+        function changeWeather() {
+            const newWeather = WEATHER_TYPES[Math.floor(Math.random() * WEATHER_TYPES.length)];
+            setWeather(newWeather);
+        }
+        
+        function setWeather(weatherType) {
+            currentWeather = weatherType;
+            
+            // Clear old weather particles
+            weatherParticles.forEach(p => scene.remove(p));
+            weatherParticles = [];
+            
+            const weatherIcons = { clear: '☀️', rain: '🌧️', snow: '❄️', fog: '🌫️', storm: '⛈️' };
+            document.getElementById('weatherIcon').textContent = weatherIcons[weatherType];
+            document.getElementById('weatherText').textContent = weatherType.charAt(0).toUpperCase() + weatherType.slice(1);
+            
+            // Create weather effects
+            if (weatherType === 'rain' || weatherType === 'snow' || weatherType === 'storm') {
+                for (let i = 0; i < 100; i++) {
+                    const geometry = new THREE.SphereGeometry(weatherType === 'snow' ? 0.05 : 0.03, 4, 4);
+                    const material = new THREE.MeshBasicMaterial({ 
+                        color: weatherType === 'snow' ? 0xffffff : 0x4169e1,
+                        transparent: true,
+                        opacity: 0.6
+                    });
+                    const particle = new THREE.Mesh(geometry, material);
+                    particle.position.set(
+                        (Math.random() - 0.5) * MAP_SIZE,
+                        Math.random() * 30 + 10,
+                        (Math.random() - 0.5) * MAP_SIZE
+                    );
+                    particle.userData = { 
+                        speed: weatherType === 'snow' ? 0.02 : (weatherType === 'storm' ? 0.3 : 0.1),
+                        drift: Math.random() * 0.02 - 0.01
+                    };
+                    scene.add(particle);
+                    weatherParticles.push(particle);
+                }
+            }
+            
+            // Fog effect
+            if (weatherType === 'fog') {
+                scene.fog = new THREE.Fog(0xcccccc, 10, 30);
+            } else {
+                scene.fog = null;
+            }
+            
+            // Storm darkens sky
+            if (weatherType === 'storm') {
+                scene.background = new THREE.Color(0x2c3e50);
+            }
+            
+            addChatMessage('Weather', `Weather changed to ${weatherType}!`, 'system');
+        }
+        
+        function updateWeather() {
+            weatherParticles.forEach(particle => {
+                particle.position.y -= particle.userData.speed;
+                particle.position.x += particle.userData.drift;
+                
+                if (particle.position.y < 0) {
+                    particle.position.y = 30;
+                    particle.position.x = currentPlayer.x + (Math.random() - 0.5) * 50;
+                    particle.position.z = currentPlayer.z + (Math.random() - 0.5) * 50;
+                }
+            });
+            
+            // Random weather changes
+            if (Math.random() < 0.0005) {
+                changeWeather();
+            }
+        }
+        
+        // BUFF SYSTEM
+        function applyBuff(buffType) {
+            const buff = BUFFS[buffType];
+            if (!buff) return;
+            
+            const existingBuff = activeBuffs.find(b => b.type === buffType);
+            if (existingBuff) {
+                existingBuff.endTime = Date.now() + buff.duration;
+            } else {
+                activeBuffs.push({
+                    type: buffType,
+                    ...buff,
+                    endTime: Date.now() + buff.duration
+                });
+                
+                // Apply effect
+                Object.entries(buff.effect).forEach(([stat, value]) => {
+                    if (stat === 'hpRegen') return; // Handled separately
+                    currentPlayer.stats[stat] = (currentPlayer.stats[stat] || 0) + value;
+                });
+                
+                addChatMessage('Buff', `${buff.icon} ${buff.name} activated!`, 'system');
+                createParticle(currentPlayer.x, currentPlayer.y, currentPlayer.z, 0x9b59b6, '✨');
+            }
+            
+            updateBuffDisplay();
+        }
+        
+        function updateBuffs() {
+            const now = Date.now();
+            activeBuffs = activeBuffs.filter(buff => {
+                if (now >= buff.endTime) {
+                    // Remove effect
+                    Object.entries(buff.effect).forEach(([stat, value]) => {
+                        if (stat === 'hpRegen') return;
+                        currentPlayer.stats[stat] = (currentPlayer.stats[stat] || 0) - value;
+                    });
+                    addChatMessage('Buff', `${buff.icon} ${buff.name} wore off`, 'system');
+                    return false;
+                }
+                
+                // Apply regen
+                if (buff.effect.hpRegen) {
+                    currentPlayer.hp = Math.min(currentPlayer.maxHp, currentPlayer.hp + buff.effect.hpRegen * 0.1);
+                }
+                
+                return true;
+            });
+            
+            updateBuffDisplay();
+        }
+        
+        function updateBuffDisplay() {
+            const container = document.getElementById('buffsContainer');
+            container.innerHTML = '';
+            
+            activeBuffs.forEach(buff => {
+                const timeLeft = Math.ceil((buff.endTime - Date.now()) / 1000);
+                container.innerHTML += `
+                    <div style="background: rgba(155, 89, 182, 0.9); padding: 0.5rem; border-radius: 10px; text-align: center; min-width: 50px;">
+                        <div style="font-size: 1.5rem;">${buff.icon}</div>
+                        <div style="font-size: 0.7rem;">${timeLeft}s</div>
+                    </div>
+                `;
+            });
+        }
+        
+        // Random buff drops from monsters
+        function maybeDropBuff() {
+            if (Math.random() < 0.15) {
+                const buffTypes = Object.keys(BUFFS);
+                const randomBuff = buffTypes[Math.floor(Math.random() * buffTypes.length)];
+                applyBuff(randomBuff);
+            }
+        }
+        
+        // EMOTE SYSTEM
+        function openEmoteMenu() {
+            document.getElementById('emotePanel').style.display = 'block';
+            
+            const grid = document.getElementById('emoteGrid');
+            grid.innerHTML = '';
+            
+            const emoteIcons = {
+                wave: '👋', dance: '💃', cheer: '🎉', laugh: '😂',
+                cry: '😢', angry: '😠', sleep: '😴', think: '🤔'
+            };
+            
+            EMOTES.forEach(emote => {
+                grid.innerHTML += `
+                    <button class="action-btn" style="padding: 1rem; font-size: 2rem;" 
+                            onclick="performEmote('${emote}')">
+                        ${emoteIcons[emote]}
+                    </button>
+                `;
+            });
+        }
+        
+        function performEmote(emote) {
+            currentPlayer.emote = emote;
+            
+            const emoteMessages = {
+                wave: '👋 waves', dance: '💃 dances', cheer: '🎉 cheers',
+                laugh: '😂 laughs', cry: '😢 cries', angry: '😠 is angry',
+                sleep: '😴 is sleeping', think: '🤔 is thinking'
+            };
+            
+            addChatMessage(currentPlayer.name, emoteMessages[emote], 'emote');
+            
+            // Show emote above player
+            createParticle(currentPlayer.x, currentPlayer.y + 2, currentPlayer.z, 0xffffff, 
+                          {wave: '👋', dance: '💃', cheer: '🎉', laugh: '😂', cry: '😢', 
+                           angry: '😠', sleep: '😴', think: '🤔'}[emote]);
+            
+            setTimeout(() => {
+                currentPlayer.emote = null;
+            }, 3000);
+            
+            closeEmoteMenu();
+        }
+        
+        function closeEmoteMenu() {
+            document.getElementById('emotePanel').style.display = 'none';
+        }
+        
+        // ACHIEVEMENT TRACKING
+        function trackDistance() {
+            const dist = Math.hypot(currentPlayer.x - lastPlayerPos.x, currentPlayer.z - lastPlayerPos.z);
+            totalDistanceTraveled += dist;
+            lastPlayerPos = { x: currentPlayer.x, z: currentPlayer.z };
+            
+            if (totalDistanceTraveled >= 1000) checkAchievement('explorer');
+        }
+        
+        // ENHANCED GAME SAVING
+        function saveGame() {
+            localStorage.setItem('fantasyquest_save', JSON.stringify({
+                name: currentPlayer.name,
+                level: currentPlayer.level,
+                xp: currentPlayer.xp,
+                gold: currentPlayer.gold,
+                hp: currentPlayer.hp,
+                mp: currentPlayer.mp,
+                skills: currentPlayer.skills,
+                stats: currentPlayer.stats,
+                equipment: currentPlayer.equipment,
+                inventory: currentPlayer.inventory,
+                pet: currentPlayer.pet,
+                achievements: currentPlayer.achievements,
+                quests: currentPlayer.quests,
+                craftedItems: currentPlayer.craftedItems,
+                distanceTraveled: totalDistanceTraveled,
+                chatCount: chatMessageCount
+            }));
+        }
+        
+        function loadGame() {
+            const save = localStorage.getItem('fantasyquest_save');
+            if (!save) return false;
+            
+            try {
+                const data = JSON.parse(save);
+                Object.assign(currentPlayer, data);
+                totalDistanceTraveled = data.distanceTraveled || 0;
+                chatMessageCount = data.chatCount || 0;
+                if (data.pet) createPetMesh();
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+        
+        // Enhanced game loop
+        const originalInterval = setInterval(() => {
+            updatePet();
+            updateWeather();
+            updateBuffs();
+            trackDistance();
+            if (Math.random() < 0.01) saveGame(); // Auto-save
+        }, 100);
 
         // Cleanup on page unload
         window.addEventListener('beforeunload', () => {
+            saveGame();
             if (currentPlayer.id) {
                 playersRef.child(currentPlayer.id).remove();
             }
         });
+        
+        // Initialize weather
+        setTimeout(() => {
+            if (scene) setWeather('clear');
+        }, 2000);
     </script>
 </body>
 </html>
