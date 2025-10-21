@@ -1389,6 +1389,8 @@
         let totalDistanceTraveled = 0; // For achievements
         let lastPlayerPos = { x: 0, z: 0 };
         let equippedWeaponMesh = null; // Visual weapon mesh
+        let targetMonster = null; // Monster being walked to
+        let targetResource = null; // Resource being walked to
 
         // Constants
         const PLAYER_SPEED = 0.15;
@@ -2926,26 +2928,26 @@
             let moved = false;
             const moveSpeed = PLAYER_SPEED;
 
-            // Keyboard controls
-            if (keys['w']) {
+            // Keyboard controls (WASD and Arrow Keys)
+            if (keys['w'] || keys['ArrowUp']) {
                 currentPlayer.x += Math.sin(cameraAngle) * moveSpeed;
                 currentPlayer.z += Math.cos(cameraAngle) * moveSpeed;
                 currentPlayer.rotation = cameraAngle;
                 moved = true;
             }
-            if (keys['s']) {
+            if (keys['s'] || keys['ArrowDown']) {
                 currentPlayer.x -= Math.sin(cameraAngle) * moveSpeed;
                 currentPlayer.z -= Math.cos(cameraAngle) * moveSpeed;
                 currentPlayer.rotation = cameraAngle + Math.PI;
                 moved = true;
             }
-            if (keys['a']) {
+            if (keys['a'] || keys['ArrowLeft']) {
                 currentPlayer.x += Math.sin(cameraAngle + Math.PI/2) * moveSpeed;
                 currentPlayer.z += Math.cos(cameraAngle + Math.PI/2) * moveSpeed;
                 currentPlayer.rotation = cameraAngle + Math.PI/2;
                 moved = true;
             }
-            if (keys['d']) {
+            if (keys['d'] || keys['ArrowRight']) {
                 currentPlayer.x += Math.sin(cameraAngle - Math.PI/2) * moveSpeed;
                 currentPlayer.z += Math.cos(cameraAngle - Math.PI/2) * moveSpeed;
                 currentPlayer.rotation = cameraAngle - Math.PI/2;
@@ -2972,6 +2974,40 @@
                     currentPlayer.z += dz * moveSpeed;
                     currentPlayer.rotation = Math.atan2(dx, dz);
                     moved = true;
+                }
+            }
+
+            // Auto-walk to target monster
+            if (targetMonster && targetMonster.monster.currentHp > 0) {
+                const dist = Math.hypot(currentPlayer.x - targetMonster.monster.x, currentPlayer.z - targetMonster.monster.z);
+                if (dist > 4) {
+                    // Walk towards monster
+                    const angle = Math.atan2(targetMonster.monster.x - currentPlayer.x, targetMonster.monster.z - currentPlayer.z);
+                    currentPlayer.x += Math.sin(angle) * moveSpeed;
+                    currentPlayer.z += Math.cos(angle) * moveSpeed;
+                    currentPlayer.rotation = angle;
+                    moved = true;
+                } else {
+                    // Close enough - attack!
+                    attackMonster(targetMonster.monster, targetMonster.mesh);
+                    targetMonster = null;
+                }
+            }
+            
+            // Auto-walk to target resource
+            if (targetResource && targetResource.resource.available) {
+                const dist = Math.hypot(currentPlayer.x - targetResource.resource.x, currentPlayer.z - targetResource.resource.z);
+                if (dist > 2.5) {
+                    // Walk towards resource
+                    const angle = Math.atan2(targetResource.resource.x - currentPlayer.x, targetResource.resource.z - currentPlayer.z);
+                    currentPlayer.x += Math.sin(angle) * moveSpeed;
+                    currentPlayer.z += Math.cos(angle) * moveSpeed;
+                    currentPlayer.rotation = angle;
+                    moved = true;
+                } else {
+                    // Close enough - gather!
+                    harvestResource(targetResource.resource, targetResource.mesh);
+                    targetResource = null;
                 }
             }
 
@@ -3101,6 +3137,12 @@
                     if (dist < 5) {
                         attackMonster(monster, monsterGroup);
                         return;
+                    } else {
+                        // Too far - walk towards monster
+                        targetMonster = { monster: monster, mesh: monsterGroup };
+                        targetResource = null;
+                        addChatMessage('System', `Walking to ${monster.name}...`, 'system');
+                        return;
                     }
                 }
             }
@@ -3117,6 +3159,13 @@
                     const dist = Math.hypot(currentPlayer.x - resource.x, currentPlayer.z - resource.z);
                     if (dist < 3) {
                         harvestResource(resource, resourceMesh);
+                        return;
+                    } else {
+                        // Too far - walk towards resource
+                        targetResource = { resource: resource, mesh: resourceMesh };
+                        targetMonster = null;
+                        addChatMessage('System', `Walking to ${resource.name}...`, 'system');
+                        return;
                     }
                 }
             }
@@ -4184,6 +4233,236 @@
         
         function closeCraftingPanel() {
             document.getElementById('craftingPanel').style.display = 'none';
+        }
+        
+        // PARTICLE AND EMOTE SYSTEM
+        function createParticle(x, y, z, color, emoji) {
+            if (!scene) return;
+            
+            // Create emoji sprite using canvas
+            const canvas = document.createElement('canvas');
+            canvas.width = 128;
+            canvas.height = 128;
+            const context = canvas.getContext('2d');
+            
+            // Draw emoji
+            context.font = 'Bold 80px Arial';
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText(emoji, 64, 64);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            const spriteMaterial = new THREE.SpriteMaterial({ 
+                map: texture,
+                transparent: true
+            });
+            const sprite = new THREE.Sprite(spriteMaterial);
+            sprite.position.set(x, y, z);
+            sprite.scale.set(1, 1, 1);
+            scene.add(sprite);
+            
+            // Animate upward and fade out
+            let lifetime = 0;
+            const animateParticle = () => {
+                lifetime += 0.05;
+                sprite.position.y += 0.02;
+                sprite.material.opacity = 1 - lifetime;
+                
+                if (lifetime < 1) {
+                    requestAnimationFrame(animateParticle);
+                } else {
+                    scene.remove(sprite);
+                    sprite.material.dispose();
+                    texture.dispose();
+                }
+            };
+            animateParticle();
+        }
+        
+        // PET SYSTEM
+        function createPetMesh() {
+            if (!currentPlayer.pet || !scene || petMesh) return;
+            
+            const petData = PETS[currentPlayer.pet];
+            if (!petData) return;
+            
+            const petGroup = new THREE.Group();
+            
+            // Create pet based on type
+            if (currentPlayer.pet === 'Wolf Pup') {
+                // Wolf body
+                const bodyGeometry = new THREE.BoxGeometry(0.6, 0.4, 0.8);
+                const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x808080 });
+                const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+                body.position.y = 0.3;
+                body.castShadow = true;
+                petGroup.add(body);
+                
+                // Wolf head
+                const headGeometry = new THREE.BoxGeometry(0.4, 0.35, 0.4);
+                const head = new THREE.Mesh(headGeometry, bodyMaterial);
+                head.position.set(0, 0.4, 0.5);
+                head.castShadow = true;
+                petGroup.add(head);
+                
+                // Ears
+                const earGeometry = new THREE.ConeGeometry(0.1, 0.2, 4);
+                const leftEar = new THREE.Mesh(earGeometry, bodyMaterial);
+                leftEar.position.set(-0.15, 0.65, 0.5);
+                leftEar.castShadow = true;
+                petGroup.add(leftEar);
+                
+                const rightEar = new THREE.Mesh(earGeometry, bodyMaterial);
+                rightEar.position.set(0.15, 0.65, 0.5);
+                rightEar.castShadow = true;
+                petGroup.add(rightEar);
+                
+                // Tail
+                const tailGeometry = new THREE.CylinderGeometry(0.05, 0.08, 0.4, 8);
+                const tail = new THREE.Mesh(tailGeometry, bodyMaterial);
+                tail.position.set(0, 0.4, -0.5);
+                tail.rotation.x = Math.PI / 4;
+                tail.castShadow = true;
+                petGroup.add(tail);
+                
+            } else if (currentPlayer.pet === 'Fire Spirit') {
+                // Fire spirit body (floating flame)
+                const bodyGeometry = new THREE.SphereGeometry(0.4, 16, 16);
+                const bodyMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0xff4500,
+                    emissive: 0xff4500,
+                    emissiveIntensity: 0.5
+                });
+                const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+                body.position.y = 0.5;
+                body.castShadow = true;
+                petGroup.add(body);
+                
+                // Flame wisps
+                for (let i = 0; i < 5; i++) {
+                    const wispGeometry = new THREE.ConeGeometry(0.1, 0.3, 4);
+                    const wispMaterial = new THREE.MeshStandardMaterial({ 
+                        color: 0xffa500,
+                        emissive: 0xff8c00,
+                        emissiveIntensity: 0.8
+                    });
+                    const wisp = new THREE.Mesh(wispGeometry, wispMaterial);
+                    const angle = (i / 5) * Math.PI * 2;
+                    wisp.position.set(Math.cos(angle) * 0.3, 0.5 + Math.random() * 0.3, Math.sin(angle) * 0.3);
+                    wisp.castShadow = true;
+                    petGroup.add(wisp);
+                }
+                
+            } else if (currentPlayer.pet === 'Ice Dragon') {
+                // Dragon body
+                const bodyGeometry = new THREE.BoxGeometry(0.5, 0.4, 0.9);
+                const bodyMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x87ceeb,
+                    metalness: 0.3,
+                    roughness: 0.7
+                });
+                const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+                body.position.y = 0.4;
+                body.castShadow = true;
+                petGroup.add(body);
+                
+                // Dragon head
+                const headGeometry = new THREE.BoxGeometry(0.35, 0.3, 0.45);
+                const head = new THREE.Mesh(headGeometry, bodyMaterial);
+                head.position.set(0, 0.5, 0.6);
+                head.castShadow = true;
+                petGroup.add(head);
+                
+                // Wings
+                const wingGeometry = new THREE.BoxGeometry(0.6, 0.02, 0.5);
+                const wingMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0xb0e0e6,
+                    transparent: true,
+                    opacity: 0.7
+                });
+                const leftWing = new THREE.Mesh(wingGeometry, wingMaterial);
+                leftWing.position.set(-0.5, 0.5, 0);
+                leftWing.rotation.z = Math.PI / 6;
+                leftWing.castShadow = true;
+                petGroup.add(leftWing);
+                
+                const rightWing = new THREE.Mesh(wingGeometry, wingMaterial);
+                rightWing.position.set(0.5, 0.5, 0);
+                rightWing.rotation.z = -Math.PI / 6;
+                rightWing.castShadow = true;
+                petGroup.add(rightWing);
+                
+                // Tail
+                const tailGeometry = new THREE.ConeGeometry(0.1, 0.6, 8);
+                const tail = new THREE.Mesh(tailGeometry, bodyMaterial);
+                tail.position.set(0, 0.3, -0.6);
+                tail.rotation.x = Math.PI / 2;
+                tail.castShadow = true;
+                petGroup.add(tail);
+                
+            } else if (currentPlayer.pet === 'Phoenix') {
+                // Phoenix body
+                const bodyGeometry = new THREE.SphereGeometry(0.35, 16, 16);
+                const bodyMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0xff6347,
+                    emissive: 0xff4500,
+                    emissiveIntensity: 0.3
+                });
+                const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+                body.position.y = 0.5;
+                body.castShadow = true;
+                petGroup.add(body);
+                
+                // Wings
+                const wingGeometry = new THREE.BoxGeometry(0.8, 0.03, 0.5);
+                const wingMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0xffa500,
+                    emissive: 0xff8c00,
+                    emissiveIntensity: 0.2
+                });
+                const leftWing = new THREE.Mesh(wingGeometry, wingMaterial);
+                leftWing.position.set(-0.6, 0.6, 0);
+                leftWing.rotation.z = Math.PI / 4;
+                leftWing.castShadow = true;
+                petGroup.add(leftWing);
+                
+                const rightWing = new THREE.Mesh(wingGeometry, wingMaterial);
+                rightWing.position.set(0.6, 0.6, 0);
+                rightWing.rotation.z = -Math.PI / 4;
+                rightWing.castShadow = true;
+                petGroup.add(rightWing);
+                
+                // Tail feathers
+                for (let i = 0; i < 3; i++) {
+                    const featherGeometry = new THREE.ConeGeometry(0.05, 0.4, 4);
+                    const feather = new THREE.Mesh(featherGeometry, wingMaterial);
+                    feather.position.set((i - 1) * 0.1, 0.3, -0.4);
+                    feather.rotation.x = -Math.PI / 4;
+                    feather.castShadow = true;
+                    petGroup.add(feather);
+                }
+            }
+            
+            // Position pet next to player
+            petGroup.position.set(currentPlayer.x + 1, currentPlayer.y, currentPlayer.z);
+            petMesh = petGroup;
+            scene.add(petMesh);
+        }
+        
+        function updatePet() {
+            if (petMesh && currentPlayer.pet) {
+                // Follow player with slight offset and bobbing motion
+                const targetX = currentPlayer.x + Math.cos(Date.now() * 0.001) * 1.5;
+                const targetZ = currentPlayer.z + Math.sin(Date.now() * 0.001) * 1.5;
+                
+                petMesh.position.x += (targetX - petMesh.position.x) * 0.05;
+                petMesh.position.z += (targetZ - petMesh.position.z) * 0.05;
+                petMesh.position.y = currentPlayer.y + Math.sin(Date.now() * 0.003) * 0.2;
+                
+                // Rotate to face player
+                const angle = Math.atan2(currentPlayer.x - petMesh.position.x, currentPlayer.z - petMesh.position.z);
+                petMesh.rotation.y = angle;
+            }
         }
         
         // WEATHER SYSTEM
