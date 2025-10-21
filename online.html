@@ -667,9 +667,52 @@
     <div id="loginScreen">
         <div class="login-box">
             <h1>⚔️ FantasyQuest 3D MMORPG</h1>
-            <p>Enter your character name to begin your 3D adventure!</p>
-            <input type="text" id="usernameInput" placeholder="Enter character name" maxlength="20">
-            <button onclick="login()">Start Adventure</button>
+            
+            <!-- Tab Navigation -->
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                <button id="loginTab" class="auth-tab active" onclick="showLoginTab()" style="flex: 1; padding: 0.75rem; border: none; background: #667eea; color: white; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                    Login
+                </button>
+                <button id="signupTab" class="auth-tab" onclick="showSignupTab()" style="flex: 1; padding: 0.75rem; border: none; background: #ddd; color: #666; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                    Sign Up
+                </button>
+            </div>
+            
+            <!-- Login Form -->
+            <div id="loginForm">
+                <p style="color: #666; margin-bottom: 1rem;">Login to your account</p>
+                <input type="email" id="loginEmail" placeholder="Email address" style="width: 100%; padding: 1rem; margin-bottom: 0.75rem; border: 2px solid #ddd; border-radius: 10px; font-size: 1rem;">
+                <input type="password" id="loginPassword" placeholder="Password" style="width: 100%; padding: 1rem; margin-bottom: 0.75rem; border: 2px solid #ddd; border-radius: 10px; font-size: 1rem;">
+                <button onclick="loginWithEmail()" style="width: 100%; padding: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-bottom: 0.75rem;">
+                    Login
+                </button>
+                <div style="text-align: center; margin: 1rem 0; color: #999;">or</div>
+                <button onclick="loginWithGoogle()" style="width: 100%; padding: 1rem; background: white; color: #333; border: 2px solid #ddd; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                    <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                    Continue with Google
+                </button>
+            </div>
+            
+            <!-- Signup Form -->
+            <div id="signupForm" style="display: none;">
+                <p style="color: #666; margin-bottom: 1rem;">Create a new account</p>
+                <input type="text" id="signupCharacterName" placeholder="Character name" maxlength="20" style="width: 100%; padding: 1rem; margin-bottom: 0.75rem; border: 2px solid #ddd; border-radius: 10px; font-size: 1rem;">
+                <input type="email" id="signupEmail" placeholder="Email address" style="width: 100%; padding: 1rem; margin-bottom: 0.75rem; border: 2px solid #ddd; border-radius: 10px; font-size: 1rem;">
+                <input type="password" id="signupPassword" placeholder="Password (min 6 characters)" style="width: 100%; padding: 1rem; margin-bottom: 0.75rem; border: 2px solid #ddd; border-radius: 10px; font-size: 1rem;">
+                <input type="password" id="signupPasswordConfirm" placeholder="Confirm password" style="width: 100%; padding: 1rem; margin-bottom: 0.75rem; border: 2px solid #ddd; border-radius: 10px; font-size: 1rem;">
+                <button onclick="signupWithEmail()" style="width: 100%; padding: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-bottom: 0.75rem;">
+                    Create Account
+                </button>
+                <div style="text-align: center; margin: 1rem 0; color: #999;">or</div>
+                <button onclick="loginWithGoogle()" style="width: 100%; padding: 1rem; background: white; color: #333; border: 2px solid #ddd; border-radius: 10px; font-size: 1rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                    <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                    Sign up with Google
+                </button>
+            </div>
+            
+            <div id="authError" style="margin-top: 1rem; padding: 0.75rem; background: #fee; color: #c00; border-radius: 5px; display: none; font-size: 0.9rem;"></div>
+            <div id="authSuccess" style="margin-top: 1rem; padding: 0.75rem; background: #efe; color: #060; border-radius: 5px; display: none; font-size: 0.9rem;"></div>
+            
             <p style="margin-top: 1rem; font-size: 0.8rem; color: #999;">Play with other players in real-time 3D!</p>
         </div>
     </div>
@@ -793,7 +836,12 @@
                     <div id="gameTitle">⚔️ FantasyQuest 3D Online</div>
                     <a href="index.html" style="color: #95a5a6; text-decoration: none; font-size: 0.9rem;">← Back to Home</a>
                 </div>
-                <div id="onlineCount">🟢 0 players online</div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div id="onlineCount">🟢 0 players online</div>
+                    <button onclick="logoutUser()" style="padding: 0.5rem 1rem; background: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                        🚪 Logout
+                    </button>
+                </div>
             </div>
             <canvas id="renderCanvas"></canvas>
             <div class="controls-hint">WASD: Move • Mouse: Rotate Camera • Click: Interact<br>Q/E: Rotate Camera • Scroll: Zoom • 1/2/3: Abilities</div>
@@ -929,6 +977,7 @@
     
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     
     <script>
@@ -946,6 +995,12 @@
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
+        const auth = firebase.auth();
+        
+        // ========== FIREBASE AUTHENTICATION SYSTEM ==========
+        
+        let currentUser = null; // Firebase user object
+        let userProfileRef = null; // Database reference for user profile
 
         // Three.js variables
         let scene, camera, renderer, canvas;
@@ -1154,24 +1209,375 @@
         let dayNightSpeed = 0.01; // How fast time passes
 
         // Login
-        function login() {
-            const username = document.getElementById('usernameInput').value.trim();
-            if (!username || username.length < 3) {
-                alert('Please enter a name with at least 3 characters!');
+        // ========== AUTHENTICATION UI FUNCTIONS ==========
+        
+        function showLoginTab() {
+            document.getElementById('loginTab').classList.add('active');
+            document.getElementById('loginTab').style.background = '#667eea';
+            document.getElementById('loginTab').style.color = 'white';
+            document.getElementById('signupTab').classList.remove('active');
+            document.getElementById('signupTab').style.background = '#ddd';
+            document.getElementById('signupTab').style.color = '#666';
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('signupForm').style.display = 'none';
+            hideAuthMessages();
+        }
+        
+        function showSignupTab() {
+            document.getElementById('signupTab').classList.add('active');
+            document.getElementById('signupTab').style.background = '#667eea';
+            document.getElementById('signupTab').style.color = 'white';
+            document.getElementById('loginTab').classList.remove('active');
+            document.getElementById('loginTab').style.background = '#ddd';
+            document.getElementById('loginTab').style.color = '#666';
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('signupForm').style.display = 'block';
+            hideAuthMessages();
+        }
+        
+        function showAuthError(message) {
+            const errorDiv = document.getElementById('authError');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('authSuccess').style.display = 'none';
+        }
+        
+        function showAuthSuccess(message) {
+            const successDiv = document.getElementById('authSuccess');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            document.getElementById('authError').style.display = 'none';
+        }
+        
+        function hideAuthMessages() {
+            document.getElementById('authError').style.display = 'none';
+            document.getElementById('authSuccess').style.display = 'none';
+        }
+        
+        // ========== FIREBASE AUTHENTICATION FUNCTIONS ==========
+        
+        // Login with Email/Password
+        async function loginWithEmail() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                showAuthError('Please enter both email and password');
                 return;
             }
-
-            currentPlayer.name = username;
-            currentPlayer.id = 'player_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
             
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('loading').classList.remove('hidden');
+            try {
+                showAuthSuccess('Logging in...');
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                // Auth state listener will handle the rest
+            } catch (error) {
+                console.error('Login error:', error);
+                let errorMessage = 'Login failed: ';
+                switch (error.code) {
+                    case 'auth/user-not-found':
+                        errorMessage += 'No account found with this email';
+                        break;
+                    case 'auth/wrong-password':
+                        errorMessage += 'Incorrect password';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage += 'Invalid email address';
+                        break;
+                    case 'auth/user-disabled':
+                        errorMessage += 'This account has been disabled';
+                        break;
+                    default:
+                        errorMessage += error.message;
+                }
+                showAuthError(errorMessage);
+            }
+        }
+        
+        // Sign up with Email/Password
+        async function signupWithEmail() {
+            const characterName = document.getElementById('signupCharacterName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
             
-            setTimeout(() => {
-                document.getElementById('loading').classList.add('hidden');
-                document.getElementById('gameContainer').classList.remove('hidden');
-                initGame();
-            }, 1000);
+            // Validation
+            if (!characterName || characterName.length < 3) {
+                showAuthError('Character name must be at least 3 characters');
+                return;
+            }
+            
+            if (!email) {
+                showAuthError('Please enter your email address');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showAuthError('Password must be at least 6 characters');
+                return;
+            }
+            
+            if (password !== passwordConfirm) {
+                showAuthError('Passwords do not match');
+                return;
+            }
+            
+            try {
+                showAuthSuccess('Creating account...');
+                
+                // Create Firebase account
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                
+                // Create initial profile in database
+                await database.ref('user_profiles/' + user.uid).set({
+                    name: characterName,
+                    email: email,
+                    level: 1,
+                    gold: 0,
+                    xp: 0,
+                    hp: 100,
+                    maxHp: 100,
+                    mp: 100,
+                    maxMp: 100,
+                    skills: {
+                        combat: 1,
+                        mining: 1,
+                        woodcutting: 1,
+                        fishing: 1,
+                        crafting: 1,
+                        magic: 1
+                    },
+                    stats: {
+                        strength: 10,
+                        defense: 10,
+                        magic: 10,
+                        speed: 10
+                    },
+                    equipment: {
+                        weapon: null,
+                        armor: null,
+                        helmet: null,
+                        boots: null
+                    },
+                    inventory: {},
+                    pet: null,
+                    achievements: [],
+                    quests: {
+                        active: [],
+                        completed: []
+                    },
+                    craftedItems: 0,
+                    createdAt: Date.now()
+                });
+                
+                showAuthSuccess('Account created! Logging in...');
+                // Auth state listener will handle the rest
+                
+            } catch (error) {
+                console.error('Signup error:', error);
+                let errorMessage = 'Signup failed: ';
+                switch (error.code) {
+                    case 'auth/email-already-in-use':
+                        errorMessage += 'This email is already registered';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage += 'Invalid email address';
+                        break;
+                    case 'auth/weak-password':
+                        errorMessage += 'Password is too weak';
+                        break;
+                    default:
+                        errorMessage += error.message;
+                }
+                showAuthError(errorMessage);
+            }
+        }
+        
+        // Login with Google
+        async function loginWithGoogle() {
+            try {
+                showAuthSuccess('Opening Google sign-in...');
+                const provider = new firebase.auth.GoogleAuthProvider();
+                const result = await auth.signInWithPopup(provider);
+                
+                // Check if this is a new user
+                const user = result.user;
+                const profileSnapshot = await database.ref('user_profiles/' + user.uid).once('value');
+                
+                if (!profileSnapshot.exists()) {
+                    // New Google user - create profile
+                    const characterName = user.displayName || 'Hero';
+                    await database.ref('user_profiles/' + user.uid).set({
+                        name: characterName,
+                        email: user.email,
+                        level: 1,
+                        gold: 0,
+                        xp: 0,
+                        hp: 100,
+                        maxHp: 100,
+                        mp: 100,
+                        maxMp: 100,
+                        skills: {
+                            combat: 1,
+                            mining: 1,
+                            woodcutting: 1,
+                            fishing: 1,
+                            crafting: 1,
+                            magic: 1
+                        },
+                        stats: {
+                            strength: 10,
+                            defense: 10,
+                            magic: 10,
+                            speed: 10
+                        },
+                        equipment: {
+                            weapon: null,
+                            armor: null,
+                            helmet: null,
+                            boots: null
+                        },
+                        inventory: {},
+                        pet: null,
+                        achievements: [],
+                        quests: {
+                            active: [],
+                            completed: []
+                        },
+                        craftedItems: 0,
+                        createdAt: Date.now()
+                    });
+                }
+                
+                // Auth state listener will handle the rest
+                
+            } catch (error) {
+                console.error('Google login error:', error);
+                if (error.code !== 'auth/popup-closed-by-user') {
+                    showAuthError('Google sign-in failed: ' + error.message);
+                }
+            }
+        }
+        
+        // Logout
+        async function logoutUser() {
+            try {
+                // Save game before logout
+                await saveGameToCloud();
+                
+                // Remove player from online players
+                if (currentPlayer.id && playersRef) {
+                    await playersRef.child(currentPlayer.id).remove();
+                }
+                
+                // Sign out
+                await auth.signOut();
+                
+                // Reload page
+                window.location.reload();
+                
+            } catch (error) {
+                console.error('Logout error:', error);
+                addChatMessage('System', 'Logout failed: ' + error.message, 'system');
+            }
+        }
+        
+        // ========== AUTH STATE LISTENER ==========
+        
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                // User is logged in
+                currentUser = user;
+                console.log('User authenticated:', user.email);
+                
+                try {
+                    // Load user profile from Firebase
+                    const profileSnapshot = await database.ref('user_profiles/' + user.uid).once('value');
+                    const profileData = profileSnapshot.val();
+                    
+                    if (profileData) {
+                        // Load saved data into currentPlayer
+                        currentPlayer.name = profileData.name;
+                        currentPlayer.id = user.uid;
+                        currentPlayer.level = profileData.level || 1;
+                        currentPlayer.gold = profileData.gold || 0;
+                        currentPlayer.xp = profileData.xp || 0;
+                        currentPlayer.hp = profileData.hp || 100;
+                        currentPlayer.maxHp = profileData.maxHp || 100;
+                        currentPlayer.mp = profileData.mp || 100;
+                        currentPlayer.maxMp = profileData.maxMp || 100;
+                        currentPlayer.skills = profileData.skills || currentPlayer.skills;
+                        currentPlayer.stats = profileData.stats || currentPlayer.stats;
+                        currentPlayer.equipment = profileData.equipment || {};
+                        currentPlayer.inventory = profileData.inventory || {};
+                        currentPlayer.pet = profileData.pet || null;
+                        currentPlayer.achievements = profileData.achievements || [];
+                        currentPlayer.quests = profileData.quests || { active: [], completed: [] };
+                        currentPlayer.craftedItems = profileData.craftedItems || 0;
+                        
+                        // Set up profile reference for auto-save
+                        userProfileRef = database.ref('user_profiles/' + user.uid);
+                        
+                        // Hide login screen, show game
+                        document.getElementById('loginScreen').classList.add('hidden');
+                        document.getElementById('gameContainer').classList.remove('hidden');
+                        
+                        // Initialize game
+                        initGame();
+                        
+                        // Start auto-save interval
+                        setInterval(saveGameToCloud, 30000); // Save every 30 seconds
+                        
+                        console.log('Profile loaded successfully');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error loading profile:', error);
+                    showAuthError('Failed to load profile: ' + error.message);
+                }
+                
+            } else {
+                // User is logged out
+                currentUser = null;
+                console.log('No user authenticated');
+                
+                // Show login screen
+                document.getElementById('loginScreen').classList.remove('hidden');
+                document.getElementById('gameContainer').classList.add('hidden');
+            }
+        });
+        
+        // ========== CLOUD SAVE FUNCTIONS ==========
+        
+        async function saveGameToCloud() {
+            if (!currentUser || !userProfileRef) return;
+            
+            try {
+                await userProfileRef.update({
+                    name: currentPlayer.name,
+                    level: currentPlayer.level,
+                    gold: currentPlayer.gold,
+                    xp: currentPlayer.xp,
+                    hp: currentPlayer.hp,
+                    maxHp: currentPlayer.maxHp,
+                    mp: currentPlayer.mp,
+                    maxMp: currentPlayer.maxMp,
+                    skills: currentPlayer.skills,
+                    stats: currentPlayer.stats,
+                    equipment: currentPlayer.equipment,
+                    inventory: currentPlayer.inventory,
+                    pet: currentPlayer.pet,
+                    achievements: currentPlayer.achievements,
+                    quests: currentPlayer.quests,
+                    craftedItems: currentPlayer.craftedItems,
+                    lastSaved: Date.now()
+                });
+                
+                console.log('Game saved to cloud');
+                
+            } catch (error) {
+                console.error('Cloud save error:', error);
+            }
         }
 
         // Initialize 3D Game
@@ -3086,6 +3492,7 @@
         
         // ENHANCED GAME SAVING
         function saveGame() {
+            // Save to localStorage as backup
             localStorage.setItem('fantasyquest_save', JSON.stringify({
                 name: currentPlayer.name,
                 level: currentPlayer.level,
@@ -3104,9 +3511,16 @@
                 distanceTraveled: totalDistanceTraveled,
                 chatCount: chatMessageCount
             }));
+            
+            // Also save to cloud if authenticated
+            if (currentUser) {
+                saveGameToCloud();
+            }
         }
         
         function loadGame() {
+            // This is now handled by the auth state listener
+            // Keep for backward compatibility with non-auth mode
             const save = localStorage.getItem('fantasyquest_save');
             if (!save) return false;
             
@@ -3128,13 +3542,13 @@
             updateWeather();
             updateBuffs();
             trackDistance();
-            if (Math.random() < 0.01) saveGame(); // Auto-save
+            if (Math.random() < 0.01) saveGame(); // Auto-save (both local and cloud)
         }, 100);
 
         // Cleanup on page unload
         window.addEventListener('beforeunload', () => {
-            saveGame();
-            if (currentPlayer.id) {
+            saveGame(); // Save both local and cloud
+            if (currentPlayer.id && playersRef) {
                 playersRef.child(currentPlayer.id).remove();
             }
         });
