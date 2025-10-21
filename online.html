@@ -1088,9 +1088,9 @@
                 </div>
             </div>
             <canvas id="renderCanvas"></canvas>
-            <div class="controls-hint">WASD: Move • Mouse: Rotate Camera • Click: Interact<br>Q/E: Rotate Camera • Scroll: Zoom • 1/2/3: Abilities</div>
+            <div class="controls-hint">Click to Move • Arrow Keys: Rotate Camera • Click: Interact<br>Mouse Drag: Look Around • Scroll: Zoom • 1/2/3: Abilities</div>
             <div class="camera-controls">
-                Camera: Q/E to rotate • Mouse drag to look around
+                Camera: Arrow Keys to rotate • Mouse drag to look around
             </div>
             <div class="day-night-indicator">
                 <span id="timeIcon">☀️</span>
@@ -1115,10 +1115,7 @@
         <!-- Right Sidebar -->
         <div id="rightSidebar">
             <div class="action-buttons">
-                <button class="action-btn" onclick="attackNearestMonster()">⚔️ Attack</button>
-                <button class="action-btn gather" onclick="gatherResource()">⛏️ Gather</button>
                 <button class="action-btn craft" onclick="openCraftingPanel()">🔨 Craft</button>
-                <button class="action-btn quest" onclick="toggleQuestPanel()">📜 Quests</button>
                 <button class="action-btn" onclick="openShop()">🏪 Shop</button>
                 <button class="action-btn" onclick="openPetShop()">🐾 Pets</button>
                 <button class="action-btn" style="background: linear-gradient(135deg, #e74c3c, #c0392b);" onclick="openEmoteMenu()">😊 Emote</button>
@@ -1392,11 +1389,18 @@
         let targetMonster = null; // Monster being walked to
         let targetResource = null; // Resource being walked to
         let targetPosition = null; // Position being walked to (click-to-move)
+        let isAttacking = false; // Continuous attack state
+        let isGathering = false; // Continuous gathering state
+        let attackCooldown = 0; // Attack cooldown timer
+        let gatheringCooldown = 0; // Gathering cooldown timer
+        let playerAnimationState = 'idle'; // Current animation: idle, walking, attacking, gathering
+        let animationFrame = 0; // Animation frame counter
         let houses = []; // House structures
         let houseMeshes = []; // House 3D meshes
         let npcData = []; // NPC data
         let npcMeshes = []; // NPC 3D meshes
         let currentQuestStep = {}; // Track progress in multi-step quests
+        let playerInsideHouse = false; // Track if player is inside a house
         
         // NPC Definitions
         const NPCS = [
@@ -1411,14 +1415,14 @@
             { id: 'king_aldric', name: 'King Aldric', x: 0, z: 40, type: 'quest', color: 0xffd700, dialogue: 'The kingdom needs a hero!' }
         ];
         
-        // House Definitions
+        // House Definitions with door positions
         const HOUSES = [
-            { x: -15, z: 5, width: 8, depth: 8, height: 6, color: 0x8b4513, name: 'Elder\'s Home' },
-            { x: 20, z: -20, width: 10, depth: 8, height: 7, color: 0x696969, name: 'Blacksmith' },
-            { x: -25, z: -15, width: 7, depth: 7, height: 5, color: 0xdaa520, name: 'Pet Shop' },
-            { x: 30, z: 10, width: 6, depth: 6, height: 5, color: 0x8fbc8f, name: 'Cottage' },
-            { x: -5, z: -35, width: 9, depth: 7, height: 6, color: 0x4682b4, name: 'Guard House' },
-            { x: 0, z: 45, width: 15, depth: 12, height: 10, color: 0xffd700, name: 'Royal Palace' }
+            { x: -15, z: 5, width: 8, depth: 8, height: 6, color: 0x8b4513, name: 'Elder\'s Home', doorZ: 'front' },
+            { x: 20, z: -20, width: 10, depth: 8, height: 7, color: 0x696969, name: 'Blacksmith', doorZ: 'front' },
+            { x: -25, z: -15, width: 7, depth: 7, height: 5, color: 0xdaa520, name: 'Pet Shop', doorZ: 'front' },
+            { x: 30, z: 10, width: 6, depth: 6, height: 5, color: 0x8fbc8f, name: 'Cottage', doorZ: 'front' },
+            { x: -5, z: -35, width: 9, depth: 7, height: 6, color: 0x4682b4, name: 'Guard House', doorZ: 'front' },
+            { x: 0, z: 45, width: 15, depth: 12, height: 10, color: 0xffd700, name: 'Royal Palace', doorZ: 'front' }
         ];
 
         // Constants
@@ -2851,13 +2855,21 @@
         
         function createHouses() {
             HOUSES.forEach(houseData => {
+                // Store door position for collision detection
+                const doorX = houseData.x;
+                const doorZ = houseData.z + houseData.depth / 2;
+                const doorWidth = houseData.width * 0.3;
+                
                 const house = {
                     x: houseData.x,
                     z: houseData.z,
                     width: houseData.width,
                     depth: houseData.depth,
                     height: houseData.height,
-                    name: houseData.name
+                    name: houseData.name,
+                    doorX: doorX,
+                    doorZ: doorZ,
+                    doorWidth: doorWidth
                 };
                 
                 const houseGroup = new THREE.Group();
@@ -2872,6 +2884,7 @@
                 walls.position.y = houseData.height / 2;
                 walls.castShadow = true;
                 walls.receiveShadow = true;
+                walls.name = 'walls';
                 houseGroup.add(walls);
                 
                 // Roof (pyramid shape)
@@ -2898,6 +2911,7 @@
                 const door = new THREE.Mesh(doorGeometry, doorMaterial);
                 door.position.set(0, houseData.height * 0.25, houseData.depth / 2 + 0.05);
                 door.castShadow = true;
+                door.name = 'door';
                 houseGroup.add(door);
                 
                 // Windows
@@ -2924,22 +2938,66 @@
         }
         
         function updateHouseVisibility() {
-            // Make roof invisible if player is inside house
+            // Check if player is inside any house and make roof/walls transparent
+            let insideHouse = false;
             houseMeshes.forEach(houseGroup => {
                 const house = houseGroup.userData;
+                
+                // Check if player is near the door (entry point)
+                const atDoor = 
+                    Math.abs(currentPlayer.x - house.doorX) < house.doorWidth / 2 + 1 &&
+                    Math.abs(currentPlayer.z - house.doorZ) < 1.5;
+                
                 const playerInHouse = 
                     currentPlayer.x > house.x - house.width/2 &&
                     currentPlayer.x < house.x + house.width/2 &&
                     currentPlayer.z > house.z - house.depth/2 &&
                     currentPlayer.z < house.z + house.depth/2;
                 
-                // Find and toggle roof visibility
+                // Only allow entry through the door
+                if (playerInHouse && !atDoor && !playerInsideHouse) {
+                    // Block entry - push player back to nearest edge
+                    const distToFront = Math.abs(currentPlayer.z - (house.z + house.depth/2));
+                    const distToBack = Math.abs(currentPlayer.z - (house.z - house.depth/2));
+                    const distToLeft = Math.abs(currentPlayer.x - (house.x - house.width/2));
+                    const distToRight = Math.abs(currentPlayer.x - (house.x + house.width/2));
+                    
+                    const minDist = Math.min(distToFront, distToBack, distToLeft, distToRight);
+                    
+                    if (minDist === distToFront) currentPlayer.z = house.z + house.depth/2 + 0.5;
+                    else if (minDist === distToBack) currentPlayer.z = house.z - house.depth/2 - 0.5;
+                    else if (minDist === distToLeft) currentPlayer.x = house.x - house.width/2 - 0.5;
+                    else currentPlayer.x = house.x + house.width/2 + 0.5;
+                } else if (playerInHouse) {
+                    insideHouse = true;
+                }
+                
+                // Make roof and walls semi-transparent when inside
                 houseGroup.children.forEach(child => {
                     if (child.name === 'roof') {
                         child.visible = !playerInHouse;
                     }
+                    if (child.name === 'walls' && playerInHouse) {
+                        child.material.transparent = true;
+                        child.material.opacity = 0.3;
+                    } else if (child.name === 'walls') {
+                        child.material.transparent = false;
+                        child.material.opacity = 1.0;
+                    }
                 });
             });
+            
+            playerInsideHouse = insideHouse;
+            
+            // Make player always visible (remove any opacity changes)
+            if (playerMesh) {
+                playerMesh.traverse(child => {
+                    if (child.material) {
+                        child.material.transparent = false;
+                        child.material.opacity = 1.0;
+                    }
+                });
+            }
         }
         
         function createNPCs() {
@@ -3314,41 +3372,18 @@
             let moved = false;
             const moveSpeed = PLAYER_SPEED;
 
-            // Keyboard controls (WASD only - arrows removed for click-to-move)
-            if (keys['w']) {
-                currentPlayer.x += Math.sin(cameraAngle) * moveSpeed;
-                currentPlayer.z += Math.cos(cameraAngle) * moveSpeed;
-                currentPlayer.rotation = cameraAngle;
-                moved = true;
-                targetPosition = null; // Cancel auto-walk
-            }
-            if (keys['s']) {
-                currentPlayer.x -= Math.sin(cameraAngle) * moveSpeed;
-                currentPlayer.z -= Math.cos(cameraAngle) * moveSpeed;
-                currentPlayer.rotation = cameraAngle + Math.PI;
-                moved = true;
-                targetPosition = null;
-            }
-            if (keys['a']) {
-                currentPlayer.x += Math.sin(cameraAngle + Math.PI/2) * moveSpeed;
-                currentPlayer.z += Math.cos(cameraAngle + Math.PI/2) * moveSpeed;
-                currentPlayer.rotation = cameraAngle + Math.PI/2;
-                moved = true;
-                targetPosition = null;
-            }
-            if (keys['d']) {
-                currentPlayer.x += Math.sin(cameraAngle - Math.PI/2) * moveSpeed;
-                currentPlayer.z += Math.cos(cameraAngle - Math.PI/2) * moveSpeed;
-                currentPlayer.rotation = cameraAngle - Math.PI/2;
-                moved = true;
-                targetPosition = null;
-            }
-
-            // Camera rotation with Q/E
-            if (keys['q']) {
+            // WASD removed - only click-to-move now
+            // Camera rotation with Arrow Keys
+            if (keys['arrowleft']) {
                 cameraAngle -= 0.02;
             }
-            if (keys['e']) {
+            if (keys['arrowright']) {
+                cameraAngle += 0.02;
+            }
+            if (keys['arrowup']) {
+                cameraAngle -= 0.02;
+            }
+            if (keys['arrowdown']) {
                 cameraAngle += 0.02;
             }
 
@@ -3383,7 +3418,7 @@
                 }
             }
             
-            // Auto-walk to target monster
+            // Auto-walk to target monster and continuous attack
             if (targetMonster && targetMonster.monster.currentHp > 0) {
                 const dist = Math.hypot(currentPlayer.x - targetMonster.monster.x, currentPlayer.z - targetMonster.monster.z);
                 if (dist > 4) {
@@ -3393,14 +3428,29 @@
                     currentPlayer.z += Math.cos(angle) * moveSpeed;
                     currentPlayer.rotation = angle;
                     moved = true;
+                    isAttacking = false;
                 } else {
-                    // Close enough - attack!
-                    attackMonster(targetMonster.monster, targetMonster.mesh);
-                    targetMonster = null;
+                    // Close enough - keep attacking until dead
+                    isAttacking = true;
+                    attackCooldown--;
+                    if (attackCooldown <= 0) {
+                        attackMonster(targetMonster.monster, targetMonster.mesh);
+                        attackCooldown = 30; // Attack every 30 frames (~0.5 seconds)
+                        // Apply attack animation
+                        playerAnimationState = 'attacking';
+                        animationFrame = 0;
+                    }
+                    // Cancel target if monster is dead
+                    if (targetMonster.monster.currentHp <= 0) {
+                        targetMonster = null;
+                        isAttacking = false;
+                    }
                 }
+            } else {
+                isAttacking = false;
             }
             
-            // Auto-walk to target resource
+            // Auto-walk to target resource and gathering animation
             if (targetResource && targetResource.resource.available) {
                 const dist = Math.hypot(currentPlayer.x - targetResource.resource.x, currentPlayer.z - targetResource.resource.z);
                 if (dist > 2.5) {
@@ -3410,11 +3460,24 @@
                     currentPlayer.z += Math.cos(angle) * moveSpeed;
                     currentPlayer.rotation = angle;
                     moved = true;
+                    isGathering = false;
                 } else {
-                    // Close enough - gather!
-                    harvestResource(targetResource.resource, targetResource.mesh);
-                    targetResource = null;
+                    // Close enough - gather with animation!
+                    isGathering = true;
+                    gatheringCooldown--;
+                    if (gatheringCooldown <= 0) {
+                        harvestResource(targetResource.resource, targetResource.mesh);
+                        gatheringCooldown = 45; // Gather every 45 frames (~0.75 seconds)
+                        targetResource = null; // Stop after gathering
+                        isGathering = false;
+                    }
+                    // Apply gathering animation based on resource type
+                    playerAnimationState = targetResource.resource.name.includes('Tree') ? 'chopping' : 
+                                         targetResource.resource.name.includes('Rock') ? 'mining' : 'gathering';
+                    animationFrame = 0;
                 }
+            } else {
+                isGathering = false;
             }
 
             // Keep player in bounds
@@ -3423,10 +3486,55 @@
 
             currentPlayer.moving = moved;
 
-            // Update player mesh position
+            // Update player mesh position and animation
             if (playerMesh) {
                 playerMesh.position.set(currentPlayer.x, currentPlayer.y, currentPlayer.z);
                 playerMesh.rotation.y = currentPlayer.rotation;
+                
+                // Apply player animations
+                animationFrame++;
+                if (isAttacking && playerAnimationState === 'attacking') {
+                    // Swinging motion for attacking
+                    const swingCycle = animationFrame % 30;
+                    const swingAngle = Math.sin(swingCycle / 5) * 0.5;
+                    // Rotate player's right arm for sword swing
+                    const rightArm = playerMesh.children.find(c => c.name === 'rightArm');
+                    if (rightArm) {
+                        rightArm.rotation.x = swingAngle;
+                        rightArm.position.y = 1.0 + Math.abs(swingAngle) * 0.2;
+                    }
+                } else if (isGathering) {
+                    // Chopping or mining motion
+                    const gatherCycle = animationFrame % 45;
+                    if (playerAnimationState === 'chopping') {
+                        // Axe chopping motion
+                        const chopAngle = Math.sin(gatherCycle / 7) * 0.8;
+                        const rightArm = playerMesh.children.find(c => c.name === 'rightArm');
+                        if (rightArm) {
+                            rightArm.rotation.x = -chopAngle - 0.5;
+                        }
+                    } else if (playerAnimationState === 'mining') {
+                        // Pickaxe mining motion
+                        const mineAngle = Math.sin(gatherCycle / 8) * 0.6;
+                        const rightArm = playerMesh.children.find(c => c.name === 'rightArm');
+                        if (rightArm) {
+                            rightArm.rotation.x = -mineAngle - 0.3;
+                            rightArm.rotation.z = mineAngle * 0.3;
+                        }
+                    }
+                } else {
+                    // Reset arm position to idle
+                    const rightArm = playerMesh.children.find(c => c.name === 'rightArm');
+                    const leftArm = playerMesh.children.find(c => c.name === 'leftArm');
+                    if (rightArm) {
+                        rightArm.rotation.x = 0;
+                        rightArm.rotation.z = 0;
+                        rightArm.position.y = 1.0;
+                    }
+                    if (leftArm) {
+                        leftArm.rotation.x = 0;
+                    }
+                }
             }
             
             // Check exploration quests
@@ -4497,6 +4605,35 @@
                 }
             });
             
+            // Draw NPCs (shops and quest givers)
+            NPCS.forEach(npc => {
+                const x = centerX + (npc.x - currentPlayer.x) * scale;
+                const y = centerY + (npc.z - currentPlayer.z) * scale;
+                
+                // Different colors for different NPC types
+                if (npc.type === 'shop') {
+                    ctx.fillStyle = '#FFD700'; // Gold for shops
+                    ctx.fillRect(x - 3, y - 3, 6, 6);
+                } else if (npc.type === 'quest') {
+                    ctx.fillStyle = '#FFA500'; // Orange for quest givers
+                    ctx.beginPath();
+                    ctx.arc(x, y, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (npc.type === 'pet') {
+                    ctx.fillStyle = '#9370DB'; // Purple for pet shop
+                    ctx.fillRect(x - 3, y - 3, 6, 6);
+                }
+            });
+            
+            // Draw houses
+            HOUSES.forEach(houseData => {
+                const x = centerX + (houseData.x - currentPlayer.x) * scale;
+                const y = centerY + (houseData.z - currentPlayer.z) * scale;
+                ctx.strokeStyle = '#8B4513';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(x - 4, y - 4, 8, 8);
+            });
+            
             // Draw other players
             Object.values(players).forEach(player => {
                 const x = centerX + (player.x - currentPlayer.x) * scale;
@@ -4507,11 +4644,14 @@
                 ctx.fill();
             });
             
-            // Draw player (center)
+            // Draw player (center) - more visible
             ctx.fillStyle = '#f39c12';
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.arc(centerX, centerY, 4, 0, Math.PI * 2);
+            ctx.arc(centerX, centerY, 5, 0, Math.PI * 2);
             ctx.fill();
+            ctx.stroke();
             
             // Draw direction
             ctx.strokeStyle = '#ffffff';
