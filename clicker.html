@@ -5,380 +5,312 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clicker Games - PlayZone</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 2rem;
+            overflow-x: hidden;
         }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 2rem;
-        }
-
-        .header h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
-        }
-
+        .menu-view { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+        .header { text-align: center; color: white; margin-bottom: 2rem; }
+        .header h1 { font-size: 3rem; margin-bottom: 1rem; text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3); }
+        
         .back-btn {
-            display: inline-block;
-            padding: 0.8rem 2rem;
-            background: white;
-            color: #667eea;
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: 600;
-            margin-bottom: 2rem;
+            display: inline-block; padding: 0.8rem 2rem; background: white; color: #667eea;
+            text-decoration: none; border-radius: 50px; font-weight: 600; margin-bottom: 2rem;
             transition: transform 0.3s ease;
         }
+        .back-btn:hover { transform: scale(1.05); }
 
-        .back-btn:hover {
-            transform: scale(1.05);
+        .games-menu {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-top: 2rem;
         }
 
-        .games-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 2rem;
-            margin-top: 2rem;
+        .game-menu-card {
+            background: white; border-radius: 15px; padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
+        .game-menu-card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3); }
+        .game-menu-card .icon { font-size: 4rem; text-align: center; margin-bottom: 1rem; }
+        .game-menu-card h3 { color: #667eea; font-size: 1.5rem; margin-bottom: 0.5rem; text-align: center; }
+        .game-menu-card p { color: #666; text-align: center; font-size: 0.9rem; }
 
-        .game-card {
-            background: white;
-            border-radius: 15px;
-            padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        .game-view {
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); z-index: 1000; overflow-y: auto;
         }
+        .game-view.active { display: block; }
 
-        .game-card h2 {
-            color: #667eea;
-            margin-bottom: 1rem;
-            font-size: 1.5rem;
+        .game-header {
+            background: rgba(255, 255, 255, 0.95); padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); display: flex;
+            justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;
         }
+        .game-title { font-size: 1.5rem; color: #667eea; font-weight: bold; }
+        .game-controls { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+        
+        .close-game-btn {
+            background: #f44336; color: white; border: none; padding: 0.6rem 1.5rem;
+            border-radius: 50px; font-weight: 600; cursor: pointer; transition: transform 0.3s ease;
+        }
+        .close-game-btn:hover { transform: scale(1.05); }
 
-        .game-area {
-            margin: 1.5rem 0;
-            min-height: 300px;
-        }
+        .game-content { padding: 2rem; max-width: 900px; margin: 0 auto; }
+        .game-area { background: white; border-radius: 15px; padding: 2rem; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); }
 
         button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 0.8rem 2rem;
-            border-radius: 50px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-            margin: 0.5rem 0.5rem 0.5rem 0;
-            font-size: 0.9rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;
+            padding: 0.8rem 2rem; border-radius: 50px; font-weight: 600; cursor: pointer;
+            transition: transform 0.3s ease; margin: 0.5rem;
         }
-
-        button:hover {
-            transform: scale(1.05);
-        }
-
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        button:hover { transform: scale(1.05); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .click-button {
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            font-size: 3rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 2rem auto;
-            cursor: pointer;
-            transition: transform 0.1s ease;
+            width: min(200px, 50vw); height: min(200px, 50vw); border-radius: 50%; font-size: 3rem;
+            display: flex; align-items: center; justify-content: center; margin: 2rem auto;
+            cursor: pointer; transition: transform 0.1s ease;
             box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
         }
-
-        .click-button:active {
-            transform: scale(0.95);
-        }
+        .click-button:active { transform: scale(0.95); }
 
         .stats {
-            background: #f5f5f5;
-            padding: 1rem;
-            border-radius: 10px;
-            margin: 1rem 0;
+            background: #f5f5f5; padding: 1rem; border-radius: 10px; margin: 1rem 0;
         }
 
         .stat-row {
-            display: flex;
-            justify-content: space-between;
-            margin: 0.5rem 0;
-            font-size: 1.1rem;
+            display: flex; justify-content: space-between; margin: 0.5rem 0; font-size: 1.1rem;
         }
 
-        .stat-label {
-            font-weight: bold;
-            color: #666;
-        }
-
-        .stat-value {
-            color: #667eea;
-            font-weight: bold;
-        }
+        .stat-label { font-weight: bold; color: #666; }
+        .stat-value { color: #667eea; font-weight: bold; }
 
         .upgrades {
-            display: flex;
-            flex-direction: column;
-            gap: 0.8rem;
-            margin: 1rem 0;
+            display: flex; flex-direction: column; gap: 0.8rem; margin: 1rem 0; max-height: 300px; overflow-y: auto;
         }
 
         .upgrade {
-            background: #f9f9f9;
-            padding: 1rem;
-            border-radius: 10px;
-            border: 2px solid #ddd;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background: #f9f9f9; padding: 1rem; border-radius: 10px; border: 2px solid #ddd;
+            display: flex; justify-content: space-between; align-items: center;
             transition: all 0.3s ease;
         }
 
-        .upgrade:hover {
-            border-color: #667eea;
-            background: #f0f0ff;
-        }
-
-        .upgrade-info {
-            flex: 1;
-        }
-
-        .upgrade-name {
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 0.3rem;
-        }
-
-        .upgrade-desc {
-            font-size: 0.9rem;
-            color: #666;
-        }
-
+        .upgrade:hover { border-color: #667eea; background: #f0f0ff; }
+        .upgrade-info { flex: 1; }
+        .upgrade-name { font-weight: bold; color: #333; margin-bottom: 0.3rem; }
+        .upgrade-desc { font-size: 0.9rem; color: #666; }
         .upgrade-cost {
-            background: #667eea;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-weight: bold;
-            white-space: nowrap;
-            margin-left: 1rem;
+            background: #667eea; color: white; padding: 0.5rem 1rem; border-radius: 20px;
+            font-weight: bold; white-space: nowrap; margin-left: 1rem;
         }
 
-        .upgrade.affordable {
-            cursor: pointer;
-        }
-
-        .upgrade.expensive {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
+        .upgrade.affordable { cursor: pointer; }
+        .upgrade.expensive { opacity: 0.6; cursor: not-allowed; }
 
         .big-number {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #667eea;
-            text-align: center;
-            margin: 1rem 0;
+            font-size: 2.5rem; font-weight: bold; color: #667eea; text-align: center; margin: 1rem 0;
         }
 
         .progress-bar {
-            width: 100%;
-            height: 20px;
-            background: #ddd;
-            border-radius: 10px;
-            overflow: hidden;
-            margin: 0.5rem 0;
+            width: 100%; height: 20px; background: #ddd; border-radius: 10px; overflow: hidden; margin: 0.5rem 0;
         }
 
         .progress-fill {
-            height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             transition: width 0.3s ease;
         }
 
         @media (max-width: 768px) {
-            .games-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .header h1 {
-                font-size: 2rem;
-            }
-
-            .click-button {
-                width: 150px;
-                height: 150px;
-                font-size: 2rem;
-            }
+            .header h1 { font-size: 2rem; }
+            .game-title { font-size: 1.2rem; }
+            .game-header { padding: 1rem; }
+            .game-content { padding: 1rem; }
+            .game-area { padding: 1rem; }
+            .games-menu { grid-template-columns: 1fr; }
+            .click-button { width: 150px; height: 150px; font-size: 2rem; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="menu-view" id="menuView">
         <div class="header">
             <a href="index.html" class="back-btn">← Back to Home</a>
             <h1>⚡ Clicker Games</h1>
             <p style="font-size: 1.2rem; margin-top: 0.5rem;">Click your way to success!</p>
         </div>
 
-        <div class="games-grid">
-            <!-- Cookie Clicker -->
-            <div class="game-card">
-                <h2>🍪 Cookie Clicker</h2>
-                <div class="game-area">
-                    <div class="big-number" id="cookie-count">0</div>
-                    <div style="text-align: center; color: #666; margin-bottom: 1rem;">cookies</div>
-                    <button class="click-button" onclick="clickCookie()">🍪</button>
-                    <div class="stats">
-                        <div class="stat-row">
-                            <span class="stat-label">Per Click:</span>
-                            <span class="stat-value" id="cookie-per-click">1</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">Per Second:</span>
-                            <span class="stat-value" id="cookie-per-second">0</span>
-                        </div>
-                    </div>
-                    <div class="upgrades" id="cookie-upgrades"></div>
-                </div>
+        <div class="games-menu">
+            <div class="game-menu-card" onclick="openGame('cookie')">
+                <div class="icon">🍪</div>
+                <h3>Cookie Clicker</h3>
+                <p>Bake cookies and buy upgrades!</p>
+            </div>
+            <div class="game-menu-card" onclick="openGame('farm')">
+                <div class="icon">🌾</div>
+                <h3>Idle Farm</h3>
+                <p>Harvest crops, earn money!</p>
+            </div>
+            <div class="game-menu-card" onclick="openGame('business')">
+                <div class="icon">💼</div>
+                <h3>Business Tycoon</h3>
+                <p>Build your business empire!</p>
+            </div>
+            <div class="game-menu-card" onclick="openGame('hero')">
+                <div class="icon">⚔️</div>
+                <h3>Hero Tapper</h3>
+                <p>Fight monsters, earn gold!</p>
+            </div>
+            <div class="game-menu-card" onclick="openGame('energy')">
+                <div class="icon">⚡</div>
+                <h3>Energy Generator</h3>
+                <p>Generate and sell energy!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Views -->
+    <div class="game-view" id="game-cookie">
+        <div class="game-header">
+            <div class="game-title">🍪 Cookie Clicker</div>
+            <div class="game-controls">
                 <button onclick="resetCookieGame()">Reset Game</button>
+                <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
             </div>
-
-            <!-- Idle Farm -->
-            <div class="game-card">
-                <h2>🌾 Idle Farm</h2>
-                <div class="game-area">
-                    <div class="big-number" id="farm-money">$0</div>
-                    <button class="click-button" onclick="harvest()">🌾</button>
-                    <div class="stats">
-                        <div class="stat-row">
-                            <span class="stat-label">Per Harvest:</span>
-                            <span class="stat-value" id="farm-per-harvest">$1</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">Auto Income:</span>
-                            <span class="stat-value" id="farm-per-second">$0/s</span>
-                        </div>
-                    </div>
-                    <div class="upgrades" id="farm-upgrades"></div>
+        </div>
+        <div class="game-content">
+            <div class="game-area">
+                <div class="big-number" id="cookie-count">0</div>
+                <div style="text-align: center; color: #666; margin-bottom: 1rem;">cookies</div>
+                <button class="click-button" onclick="clickCookie()">🍪</button>
+                <div class="stats">
+                    <div class="stat-row"><span class="stat-label">Per Click:</span><span class="stat-value" id="cookie-per-click">1</span></div>
+                    <div class="stat-row"><span class="stat-label">Per Second:</span><span class="stat-value" id="cookie-per-second">0</span></div>
                 </div>
+                <div class="upgrades" id="cookie-upgrades"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-view" id="game-farm">
+        <div class="game-header">
+            <div class="game-title">🌾 Idle Farm</div>
+            <div class="game-controls">
                 <button onclick="resetFarmGame()">Reset Game</button>
+                <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
             </div>
-
-            <!-- Business Tycoon -->
-            <div class="game-card">
-                <h2>💼 Business Tycoon</h2>
-                <div class="game-area">
-                    <div class="big-number" id="business-money">$100</div>
-                    <div class="stats">
-                        <div class="stat-row">
-                            <span class="stat-label">Revenue/sec:</span>
-                            <span class="stat-value" id="business-revenue">$0</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">Businesses:</span>
-                            <span class="stat-value" id="business-count">0</span>
-                        </div>
-                    </div>
-                    <div class="upgrades" id="business-upgrades"></div>
+        </div>
+        <div class="game-content">
+            <div class="game-area">
+                <div class="big-number" id="farm-money">$0</div>
+                <button class="click-button" onclick="harvest()">🌾</button>
+                <div class="stats">
+                    <div class="stat-row"><span class="stat-label">Per Harvest:</span><span class="stat-value" id="farm-per-harvest">$1</span></div>
+                    <div class="stat-row"><span class="stat-label">Auto Income:</span><span class="stat-value" id="farm-per-second">$0/s</span></div>
                 </div>
+                <div class="upgrades" id="farm-upgrades"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-view" id="game-business">
+        <div class="game-header">
+            <div class="game-title">💼 Business Tycoon</div>
+            <div class="game-controls">
                 <button onclick="resetBusinessGame()">Reset Game</button>
+                <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
             </div>
-
-            <!-- Hero Tapper -->
-            <div class="game-card">
-                <h2>⚔️ Hero Tapper</h2>
-                <div class="game-area">
-                    <div class="stats">
-                        <div class="stat-row">
-                            <span class="stat-label">Gold:</span>
-                            <span class="stat-value" id="hero-gold">0</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">Damage:</span>
-                            <span class="stat-value" id="hero-damage">1</span>
-                        </div>
-                    </div>
-                    <div style="background: #f5f5f5; padding: 1rem; border-radius: 10px; margin: 1rem 0;">
-                        <div style="text-align: center; font-weight: bold; margin-bottom: 0.5rem;">Monster #<span id="monster-level">1</span></div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="monster-health-bar"></div>
-                        </div>
-                        <div style="text-align: center; margin-top: 0.5rem;">
-                            <span id="monster-health">10</span> / <span id="monster-max-health">10</span> HP
-                        </div>
-                    </div>
-                    <button class="click-button" onclick="attackMonster()">⚔️</button>
-                    <div class="upgrades" id="hero-upgrades"></div>
+        </div>
+        <div class="game-content">
+            <div class="game-area">
+                <div class="big-number" id="business-money">$100</div>
+                <div class="stats">
+                    <div class="stat-row"><span class="stat-label">Revenue/sec:</span><span class="stat-value" id="business-revenue">$0</span></div>
+                    <div class="stat-row"><span class="stat-label">Businesses:</span><span class="stat-value" id="business-count">0</span></div>
                 </div>
+                <div class="upgrades" id="business-upgrades"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-view" id="game-hero">
+        <div class="game-header">
+            <div class="game-title">⚔️ Hero Tapper</div>
+            <div class="game-controls">
                 <button onclick="resetHeroGame()">Reset Game</button>
+                <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
             </div>
-
-            <!-- Energy Generator -->
-            <div class="game-card">
-                <h2>⚡ Energy Generator</h2>
-                <div class="game-area">
-                    <div class="big-number" id="energy-count">0</div>
-                    <div style="text-align: center; color: #666; margin-bottom: 1rem;">energy units</div>
-                    <button class="click-button" onclick="generateEnergy()">⚡</button>
-                    <div class="stats">
-                        <div class="stat-row">
-                            <span class="stat-label">Per Click:</span>
-                            <span class="stat-value" id="energy-per-click">1</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">Auto Gen:</span>
-                            <span class="stat-value" id="energy-per-second">0/s</span>
-                        </div>
-                        <div class="stat-row">
-                            <span class="stat-label">Cash:</span>
-                            <span class="stat-value" id="energy-cash">$0</span>
-                        </div>
-                    </div>
-                    <button onclick="sellEnergy()">Sell Energy ($1 each)</button>
-                    <div class="upgrades" id="energy-upgrades"></div>
+        </div>
+        <div class="game-content">
+            <div class="game-area">
+                <div class="stats">
+                    <div class="stat-row"><span class="stat-label">Gold:</span><span class="stat-value" id="hero-gold">0</span></div>
+                    <div class="stat-row"><span class="stat-label">Damage:</span><span class="stat-value" id="hero-damage">1</span></div>
                 </div>
+                <div style="background: #f5f5f5; padding: 1rem; border-radius: 10px; margin: 1rem 0;">
+                    <div style="text-align: center; font-weight: bold; margin-bottom: 0.5rem;">Monster #<span id="monster-level">1</span></div>
+                    <div class="progress-bar"><div class="progress-fill" id="monster-health-bar"></div></div>
+                    <div style="text-align: center; margin-top: 0.5rem;"><span id="monster-health">10</span> / <span id="monster-max-health">10</span> HP</div>
+                </div>
+                <button class="click-button" onclick="attackMonster()">⚔️</button>
+                <div class="upgrades" id="hero-upgrades"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-view" id="game-energy">
+        <div class="game-header">
+            <div class="game-title">⚡ Energy Generator</div>
+            <div class="game-controls">
                 <button onclick="resetEnergyGame()">Reset Game</button>
+                <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
+            </div>
+        </div>
+        <div class="game-content">
+            <div class="game-area">
+                <div class="big-number" id="energy-count">0</div>
+                <div style="text-align: center; color: #666; margin-bottom: 1rem;">energy units</div>
+                <button class="click-button" onclick="generateEnergy()">⚡</button>
+                <div class="stats">
+                    <div class="stat-row"><span class="stat-label">Per Click:</span><span class="stat-value" id="energy-per-click">1</span></div>
+                    <div class="stat-row"><span class="stat-label">Auto Gen:</span><span class="stat-value" id="energy-per-second">0/s</span></div>
+                    <div class="stat-row"><span class="stat-label">Cash:</span><span class="stat-value" id="energy-cash">$0</span></div>
+                </div>
+                <button onclick="sellEnergy()">Sell Energy ($1 each)</button>
+                <div class="upgrades" id="energy-upgrades"></div>
             </div>
         </div>
     </div>
 
     <script>
-        // ========== COOKIE CLICKER ==========
-        let cookies = 0;
-        let cookiePerClick = 1;
-        let cookiePerSecond = 0;
+        function openGame(gameName) {
+            document.getElementById('menuView').style.display = 'none';
+            document.getElementById('game-' + gameName).classList.add('active');
+            
+            if (gameName === 'cookie') { updateCookieDisplay(); startCookieInterval(); }
+            else if (gameName === 'farm') { updateFarmDisplay(); startFarmInterval(); }
+            else if (gameName === 'business') { updateBusinessDisplay(); startBusinessInterval(); }
+            else if (gameName === 'hero') updateHeroDisplay();
+            else if (gameName === 'energy') { updateEnergyDisplay(); startEnergyInterval(); }
+        }
+
+        function closeGame() {
+            document.querySelectorAll('.game-view').forEach(view => view.classList.remove('active'));
+            document.getElementById('menuView').style.display = 'block';
+        }
+
+        // COOKIE CLICKER
+        let cookies = 0, cookiePerClick = 1, cookiePerSecond = 0;
+        let cookieInterval = null;
         const cookieUpgrades = [
             { name: 'Better Oven', cost: 10, clickBonus: 1, description: '+1 per click' },
             { name: 'Grandma', cost: 50, passive: 1, description: '+1 cookie/sec' },
             { name: 'Factory', cost: 200, passive: 5, description: '+5 cookies/sec' },
             { name: 'Golden Touch', cost: 500, clickBonus: 5, description: '+5 per click' },
-            { name: 'Cookie Farm', cost: 1000, passive: 20, description: '+20 cookies/sec' },
-            { name: 'Time Machine', cost: 5000, passive: 100, description: '+100 cookies/sec' }
+            { name: 'Cookie Farm', cost: 1000, passive: 20, description: '+20 cookies/sec' }
         ];
 
         function clickCookie() {
@@ -396,20 +328,11 @@
         function renderCookieUpgrades() {
             const upgradesDiv = document.getElementById('cookie-upgrades');
             upgradesDiv.innerHTML = '';
-            
             cookieUpgrades.forEach((upgrade, index) => {
                 const div = document.createElement('div');
                 div.className = 'upgrade ' + (cookies >= upgrade.cost ? 'affordable' : 'expensive');
-                div.innerHTML = `
-                    <div class="upgrade-info">
-                        <div class="upgrade-name">${upgrade.name}</div>
-                        <div class="upgrade-desc">${upgrade.description}</div>
-                    </div>
-                    <div class="upgrade-cost">${upgrade.cost} 🍪</div>
-                `;
-                if (cookies >= upgrade.cost) {
-                    div.onclick = () => buyCookieUpgrade(index);
-                }
+                div.innerHTML = `<div class="upgrade-info"><div class="upgrade-name">${upgrade.name}</div><div class="upgrade-desc">${upgrade.description}</div></div><div class="upgrade-cost">${upgrade.cost} 🍪</div>`;
+                if (cookies >= upgrade.cost) div.onclick = () => buyCookieUpgrade(index);
                 upgradesDiv.appendChild(div);
             });
         }
@@ -425,34 +348,29 @@
             }
         }
 
+        function startCookieInterval() {
+            if (cookieInterval) clearInterval(cookieInterval);
+            cookieInterval = setInterval(() => {
+                cookies += cookiePerSecond / 10;
+                updateCookieDisplay();
+            }, 100);
+        }
+
         function resetCookieGame() {
-            cookies = 0;
-            cookiePerClick = 1;
-            cookiePerSecond = 0;
-            cookieUpgrades[0].cost = 10;
-            cookieUpgrades[1].cost = 50;
-            cookieUpgrades[2].cost = 200;
-            cookieUpgrades[3].cost = 500;
-            cookieUpgrades[4].cost = 1000;
-            cookieUpgrades[5].cost = 5000;
+            cookies = 0; cookiePerClick = 1; cookiePerSecond = 0;
+            cookieUpgrades[0].cost = 10; cookieUpgrades[1].cost = 50; cookieUpgrades[2].cost = 200;
+            cookieUpgrades[3].cost = 500; cookieUpgrades[4].cost = 1000;
             updateCookieDisplay();
         }
 
-        setInterval(() => {
-            cookies += cookiePerSecond / 10;
-            updateCookieDisplay();
-        }, 100);
-
-        // ========== IDLE FARM ==========
-        let farmMoney = 0;
-        let farmPerHarvest = 1;
-        let farmPerSecond = 0;
+        // IDLE FARM
+        let farmMoney = 0, farmPerHarvest = 1, farmPerSecond = 0;
+        let farmInterval = null;
         const farmUpgrades = [
             { name: 'Better Seeds', cost: 20, harvestBonus: 2, description: '+$2 per harvest' },
             { name: 'Sprinkler', cost: 100, passive: 1, description: '+$1/sec' },
             { name: 'Tractor', cost: 500, harvestBonus: 10, description: '+$10 per harvest' },
-            { name: 'Greenhouse', cost: 1500, passive: 10, description: '+$10/sec' },
-            { name: 'Farm Workers', cost: 5000, passive: 50, description: '+$50/sec' }
+            { name: 'Greenhouse', cost: 1500, passive: 10, description: '+$10/sec' }
         ];
 
         function harvest() {
@@ -470,20 +388,11 @@
         function renderFarmUpgrades() {
             const upgradesDiv = document.getElementById('farm-upgrades');
             upgradesDiv.innerHTML = '';
-            
             farmUpgrades.forEach((upgrade, index) => {
                 const div = document.createElement('div');
                 div.className = 'upgrade ' + (farmMoney >= upgrade.cost ? 'affordable' : 'expensive');
-                div.innerHTML = `
-                    <div class="upgrade-info">
-                        <div class="upgrade-name">${upgrade.name}</div>
-                        <div class="upgrade-desc">${upgrade.description}</div>
-                    </div>
-                    <div class="upgrade-cost">$${upgrade.cost}</div>
-                `;
-                if (farmMoney >= upgrade.cost) {
-                    div.onclick = () => buyFarmUpgrade(index);
-                }
+                div.innerHTML = `<div class="upgrade-info"><div class="upgrade-name">${upgrade.name}</div><div class="upgrade-desc">${upgrade.description}</div></div><div class="upgrade-cost">$${upgrade.cost}</div>`;
+                if (farmMoney >= upgrade.cost) div.onclick = () => buyFarmUpgrade(index);
                 upgradesDiv.appendChild(div);
             });
         }
@@ -499,33 +408,28 @@
             }
         }
 
+        function startFarmInterval() {
+            if (farmInterval) clearInterval(farmInterval);
+            farmInterval = setInterval(() => {
+                farmMoney += farmPerSecond / 10;
+                updateFarmDisplay();
+            }, 100);
+        }
+
         function resetFarmGame() {
-            farmMoney = 0;
-            farmPerHarvest = 1;
-            farmPerSecond = 0;
-            farmUpgrades[0].cost = 20;
-            farmUpgrades[1].cost = 100;
-            farmUpgrades[2].cost = 500;
-            farmUpgrades[3].cost = 1500;
-            farmUpgrades[4].cost = 5000;
+            farmMoney = 0; farmPerHarvest = 1; farmPerSecond = 0;
+            farmUpgrades[0].cost = 20; farmUpgrades[1].cost = 100; farmUpgrades[2].cost = 500; farmUpgrades[3].cost = 1500;
             updateFarmDisplay();
         }
 
-        setInterval(() => {
-            farmMoney += farmPerSecond / 10;
-            updateFarmDisplay();
-        }, 100);
-
-        // ========== BUSINESS TYCOON ==========
-        let businessMoney = 100;
-        let businessRevenue = 0;
-        let businessCount = 0;
+        // BUSINESS TYCOON
+        let businessMoney = 100, businessRevenue = 0, businessCount = 0;
+        let businessInterval = null;
         const businesses = [
             { name: 'Lemonade Stand', cost: 50, revenue: 1, description: '+$1/sec' },
             { name: 'Coffee Shop', cost: 500, revenue: 10, description: '+$10/sec' },
             { name: 'Restaurant', cost: 2000, revenue: 50, description: '+$50/sec' },
-            { name: 'Shopping Mall', cost: 10000, revenue: 200, description: '+$200/sec' },
-            { name: 'Tech Startup', cost: 50000, revenue: 1000, description: '+$1000/sec' }
+            { name: 'Shopping Mall', cost: 10000, revenue: 200, description: '+$200/sec' }
         ];
 
         function updateBusinessDisplay() {
@@ -538,20 +442,11 @@
         function renderBusinessUpgrades() {
             const upgradesDiv = document.getElementById('business-upgrades');
             upgradesDiv.innerHTML = '';
-            
             businesses.forEach((business, index) => {
                 const div = document.createElement('div');
                 div.className = 'upgrade ' + (businessMoney >= business.cost ? 'affordable' : 'expensive');
-                div.innerHTML = `
-                    <div class="upgrade-info">
-                        <div class="upgrade-name">${business.name}</div>
-                        <div class="upgrade-desc">${business.description}</div>
-                    </div>
-                    <div class="upgrade-cost">$${business.cost}</div>
-                `;
-                if (businessMoney >= business.cost) {
-                    div.onclick = () => buyBusiness(index);
-                }
+                div.innerHTML = `<div class="upgrade-info"><div class="upgrade-name">${business.name}</div><div class="upgrade-desc">${business.description}</div></div><div class="upgrade-cost">$${business.cost}</div>`;
+                if (businessMoney >= business.cost) div.onclick = () => buyBusiness(index);
                 upgradesDiv.appendChild(div);
             });
         }
@@ -567,47 +462,37 @@
             }
         }
 
+        function startBusinessInterval() {
+            if (businessInterval) clearInterval(businessInterval);
+            businessInterval = setInterval(() => {
+                businessMoney += businessRevenue / 10;
+                updateBusinessDisplay();
+            }, 100);
+        }
+
         function resetBusinessGame() {
-            businessMoney = 100;
-            businessRevenue = 0;
-            businessCount = 0;
-            businesses[0].cost = 50;
-            businesses[1].cost = 500;
-            businesses[2].cost = 2000;
-            businesses[3].cost = 10000;
-            businesses[4].cost = 50000;
+            businessMoney = 100; businessRevenue = 0; businessCount = 0;
+            businesses[0].cost = 50; businesses[1].cost = 500; businesses[2].cost = 2000; businesses[3].cost = 10000;
             updateBusinessDisplay();
         }
 
-        setInterval(() => {
-            businessMoney += businessRevenue / 10;
-            updateBusinessDisplay();
-        }, 100);
-
-        // ========== HERO TAPPER ==========
-        let heroGold = 0;
-        let heroDamage = 1;
-        let monsterLevel = 1;
-        let monsterHealth = 10;
-        let monsterMaxHealth = 10;
+        // HERO TAPPER
+        let heroGold = 0, heroDamage = 1, monsterLevel = 1, monsterHealth = 10, monsterMaxHealth = 10;
         const heroUpgrades = [
             { name: 'Iron Sword', cost: 10, damage: 1, description: '+1 damage' },
             { name: 'Steel Armor', cost: 50, damage: 3, description: '+3 damage' },
             { name: 'Magic Bow', cost: 200, damage: 10, description: '+10 damage' },
-            { name: 'Dragon Blade', cost: 1000, damage: 50, description: '+50 damage' },
-            { name: 'Legendary Staff', cost: 5000, damage: 200, description: '+200 damage' }
+            { name: 'Dragon Blade', cost: 1000, damage: 50, description: '+50 damage' }
         ];
 
         function attackMonster() {
             monsterHealth -= heroDamage;
-            
             if (monsterHealth <= 0) {
                 heroGold += monsterLevel * 5;
                 monsterLevel++;
                 monsterMaxHealth = Math.floor(10 * Math.pow(1.5, monsterLevel - 1));
                 monsterHealth = monsterMaxHealth;
             }
-            
             updateHeroDisplay();
         }
 
@@ -617,30 +502,19 @@
             document.getElementById('monster-level').textContent = monsterLevel;
             document.getElementById('monster-health').textContent = Math.max(0, Math.floor(monsterHealth));
             document.getElementById('monster-max-health').textContent = monsterMaxHealth;
-            
             const healthPercent = (monsterHealth / monsterMaxHealth) * 100;
             document.getElementById('monster-health-bar').style.width = Math.max(0, healthPercent) + '%';
-            
             renderHeroUpgrades();
         }
 
         function renderHeroUpgrades() {
             const upgradesDiv = document.getElementById('hero-upgrades');
             upgradesDiv.innerHTML = '';
-            
             heroUpgrades.forEach((upgrade, index) => {
                 const div = document.createElement('div');
                 div.className = 'upgrade ' + (heroGold >= upgrade.cost ? 'affordable' : 'expensive');
-                div.innerHTML = `
-                    <div class="upgrade-info">
-                        <div class="upgrade-name">${upgrade.name}</div>
-                        <div class="upgrade-desc">${upgrade.description}</div>
-                    </div>
-                    <div class="upgrade-cost">${upgrade.cost} Gold</div>
-                `;
-                if (heroGold >= upgrade.cost) {
-                    div.onclick = () => buyHeroUpgrade(index);
-                }
+                div.innerHTML = `<div class="upgrade-info"><div class="upgrade-name">${upgrade.name}</div><div class="upgrade-desc">${upgrade.description}</div></div><div class="upgrade-cost">${upgrade.cost} Gold</div>`;
+                if (heroGold >= upgrade.cost) div.onclick = () => buyHeroUpgrade(index);
                 upgradesDiv.appendChild(div);
             });
         }
@@ -656,30 +530,19 @@
         }
 
         function resetHeroGame() {
-            heroGold = 0;
-            heroDamage = 1;
-            monsterLevel = 1;
-            monsterHealth = 10;
-            monsterMaxHealth = 10;
-            heroUpgrades[0].cost = 10;
-            heroUpgrades[1].cost = 50;
-            heroUpgrades[2].cost = 200;
-            heroUpgrades[3].cost = 1000;
-            heroUpgrades[4].cost = 5000;
+            heroGold = 0; heroDamage = 1; monsterLevel = 1; monsterHealth = 10; monsterMaxHealth = 10;
+            heroUpgrades[0].cost = 10; heroUpgrades[1].cost = 50; heroUpgrades[2].cost = 200; heroUpgrades[3].cost = 1000;
             updateHeroDisplay();
         }
 
-        // ========== ENERGY GENERATOR ==========
-        let energyCount = 0;
-        let energyPerClick = 1;
-        let energyPerSecond = 0;
-        let energyCash = 0;
+        // ENERGY GENERATOR
+        let energyCount = 0, energyPerClick = 1, energyPerSecond = 0, energyCash = 0;
+        let energyInterval = null;
         const energyUpgrades = [
             { name: 'Solar Panel', cost: 50, passive: 1, description: '+1 energy/sec' },
             { name: 'Wind Turbine', cost: 200, passive: 5, description: '+5 energy/sec' },
             { name: 'Better Capacitor', cost: 500, clickBonus: 5, description: '+5 per click' },
-            { name: 'Nuclear Plant', cost: 2000, passive: 25, description: '+25 energy/sec' },
-            { name: 'Fusion Reactor', cost: 10000, passive: 100, description: '+100 energy/sec' }
+            { name: 'Nuclear Plant', cost: 2000, passive: 25, description: '+25 energy/sec' }
         ];
 
         function generateEnergy() {
@@ -704,20 +567,11 @@
         function renderEnergyUpgrades() {
             const upgradesDiv = document.getElementById('energy-upgrades');
             upgradesDiv.innerHTML = '';
-            
             energyUpgrades.forEach((upgrade, index) => {
                 const div = document.createElement('div');
                 div.className = 'upgrade ' + (energyCash >= upgrade.cost ? 'affordable' : 'expensive');
-                div.innerHTML = `
-                    <div class="upgrade-info">
-                        <div class="upgrade-name">${upgrade.name}</div>
-                        <div class="upgrade-desc">${upgrade.description}</div>
-                    </div>
-                    <div class="upgrade-cost">$${upgrade.cost}</div>
-                `;
-                if (energyCash >= upgrade.cost) {
-                    div.onclick = () => buyEnergyUpgrade(index);
-                }
+                div.innerHTML = `<div class="upgrade-info"><div class="upgrade-name">${upgrade.name}</div><div class="upgrade-desc">${upgrade.description}</div></div><div class="upgrade-cost">$${upgrade.cost}</div>`;
+                if (energyCash >= upgrade.cost) div.onclick = () => buyEnergyUpgrade(index);
                 upgradesDiv.appendChild(div);
             });
         }
@@ -733,30 +587,19 @@
             }
         }
 
-        function resetEnergyGame() {
-            energyCount = 0;
-            energyPerClick = 1;
-            energyPerSecond = 0;
-            energyCash = 0;
-            energyUpgrades[0].cost = 50;
-            energyUpgrades[1].cost = 200;
-            energyUpgrades[2].cost = 500;
-            energyUpgrades[3].cost = 2000;
-            energyUpgrades[4].cost = 10000;
-            updateEnergyDisplay();
+        function startEnergyInterval() {
+            if (energyInterval) clearInterval(energyInterval);
+            energyInterval = setInterval(() => {
+                energyCount += energyPerSecond / 10;
+                updateEnergyDisplay();
+            }, 100);
         }
 
-        setInterval(() => {
-            energyCount += energyPerSecond / 10;
+        function resetEnergyGame() {
+            energyCount = 0; energyPerClick = 1; energyPerSecond = 0; energyCash = 0;
+            energyUpgrades[0].cost = 50; energyUpgrades[1].cost = 200; energyUpgrades[2].cost = 500; energyUpgrades[3].cost = 2000;
             updateEnergyDisplay();
-        }, 100);
-
-        // Initialize all games
-        updateCookieDisplay();
-        updateFarmDisplay();
-        updateBusinessDisplay();
-        updateHeroDisplay();
-        updateEnergyDisplay();
+        }
     </script>
 </body>
 </html>

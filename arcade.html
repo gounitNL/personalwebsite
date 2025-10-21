@@ -5,288 +5,264 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arcade Games - PlayZone</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 2rem;
+            overflow-x: hidden;
         }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 2rem;
-        }
-
-        .header h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
-        }
-
+        .menu-view { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+        .header { text-align: center; color: white; margin-bottom: 2rem; }
+        .header h1 { font-size: 3rem; margin-bottom: 1rem; text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3); }
+        
         .back-btn {
-            display: inline-block;
-            padding: 0.8rem 2rem;
-            background: white;
-            color: #667eea;
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: 600;
-            margin-bottom: 2rem;
+            display: inline-block; padding: 0.8rem 2rem; background: white; color: #667eea;
+            text-decoration: none; border-radius: 50px; font-weight: 600; margin-bottom: 2rem;
             transition: transform 0.3s ease;
         }
+        .back-btn:hover { transform: scale(1.05); }
 
-        .back-btn:hover {
-            transform: scale(1.05);
+        .games-menu {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-top: 2rem;
         }
 
-        .games-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 2rem;
-            margin-top: 2rem;
+        .game-menu-card {
+            background: white; border-radius: 15px; padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
+        .game-menu-card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3); }
+        .game-menu-card .icon { font-size: 4rem; text-align: center; margin-bottom: 1rem; }
+        .game-menu-card h3 { color: #667eea; font-size: 1.5rem; margin-bottom: 0.5rem; text-align: center; }
+        .game-menu-card p { color: #666; text-align: center; font-size: 0.9rem; }
 
-        .game-card {
-            background: white;
-            border-radius: 15px;
-            padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        .game-view {
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); z-index: 1000; overflow-y: auto;
         }
+        .game-view.active { display: block; }
 
-        .game-card h2 {
-            color: #667eea;
-            margin-bottom: 1rem;
-            font-size: 1.5rem;
+        .game-header {
+            background: rgba(255, 255, 255, 0.95); padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); display: flex;
+            justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;
         }
+        .game-title { font-size: 1.5rem; color: #667eea; font-weight: bold; }
+        .game-controls { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+        
+        .close-game-btn {
+            background: #f44336; color: white; border: none; padding: 0.6rem 1.5rem;
+            border-radius: 50px; font-weight: 600; cursor: pointer; transition: transform 0.3s ease;
+        }
+        .close-game-btn:hover { transform: scale(1.05); }
 
-        .game-area {
-            margin: 1.5rem 0;
-            position: relative;
-        }
+        .game-content { padding: 2rem; display: flex; flex-direction: column; align-items: center; }
+        .game-area { position: relative; }
 
         canvas {
-            border: 3px solid #667eea;
-            border-radius: 10px;
-            display: block;
-            margin: 0 auto;
-            background: #f0f0f0;
+            border: 3px solid #667eea; border-radius: 10px; display: block;
+            background: #f0f0f0; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
 
         button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 0.8rem 2rem;
-            border-radius: 50px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-            margin: 0.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;
+            padding: 0.8rem 2rem; border-radius: 50px; font-weight: 600; cursor: pointer;
+            transition: transform 0.3s ease; margin: 0.5rem;
         }
+        button:hover { transform: scale(1.05); }
 
-        button:hover {
-            transform: scale(1.05);
-        }
-
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .score {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #333;
-            margin: 1rem 0;
-            text-align: center;
-        }
-
+        .score { font-size: 1.2rem; font-weight: bold; color: white; margin: 1rem 0; }
+        
         .controls {
-            font-size: 0.9rem;
-            color: #666;
-            text-align: center;
-            margin: 1rem 0;
-            padding: 1rem;
-            background: #f5f5f5;
-            border-radius: 10px;
-        }
-
-        .game-over {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 2rem;
-            border-radius: 15px;
-            text-align: center;
-            display: none;
-        }
-
-        .game-over.show {
-            display: block;
+            background: rgba(255, 255, 255, 0.9); padding: 1rem; border-radius: 10px;
+            margin: 1rem 0; text-align: center; color: #666; max-width: 600px;
         }
 
         @media (max-width: 768px) {
-            .games-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .header h1 {
-                font-size: 2rem;
-            }
-
-            canvas {
-                max-width: 100%;
-            }
+            .header h1 { font-size: 2rem; }
+            .game-title { font-size: 1.2rem; }
+            .game-header { padding: 1rem; }
+            .game-content { padding: 1rem; }
+            .games-menu { grid-template-columns: 1fr; }
+            canvas { max-width: 100%; height: auto; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="menu-view" id="menuView">
         <div class="header">
             <a href="index.html" class="back-btn">← Back to Home</a>
             <h1>🕹️ Arcade Games</h1>
             <p style="font-size: 1.2rem; margin-top: 0.5rem;">Classic arcade action!</p>
         </div>
 
-        <div class="games-grid">
-            <!-- Flappy Bird -->
-            <div class="game-card">
-                <h2>Flappy Bird</h2>
-                <div class="score">Score: <span id="flappy-score">0</span> | High: <span id="flappy-high">0</span></div>
-                <div class="game-area">
-                    <canvas id="flappy-canvas" width="400" height="500"></canvas>
-                    <div class="game-over" id="flappy-gameover">
-                        <h3>Game Over!</h3>
-                        <p>Score: <span id="flappy-final-score">0</span></p>
-                    </div>
-                </div>
-                <div class="controls">Press SPACE or Click to flap!</div>
-                <button onclick="startFlappyBird()">Start Game</button>
+        <div class="games-menu">
+            <div class="game-menu-card" onclick="openGame('flappy')">
+                <div class="icon">🐦</div>
+                <h3>Flappy Bird</h3>
+                <p>Tap to flap and avoid pipes!</p>
             </div>
-
-            <!-- Breakout -->
-            <div class="game-card">
-                <h2>Breakout</h2>
-                <div class="score">Score: <span id="breakout-score">0</span> | Lives: <span id="breakout-lives">3</span></div>
-                <div class="game-area">
-                    <canvas id="breakout-canvas" width="400" height="500"></canvas>
-                    <div class="game-over" id="breakout-gameover">
-                        <h3>Game Over!</h3>
-                        <p>Final Score: <span id="breakout-final-score">0</span></p>
-                    </div>
-                </div>
-                <div class="controls">Move paddle with Arrow Keys or Mouse</div>
-                <button onclick="startBreakout()">Start Game</button>
+            <div class="game-menu-card" onclick="openGame('breakout')">
+                <div class="icon">🧱</div>
+                <h3>Breakout</h3>
+                <p>Break all the bricks!</p>
             </div>
-
-            <!-- Dino Runner -->
-            <div class="game-card">
-                <h2>Dino Runner</h2>
-                <div class="score">Score: <span id="dino-score">0</span> | High: <span id="dino-high">0</span></div>
-                <div class="game-area">
-                    <canvas id="dino-canvas" width="600" height="300"></canvas>
-                    <div class="game-over" id="dino-gameover">
-                        <h3>Game Over!</h3>
-                        <p>Score: <span id="dino-final-score">0</span></p>
-                    </div>
-                </div>
-                <div class="controls">Press SPACE or Click to jump!</div>
-                <button onclick="startDinoRunner()">Start Game</button>
+            <div class="game-menu-card" onclick="openGame('dino')">
+                <div class="icon">🦖</div>
+                <h3>Dino Runner</h3>
+                <p>Jump over obstacles!</p>
             </div>
-
-            <!-- Asteroids -->
-            <div class="game-card">
-                <h2>Asteroids</h2>
-                <div class="score">Score: <span id="asteroids-score">0</span> | Lives: <span id="asteroids-lives">3</span></div>
-                <div class="game-area">
-                    <canvas id="asteroids-canvas" width="500" height="500"></canvas>
-                    <div class="game-over" id="asteroids-gameover">
-                        <h3>Game Over!</h3>
-                        <p>Final Score: <span id="asteroids-final-score">0</span></p>
-                    </div>
-                </div>
-                <div class="controls">Arrow Keys: Rotate & Move | SPACE: Shoot</div>
-                <button onclick="startAsteroids()">Start Game</button>
+            <div class="game-menu-card" onclick="openGame('asteroids')">
+                <div class="icon">🚀</div>
+                <h3>Asteroids</h3>
+                <p>Shoot the asteroids!</p>
             </div>
-
-            <!-- Simple Platformer -->
-            <div class="game-card">
-                <h2>Platformer</h2>
-                <div class="score">Coins: <span id="platform-score">0</span> | Lives: <span id="platform-lives">3</span></div>
-                <div class="game-area">
-                    <canvas id="platform-canvas" width="600" height="400"></canvas>
-                    <div class="game-over" id="platform-gameover">
-                        <h3>Level Complete!</h3>
-                        <p>Coins Collected: <span id="platform-final-score">0</span></p>
-                    </div>
-                </div>
-                <div class="controls">Arrow Keys: Move | SPACE: Jump</div>
-                <button onclick="startPlatformer()">Start Game</button>
+            <div class="game-menu-card" onclick="openGame('platformer')">
+                <div class="icon">🎮</div>
+                <h3>Platformer</h3>
+                <p>Collect coins and jump!</p>
             </div>
         </div>
     </div>
 
+    <!-- Game Views -->
+    <div class="game-view" id="game-flappy">
+        <div class="game-header">
+            <div class="game-title">🐦 Flappy Bird</div>
+            <div class="game-controls">
+                <div class="score">Score: <span id="flappy-score">0</span> | High: <span id="flappy-high">0</span></div>
+                <button onclick="startFlappyBird()">Start Game</button>
+                <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
+            </div>
+        </div>
+        <div class="game-content">
+            <div class="game-area">
+                <canvas id="flappy-canvas" width="400" height="500"></canvas>
+            </div>
+            <div class="controls">Press SPACE or Click to flap!</div>
+        </div>
+    </div>
+
+    <div class="game-view" id="game-breakout">
+        <div class="game-header">
+            <div class="game-title">🧱 Breakout</div>
+            <div class="game-controls">
+                <div class="score">Score: <span id="breakout-score">0</span> | Lives: <span id="breakout-lives">3</span></div>
+                <button onclick="startBreakout()">Start Game</button>
+                <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
+            </div>
+        </div>
+        <div class="game-content">
+            <div class="game-area">
+                <canvas id="breakout-canvas" width="400" height="500"></canvas>
+            </div>
+            <div class="controls">Move paddle with Arrow Keys or Mouse</div>
+        </div>
+    </div>
+
+    <div class="game-view" id="game-dino">
+        <div class="game-header">
+            <div class="game-title">🦖 Dino Runner</div>
+            <div class="game-controls">
+                <div class="score">Score: <span id="dino-score">0</span> | High: <span id="dino-high">0</span></div>
+                <button onclick="startDinoRunner()">Start Game</button>
+                <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
+            </div>
+        </div>
+        <div class="game-content">
+            <div class="game-area">
+                <canvas id="dino-canvas" width="600" height="300"></canvas>
+            </div>
+            <div class="controls">Press SPACE or Click to jump!</div>
+        </div>
+    </div>
+
+    <div class="game-view" id="game-asteroids">
+        <div class="game-header">
+            <div class="game-title">🚀 Asteroids</div>
+            <div class="game-controls">
+                <div class="score">Score: <span id="asteroids-score">0</span> | Lives: <span id="asteroids-lives">3</span></div>
+                <button onclick="startAsteroids()">Start Game</button>
+                <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
+            </div>
+        </div>
+        <div class="game-content">
+            <div class="game-area">
+                <canvas id="asteroids-canvas" width="500" height="500"></canvas>
+            </div>
+            <div class="controls">Arrow Keys: Rotate & Move | SPACE: Shoot</div>
+        </div>
+    </div>
+
+    <div class="game-view" id="game-platformer">
+        <div class="game-header">
+            <div class="game-title">🎮 Platformer</div>
+            <div class="game-controls">
+                <div class="score">Coins: <span id="platform-score">0</span> | Lives: <span id="platform-lives">3</span></div>
+                <button onclick="startPlatformer()">Start Game</button>
+                <button class="close-game-btn" onclick="closeGame()">✕ Close</button>
+            </div>
+        </div>
+        <div class="game-content">
+            <div class="game-area">
+                <canvas id="platform-canvas" width="600" height="400"></canvas>
+            </div>
+            <div class="controls">Arrow Keys: Move | SPACE: Jump</div>
+        </div>
+    </div>
+
     <script>
-        // ========== FLAPPY BIRD ==========
-        let flappyCanvas, flappyCtx;
-        let flappyBird, flappyPipes, flappyScore, flappyHighScore, flappyGameRunning;
-        let flappyAnimationId;
+        function openGame(gameName) {
+            document.getElementById('menuView').style.display = 'none';
+            document.getElementById('game-' + gameName).classList.add('active');
+        }
+
+        function closeGame() {
+            document.querySelectorAll('.game-view').forEach(view => view.classList.remove('active'));
+            document.getElementById('menuView').style.display = 'block';
+            if (flappyAnimationId) cancelAnimationFrame(flappyAnimationId);
+            if (breakoutAnimationId) cancelAnimationFrame(breakoutAnimationId);
+            if (dinoAnimationId) cancelAnimationFrame(dinoAnimationId);
+            if (asteroidsAnimationId) cancelAnimationFrame(asteroidsAnimationId);
+            if (platformAnimationId) cancelAnimationFrame(platformAnimationId);
+        }
+
+        // FLAPPY BIRD
+        let flappyCanvas, flappyCtx, flappyBird, flappyPipes, flappyScore, flappyHighScore, flappyGameRunning, flappyAnimationId;
 
         function startFlappyBird() {
             flappyCanvas = document.getElementById('flappy-canvas');
             flappyCtx = flappyCanvas.getContext('2d');
-            
             flappyBird = { x: 50, y: 200, velocity: 0, radius: 20 };
             flappyPipes = [];
             flappyScore = 0;
             flappyHighScore = parseInt(localStorage.getItem('flappyHigh') || 0);
             flappyGameRunning = true;
-            
             document.getElementById('flappy-score').textContent = flappyScore;
             document.getElementById('flappy-high').textContent = flappyHighScore;
-            document.getElementById('flappy-gameover').classList.remove('show');
-            
             if (flappyAnimationId) cancelAnimationFrame(flappyAnimationId);
             flappyGameLoop();
         }
 
         function flappyGameLoop() {
             if (!flappyGameRunning) return;
-            
             flappyCtx.fillStyle = '#87CEEB';
             flappyCtx.fillRect(0, 0, flappyCanvas.width, flappyCanvas.height);
             
-            // Update bird
             flappyBird.velocity += 0.6;
             flappyBird.y += flappyBird.velocity;
             
-            // Draw bird
             flappyCtx.fillStyle = '#FFD700';
             flappyCtx.beginPath();
             flappyCtx.arc(flappyBird.x, flappyBird.y, flappyBird.radius, 0, Math.PI * 2);
             flappyCtx.fill();
             
-            // Update and draw pipes
             if (flappyPipes.length === 0 || flappyPipes[flappyPipes.length - 1].x < flappyCanvas.width - 200) {
                 const gap = 150;
-                const minHeight = 50;
-                const maxHeight = flappyCanvas.height - gap - minHeight;
-                const height = Math.random() * (maxHeight - minHeight) + minHeight;
+                const height = Math.random() * (flappyCanvas.height - gap - 100) + 50;
                 flappyPipes.push({ x: flappyCanvas.width, top: height, bottom: height + gap });
             }
             
@@ -294,12 +270,10 @@
                 const pipe = flappyPipes[i];
                 pipe.x -= 3;
                 
-                // Draw pipes
                 flappyCtx.fillStyle = '#228B22';
                 flappyCtx.fillRect(pipe.x, 0, 60, pipe.top);
                 flappyCtx.fillRect(pipe.x, pipe.bottom, 60, flappyCanvas.height - pipe.bottom);
                 
-                // Check collision
                 if (flappyBird.x + flappyBird.radius > pipe.x && flappyBird.x - flappyBird.radius < pipe.x + 60) {
                     if (flappyBird.y - flappyBird.radius < pipe.top || flappyBird.y + flappyBird.radius > pipe.bottom) {
                         endFlappyGame();
@@ -307,19 +281,15 @@
                     }
                 }
                 
-                // Score
                 if (pipe.x + 60 < flappyBird.x && !pipe.scored) {
                     flappyScore++;
                     pipe.scored = true;
                     document.getElementById('flappy-score').textContent = flappyScore;
                 }
                 
-                if (pipe.x < -60) {
-                    flappyPipes.splice(i, 1);
-                }
+                if (pipe.x < -60) flappyPipes.splice(i, 1);
             }
             
-            // Check boundaries
             if (flappyBird.y + flappyBird.radius > flappyCanvas.height || flappyBird.y - flappyBird.radius < 0) {
                 endFlappyGame();
                 return;
@@ -329,9 +299,7 @@
         }
 
         function flappyJump() {
-            if (flappyGameRunning) {
-                flappyBird.velocity = -10;
-            }
+            if (flappyGameRunning) flappyBird.velocity = -10;
         }
 
         function endFlappyGame() {
@@ -341,44 +309,33 @@
                 localStorage.setItem('flappyHigh', flappyHighScore);
                 document.getElementById('flappy-high').textContent = flappyHighScore;
             }
-            document.getElementById('flappy-final-score').textContent = flappyScore;
-            document.getElementById('flappy-gameover').classList.add('show');
         }
 
         document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' && document.getElementById('flappy-canvas')) {
+            if (e.code === 'Space' && document.getElementById('game-flappy').classList.contains('active')) {
                 e.preventDefault();
                 flappyJump();
             }
         });
-        
         document.getElementById('flappy-canvas').addEventListener('click', flappyJump);
 
-        // ========== BREAKOUT ==========
-        let breakoutCanvas, breakoutCtx;
-        let breakoutBall, breakoutPaddle, breakoutBricks, breakoutScore, breakoutLives, breakoutGameRunning;
-        let breakoutAnimationId;
+        // BREAKOUT
+        let breakoutCanvas, breakoutCtx, breakoutBall, breakoutPaddle, breakoutBricks, breakoutScore, breakoutLives, breakoutGameRunning, breakoutAnimationId;
 
         function startBreakout() {
             breakoutCanvas = document.getElementById('breakout-canvas');
             breakoutCtx = breakoutCanvas.getContext('2d');
-            
             breakoutBall = { x: 200, y: 400, dx: 3, dy: -3, radius: 8 };
             breakoutPaddle = { x: 160, y: 470, width: 80, height: 10, dx: 0 };
             breakoutScore = 0;
             breakoutLives = 3;
             breakoutGameRunning = true;
             
-            // Create bricks
             breakoutBricks = [];
             for (let row = 0; row < 5; row++) {
                 for (let col = 0; col < 8; col++) {
                     breakoutBricks.push({
-                        x: col * 50 + 5,
-                        y: row * 20 + 30,
-                        width: 45,
-                        height: 15,
-                        active: true,
+                        x: col * 50 + 5, y: row * 20 + 30, width: 45, height: 15, active: true,
                         color: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8'][row]
                     });
                 }
@@ -386,8 +343,6 @@
             
             document.getElementById('breakout-score').textContent = breakoutScore;
             document.getElementById('breakout-lives').textContent = breakoutLives;
-            document.getElementById('breakout-gameover').classList.remove('show');
-            
             if (breakoutAnimationId) cancelAnimationFrame(breakoutAnimationId);
             breakoutGameLoop();
         }
@@ -398,7 +353,6 @@
             breakoutCtx.fillStyle = '#1a1a2e';
             breakoutCtx.fillRect(0, 0, breakoutCanvas.width, breakoutCanvas.height);
             
-            // Draw and update ball
             breakoutBall.x += breakoutBall.dx;
             breakoutBall.y += breakoutBall.dy;
             
@@ -407,7 +361,6 @@
             breakoutCtx.arc(breakoutBall.x, breakoutBall.y, breakoutBall.radius, 0, Math.PI * 2);
             breakoutCtx.fill();
             
-            // Ball collision with walls
             if (breakoutBall.x + breakoutBall.radius > breakoutCanvas.width || breakoutBall.x - breakoutBall.radius < 0) {
                 breakoutBall.dx = -breakoutBall.dx;
             }
@@ -415,19 +368,17 @@
                 breakoutBall.dy = -breakoutBall.dy;
             }
             
-            // Ball collision with paddle
             if (breakoutBall.y + breakoutBall.radius > breakoutPaddle.y &&
                 breakoutBall.x > breakoutPaddle.x &&
                 breakoutBall.x < breakoutPaddle.x + breakoutPaddle.width) {
                 breakoutBall.dy = -Math.abs(breakoutBall.dy);
             }
             
-            // Ball falls below paddle
             if (breakoutBall.y + breakoutBall.radius > breakoutCanvas.height) {
                 breakoutLives--;
                 document.getElementById('breakout-lives').textContent = breakoutLives;
                 if (breakoutLives === 0) {
-                    endBreakoutGame();
+                    breakoutGameRunning = false;
                     return;
                 }
                 breakoutBall.x = 200;
@@ -436,18 +387,15 @@
                 breakoutBall.dy = -3;
             }
             
-            // Update paddle
             breakoutPaddle.x += breakoutPaddle.dx;
             if (breakoutPaddle.x < 0) breakoutPaddle.x = 0;
             if (breakoutPaddle.x + breakoutPaddle.width > breakoutCanvas.width) {
                 breakoutPaddle.x = breakoutCanvas.width - breakoutPaddle.width;
             }
             
-            // Draw paddle
             breakoutCtx.fillStyle = '#fff';
             breakoutCtx.fillRect(breakoutPaddle.x, breakoutPaddle.y, breakoutPaddle.width, breakoutPaddle.height);
             
-            // Draw and check bricks
             let allBroken = true;
             breakoutBricks.forEach(brick => {
                 if (brick.active) {
@@ -455,7 +403,6 @@
                     breakoutCtx.fillStyle = brick.color;
                     breakoutCtx.fillRect(brick.x, brick.y, brick.width, brick.height);
                     
-                    // Collision detection
                     if (breakoutBall.x > brick.x && breakoutBall.x < brick.x + brick.width &&
                         breakoutBall.y > brick.y && breakoutBall.y < brick.y + brick.height) {
                         breakoutBall.dy = -breakoutBall.dy;
@@ -467,72 +414,51 @@
             });
             
             if (allBroken) {
-                endBreakoutGame(true);
+                breakoutGameRunning = false;
                 return;
             }
             
             breakoutAnimationId = requestAnimationFrame(breakoutGameLoop);
         }
 
-        function endBreakoutGame(won = false) {
-            breakoutGameRunning = false;
-            document.getElementById('breakout-final-score').textContent = breakoutScore;
-            document.getElementById('breakout-gameover').innerHTML = won ? 
-                `<h3>You Won!</h3><p>Final Score: ${breakoutScore}</p>` :
-                `<h3>Game Over!</h3><p>Final Score: ${breakoutScore}</p>`;
-            document.getElementById('breakout-gameover').classList.add('show');
-        }
-
         document.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowLeft') breakoutPaddle.dx = -6;
             if (e.key === 'ArrowRight') breakoutPaddle.dx = 6;
         });
-
         document.addEventListener('keyup', (e) => {
             if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') breakoutPaddle.dx = 0;
         });
 
-        // ========== DINO RUNNER ==========
-        let dinoCanvas, dinoCtx;
-        let dino, obstacles, dinoScore, dinoHighScore, dinoGameRunning;
-        let dinoAnimationId, dinoFrameCount;
+        // DINO RUNNER
+        let dinoCanvas, dinoCtx, dino, obstacles, dinoScore, dinoHighScore, dinoGameRunning, dinoAnimationId, dinoFrameCount;
 
         function startDinoRunner() {
             dinoCanvas = document.getElementById('dino-canvas');
             dinoCtx = dinoCanvas.getContext('2d');
-            
             dino = { x: 50, y: 240, width: 30, height: 40, jumping: false, velocity: 0 };
             obstacles = [];
             dinoScore = 0;
             dinoHighScore = parseInt(localStorage.getItem('dinoHigh') || 0);
             dinoGameRunning = true;
             dinoFrameCount = 0;
-            
             document.getElementById('dino-score').textContent = dinoScore;
             document.getElementById('dino-high').textContent = dinoHighScore;
-            document.getElementById('dino-gameover').classList.remove('show');
-            
             if (dinoAnimationId) cancelAnimationFrame(dinoAnimationId);
             dinoGameLoop();
         }
 
         function dinoGameLoop() {
             if (!dinoGameRunning) return;
-            
             dinoFrameCount++;
             
             dinoCtx.fillStyle = '#f0f0f0';
             dinoCtx.fillRect(0, 0, dinoCanvas.width, dinoCanvas.height);
-            
-            // Ground
             dinoCtx.fillStyle = '#333';
             dinoCtx.fillRect(0, 280, dinoCanvas.width, 2);
             
-            // Update dino
             if (dino.jumping) {
                 dino.velocity += 0.8;
                 dino.y += dino.velocity;
-                
                 if (dino.y >= 240) {
                     dino.y = 240;
                     dino.jumping = false;
@@ -540,16 +466,13 @@
                 }
             }
             
-            // Draw dino
             dinoCtx.fillStyle = '#666';
             dinoCtx.fillRect(dino.x, dino.y, dino.width, dino.height);
             
-            // Spawn obstacles
             if (dinoFrameCount % 100 === 0) {
                 obstacles.push({ x: dinoCanvas.width, y: 250, width: 20, height: 30 });
             }
             
-            // Update and draw obstacles
             for (let i = obstacles.length - 1; i >= 0; i--) {
                 const obs = obstacles[i];
                 obs.x -= 5;
@@ -557,12 +480,14 @@
                 dinoCtx.fillStyle = '#228B22';
                 dinoCtx.fillRect(obs.x, obs.y, obs.width, obs.height);
                 
-                // Collision detection
-                if (dino.x < obs.x + obs.width &&
-                    dino.x + dino.width > obs.x &&
-                    dino.y < obs.y + obs.height &&
-                    dino.y + dino.height > obs.y) {
-                    endDinoGame();
+                if (dino.x < obs.x + obs.width && dino.x + dino.width > obs.x &&
+                    dino.y < obs.y + obs.height && dino.y + dino.height > obs.y) {
+                    dinoGameRunning = false;
+                    if (dinoScore > dinoHighScore) {
+                        dinoHighScore = dinoScore;
+                        localStorage.setItem('dinoHigh', dinoHighScore);
+                        document.getElementById('dino-high').textContent = dinoHighScore;
+                    }
                     return;
                 }
                 
@@ -583,36 +508,21 @@
             }
         }
 
-        function endDinoGame() {
-            dinoGameRunning = false;
-            if (dinoScore > dinoHighScore) {
-                dinoHighScore = dinoScore;
-                localStorage.setItem('dinoHigh', dinoHighScore);
-                document.getElementById('dino-high').textContent = dinoHighScore;
-            }
-            document.getElementById('dino-final-score').textContent = dinoScore;
-            document.getElementById('dino-gameover').classList.add('show');
-        }
-
         document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' && document.getElementById('dino-canvas')) {
+            if (e.code === 'Space' && document.getElementById('game-dino').classList.contains('active')) {
                 e.preventDefault();
                 dinoJump();
             }
         });
-        
         document.getElementById('dino-canvas').addEventListener('click', dinoJump);
 
-        // ========== ASTEROIDS ==========
-        let asteroidsCanvas, asteroidsCtx;
-        let ship, asteroids, bullets, asteroidsScore, asteroidsLives, asteroidsGameRunning;
-        let asteroidsAnimationId;
+        // ASTEROIDS
+        let asteroidsCanvas, asteroidsCtx, ship, asteroids, bullets, asteroidsScore, asteroidsLives, asteroidsGameRunning, asteroidsAnimationId;
         let asteroidsKeys = {};
 
         function startAsteroids() {
             asteroidsCanvas = document.getElementById('asteroids-canvas');
             asteroidsCtx = asteroidsCanvas.getContext('2d');
-            
             ship = { x: 250, y: 250, angle: 0, dx: 0, dy: 0, size: 15 };
             asteroids = [];
             bullets = [];
@@ -620,27 +530,22 @@
             asteroidsLives = 3;
             asteroidsGameRunning = true;
             
-            // Create initial asteroids
             for (let i = 0; i < 5; i++) {
                 createAsteroid(Math.random() * asteroidsCanvas.width, Math.random() * asteroidsCanvas.height, 3);
             }
             
             document.getElementById('asteroids-score').textContent = asteroidsScore;
             document.getElementById('asteroids-lives').textContent = asteroidsLives;
-            document.getElementById('asteroids-gameover').classList.remove('show');
-            
             if (asteroidsAnimationId) cancelAnimationFrame(asteroidsAnimationId);
             asteroidsGameLoop();
         }
 
         function createAsteroid(x, y, size) {
             asteroids.push({
-                x: x,
-                y: y,
+                x: x, y: y,
                 dx: (Math.random() - 0.5) * 2,
                 dy: (Math.random() - 0.5) * 2,
-                size: size,
-                radius: size * 10
+                size: size, radius: size * 10
             });
         }
 
@@ -650,7 +555,6 @@
             asteroidsCtx.fillStyle = '#000';
             asteroidsCtx.fillRect(0, 0, asteroidsCanvas.width, asteroidsCanvas.height);
             
-            // Update ship
             if (asteroidsKeys['ArrowLeft']) ship.angle -= 0.1;
             if (asteroidsKeys['ArrowRight']) ship.angle += 0.1;
             if (asteroidsKeys['ArrowUp']) {
@@ -663,13 +567,11 @@
             ship.dx *= 0.99;
             ship.dy *= 0.99;
             
-            // Wrap around screen
             if (ship.x < 0) ship.x = asteroidsCanvas.width;
             if (ship.x > asteroidsCanvas.width) ship.x = 0;
             if (ship.y < 0) ship.y = asteroidsCanvas.height;
             if (ship.y > asteroidsCanvas.height) ship.y = 0;
             
-            // Draw ship
             asteroidsCtx.save();
             asteroidsCtx.translate(ship.x, ship.y);
             asteroidsCtx.rotate(ship.angle);
@@ -683,7 +585,6 @@
             asteroidsCtx.stroke();
             asteroidsCtx.restore();
             
-            // Update and draw asteroids
             for (let i = asteroids.length - 1; i >= 0; i--) {
                 const ast = asteroids[i];
                 ast.x += ast.dx;
@@ -700,7 +601,6 @@
                 asteroidsCtx.arc(ast.x, ast.y, ast.radius, 0, Math.PI * 2);
                 asteroidsCtx.stroke();
                 
-                // Collision with ship
                 const dx = ship.x - ast.x;
                 const dy = ship.y - ast.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
@@ -709,15 +609,13 @@
                     asteroidsLives--;
                     document.getElementById('asteroids-lives').textContent = asteroidsLives;
                     asteroids.splice(i, 1);
-                    
                     if (asteroidsLives === 0) {
-                        endAsteroidsGame();
+                        asteroidsGameRunning = false;
                         return;
                     }
                     continue;
                 }
                 
-                // Check bullet collisions
                 for (let j = bullets.length - 1; j >= 0; j--) {
                     const bullet = bullets[j];
                     const bdx = bullet.x - ast.x;
@@ -739,7 +637,6 @@
                 }
             }
             
-            // Update and draw bullets
             for (let i = bullets.length - 1; i >= 0; i--) {
                 const bullet = bullets[i];
                 bullet.x += bullet.dx;
@@ -770,8 +667,7 @@
         function shootBullet() {
             if (asteroidsGameRunning) {
                 bullets.push({
-                    x: ship.x,
-                    y: ship.y,
+                    x: ship.x, y: ship.y,
                     dx: Math.cos(ship.angle) * 5,
                     dy: Math.sin(ship.angle) * 5,
                     life: 50
@@ -779,34 +675,24 @@
             }
         }
 
-        function endAsteroidsGame() {
-            asteroidsGameRunning = false;
-            document.getElementById('asteroids-final-score').textContent = asteroidsScore;
-            document.getElementById('asteroids-gameover').classList.add('show');
-        }
-
         document.addEventListener('keydown', (e) => {
             asteroidsKeys[e.key] = true;
-            if (e.code === 'Space') {
+            if (e.code === 'Space' && document.getElementById('game-asteroids').classList.contains('active')) {
                 e.preventDefault();
                 shootBullet();
             }
         });
-
         document.addEventListener('keyup', (e) => {
             asteroidsKeys[e.key] = false;
         });
 
-        // ========== PLATFORMER ==========
-        let platformCanvas, platformCtx;
-        let player, platforms, coins, platformScore, platformLives, platformGameRunning;
-        let platformAnimationId;
+        // PLATFORMER
+        let platformCanvas, platformCtx, player, platforms, coins, platformScore, platformLives, platformGameRunning, platformAnimationId;
         let platformKeys = {};
 
         function startPlatformer() {
             platformCanvas = document.getElementById('platform-canvas');
             platformCtx = platformCanvas.getContext('2d');
-            
             player = { x: 50, y: 300, width: 30, height: 40, dx: 0, dy: 0, jumping: false, grounded: false };
             platforms = [
                 { x: 0, y: 370, width: 200, height: 30 },
@@ -829,8 +715,6 @@
             
             document.getElementById('platform-score').textContent = platformScore;
             document.getElementById('platform-lives').textContent = platformLives;
-            document.getElementById('platform-gameover').classList.remove('show');
-            
             if (platformAnimationId) cancelAnimationFrame(platformAnimationId);
             platformGameLoop();
         }
@@ -841,23 +725,20 @@
             platformCtx.fillStyle = '#87CEEB';
             platformCtx.fillRect(0, 0, platformCanvas.width, platformCanvas.height);
             
-            // Update player
             if (platformKeys['ArrowLeft']) player.dx = -5;
             else if (platformKeys['ArrowRight']) player.dx = 5;
             else player.dx = 0;
             
-            player.dy += 0.8; // Gravity
+            player.dy += 0.8;
             player.x += player.dx;
             player.y += player.dy;
             
-            // Check platform collisions
             player.grounded = false;
             platforms.forEach(platform => {
                 if (player.x < platform.x + platform.width &&
                     player.x + player.width > platform.x &&
                     player.y < platform.y + platform.height &&
                     player.y + player.height > platform.y) {
-                    
                     if (player.dy > 0) {
                         player.y = platform.y - player.height;
                         player.dy = 0;
@@ -867,16 +748,14 @@
                 }
             });
             
-            // Boundaries
             if (player.x < 0) player.x = 0;
             if (player.x + player.width > platformCanvas.width) player.x = platformCanvas.width - player.width;
             
-            // Fall off screen
             if (player.y > platformCanvas.height) {
                 platformLives--;
                 document.getElementById('platform-lives').textContent = platformLives;
                 if (platformLives === 0) {
-                    endPlatformerGame();
+                    platformGameRunning = false;
                     return;
                 }
                 player.x = 50;
@@ -884,17 +763,14 @@
                 player.dy = 0;
             }
             
-            // Draw player
             platformCtx.fillStyle = '#FF6B6B';
             platformCtx.fillRect(player.x, player.y, player.width, player.height);
             
-            // Draw platforms
             platformCtx.fillStyle = '#8B4513';
             platforms.forEach(platform => {
                 platformCtx.fillRect(platform.x, platform.y, platform.width, platform.height);
             });
             
-            // Draw and collect coins
             coins.forEach(coin => {
                 if (!coin.collected) {
                     const dx = (player.x + player.width / 2) - coin.x;
@@ -914,9 +790,8 @@
                 }
             });
             
-            // Check win condition
             if (coins.every(coin => coin.collected)) {
-                endPlatformerGame(true);
+                platformGameRunning = false;
                 return;
             }
             
@@ -930,23 +805,13 @@
             }
         }
 
-        function endPlatformerGame(won = false) {
-            platformGameRunning = false;
-            document.getElementById('platform-final-score').textContent = platformScore;
-            document.getElementById('platform-gameover').innerHTML = won ? 
-                `<h3>Level Complete!</h3><p>Coins Collected: ${platformScore}</p>` :
-                `<h3>Game Over!</h3><p>Coins Collected: ${platformScore}</p>`;
-            document.getElementById('platform-gameover').classList.add('show');
-        }
-
         document.addEventListener('keydown', (e) => {
             platformKeys[e.key] = true;
-            if (e.code === 'Space') {
+            if (e.code === 'Space' && document.getElementById('game-platformer').classList.contains('active')) {
                 e.preventDefault();
                 platformJump();
             }
         });
-
         document.addEventListener('keyup', (e) => {
             platformKeys[e.key] = false;
         });
