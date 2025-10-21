@@ -733,6 +733,26 @@
             if (oldGrid !== JSON.stringify(grid2048)) {
                 addNewTile();
                 render2048();
+                
+                // Check for win (2048 tile reached)
+                let hasWon = false;
+                for (let i = 0; i < gridSize2048; i++) {
+                    for (let j = 0; j < gridSize2048; j++) {
+                        if (grid2048[i][j] >= 2048) {
+                            hasWon = true;
+                            break;
+                        }
+                    }
+                }
+                if (hasWon) {
+                    setTimeout(() => {
+                        if (confirm('🎉 Congratulations! You reached 2048! Continue playing?')) {
+                            // Continue playing
+                        } else {
+                            init2048();
+                        }
+                    }, 100);
+                }
             }
         }
 

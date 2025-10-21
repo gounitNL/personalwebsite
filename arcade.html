@@ -300,7 +300,12 @@
         }
 
         function flappyJump() {
-            if (flappyGameRunning) flappyBird.velocity = -10;
+            if (flappyGameRunning) {
+                flappyBird.velocity = -10;
+            } else {
+                // Restart game if it's over
+                startFlappyBird();
+            }
         }
 
         function endFlappyGame() {
@@ -310,6 +315,20 @@
                 localStorage.setItem('flappyHigh', flappyHighScore);
                 document.getElementById('flappy-high').textContent = flappyHighScore;
             }
+            
+            // Haptic feedback on mobile
+            if (navigator.vibrate) navigator.vibrate(200);
+            
+            // Game over message
+            flappyCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            flappyCtx.fillRect(0, 0, flappyCanvas.width, flappyCanvas.height);
+            flappyCtx.fillStyle = 'white';
+            flappyCtx.font = 'bold 36px Arial';
+            flappyCtx.textAlign = 'center';
+            flappyCtx.fillText('GAME OVER', flappyCanvas.width / 2, flappyCanvas.height / 2 - 30);
+            flappyCtx.font = '20px Arial';
+            flappyCtx.fillText(`Score: ${flappyScore}`, flappyCanvas.width / 2, flappyCanvas.height / 2 + 10);
+            flappyCtx.fillText('Click or Space to Restart', flappyCanvas.width / 2, flappyCanvas.height / 2 + 50);
         }
 
         document.addEventListener('keydown', (e) => {
@@ -380,6 +399,17 @@
                 document.getElementById('breakout-lives').textContent = breakoutLives;
                 if (breakoutLives === 0) {
                     breakoutGameRunning = false;
+                    if (navigator.vibrate) navigator.vibrate(200);
+                    // Game over message
+                    breakoutCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                    breakoutCtx.fillRect(0, 0, breakoutCanvas.width, breakoutCanvas.height);
+                    breakoutCtx.fillStyle = 'white';
+                    breakoutCtx.font = 'bold 36px Arial';
+                    breakoutCtx.textAlign = 'center';
+                    breakoutCtx.fillText('GAME OVER', breakoutCanvas.width / 2, breakoutCanvas.height / 2 - 30);
+                    breakoutCtx.font = '20px Arial';
+                    breakoutCtx.fillText(`Score: ${breakoutScore}`, breakoutCanvas.width / 2, breakoutCanvas.height / 2 + 10);
+                    breakoutCtx.fillText('Click to Restart', breakoutCanvas.width / 2, breakoutCanvas.height / 2 + 50);
                     return;
                 }
                 breakoutBall.x = 200;
@@ -433,11 +463,22 @@
         }
 
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft') breakoutPaddle.dx = -6;
-            if (e.key === 'ArrowRight') breakoutPaddle.dx = 6;
+            if (document.getElementById('game-breakout').classList.contains('active')) {
+                if (e.key === 'ArrowLeft') breakoutPaddle.dx = -6;
+                if (e.key === 'ArrowRight') breakoutPaddle.dx = 6;
+                if (e.code === 'Space' && !breakoutGameRunning) {
+                    e.preventDefault();
+                    startBreakout();
+                }
+            }
         });
         document.addEventListener('keyup', (e) => {
             if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') breakoutPaddle.dx = 0;
+        });
+        
+        // Click to restart Breakout
+        document.getElementById('breakout-canvas').addEventListener('click', () => {
+            if (!breakoutGameRunning) startBreakout();
         });
 
         // DINO RUNNER
