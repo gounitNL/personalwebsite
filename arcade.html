@@ -261,14 +261,15 @@
             flappyCtx.fill();
             
             if (flappyPipes.length === 0 || flappyPipes[flappyPipes.length - 1].x < flappyCanvas.width - 200) {
-                const gap = 150;
+                const gap = Math.max(120, 150 - Math.floor(flappyScore / 10) * 5); // Gap narrows every 10 points
                 const height = Math.random() * (flappyCanvas.height - gap - 100) + 50;
                 flappyPipes.push({ x: flappyCanvas.width, top: height, bottom: height + gap });
             }
             
             for (let i = flappyPipes.length - 1; i >= 0; i--) {
                 const pipe = flappyPipes[i];
-                pipe.x -= 3;
+                const speed = 3 + Math.floor(flappyScore / 5) * 0.5; // Speed increases every 5 points
+                pipe.x -= speed;
                 
                 flappyCtx.fillStyle = '#228B22';
                 flappyCtx.fillRect(pipe.x, 0, 60, pipe.top);
@@ -383,8 +384,9 @@
                 }
                 breakoutBall.x = 200;
                 breakoutBall.y = 400;
-                breakoutBall.dx = 3;
-                breakoutBall.dy = -3;
+                const speedMultiplier = 1 + (breakoutScore / 500); // Ball gets faster as score increases
+                breakoutBall.dx = 3 * speedMultiplier;
+                breakoutBall.dy = -3 * speedMultiplier;
             }
             
             breakoutPaddle.x += breakoutPaddle.dx;
@@ -414,8 +416,17 @@
             });
             
             if (allBroken) {
-                breakoutGameRunning = false;
-                return;
+                // Level up: Create more bricks and increase ball speed slightly
+                for (let row = 0; row < 5; row++) {
+                    for (let col = 0; col < 8; col++) {
+                        breakoutBricks.push({
+                            x: col * 50 + 5, y: row * 20 + 30, width: 45, height: 15, active: true,
+                            color: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8'][row]
+                        });
+                    }
+                }
+                breakoutBall.dx *= 1.1;
+                breakoutBall.dy *= 1.1;
             }
             
             breakoutAnimationId = requestAnimationFrame(breakoutGameLoop);
@@ -469,13 +480,15 @@
             dinoCtx.fillStyle = '#666';
             dinoCtx.fillRect(dino.x, dino.y, dino.width, dino.height);
             
-            if (dinoFrameCount % 100 === 0) {
+            const spawnRate = Math.max(50, 100 - Math.floor(dinoScore / 5) * 5); // More frequent obstacles as score increases
+            if (dinoFrameCount % spawnRate === 0) {
                 obstacles.push({ x: dinoCanvas.width, y: 250, width: 20, height: 30 });
             }
             
             for (let i = obstacles.length - 1; i >= 0; i--) {
                 const obs = obstacles[i];
-                obs.x -= 5;
+                const speed = 5 + Math.floor(dinoScore / 10) * 0.5; // Speed increases every 10 obstacles
+                obs.x -= speed;
                 
                 dinoCtx.fillStyle = '#228B22';
                 dinoCtx.fillRect(obs.x, obs.y, obs.width, obs.height);
@@ -656,7 +669,8 @@
             }
             
             if (asteroids.length === 0) {
-                for (let i = 0; i < 5; i++) {
+                const numAsteroids = 5 + Math.floor(asteroidsScore / 100); // More asteroids as score increases
+                for (let i = 0; i < numAsteroids; i++) {
                     createAsteroid(Math.random() * asteroidsCanvas.width, Math.random() * asteroidsCanvas.height, 3);
                 }
             }
