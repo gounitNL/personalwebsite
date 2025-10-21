@@ -994,8 +994,10 @@
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-        const auth = firebase.auth();
+        
+        // Make these globally accessible (use var instead of const for global scope)
+        var database = firebase.database();
+        var auth = firebase.auth();
         
         // ========== FIREBASE AUTHENTICATION SYSTEM ==========
         
