@@ -983,14 +983,19 @@
     <script>
         // Firebase Configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyBqZL5fJ9K7nX8yQ2wM4vH6dR3tP5cE8aG",
-            authDomain: "fantasyquest-mmorpg.firebaseapp.com",
-            databaseURL: "https://fantasyquest-mmorpg-default-rtdb.firebaseio.com",
-            projectId: "fantasyquest-mmorpg",
-            storageBucket: "fantasyquest-mmorpg.appspot.com",
-            messagingSenderId: "123456789012",
-            appId: "1:123456789012:web:abcdef123456"
-        };
+  apiKey: "AIzaSyCqMqav_HFKid6XdmbnfhG5llgCMZoYQV0",
+  authDomain: "fantasyquest-mmorpg.firebaseapp.com",
+  databaseURL: "https://fantasyquest-mmorpg-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "fantasyquest-mmorpg",
+  storageBucket: "fantasyquest-mmorpg.firebasestorage.app",
+  messagingSenderId: "149888279159",
+  appId: "1:149888279159:web:48a53797f0c57f3a671c72",
+  measurementId: "G-4R4YVKSRSE"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
