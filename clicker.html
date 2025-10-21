@@ -290,7 +290,7 @@
             document.getElementById('menuView').style.display = 'none';
             document.getElementById('game-' + gameName).classList.add('active');
             
-            if (gameName === 'cookie') { updateCookieDisplay(); startCookieInterval(); }
+            if (gameName === 'cookie') { loadCookieGame(); updateCookieDisplay(); startCookieInterval(); }
             else if (gameName === 'farm') { updateFarmDisplay(); startFarmInterval(); }
             else if (gameName === 'business') { updateBusinessDisplay(); startBusinessInterval(); }
             else if (gameName === 'hero') updateHeroDisplay();
@@ -326,6 +326,7 @@
         function clickCookie() {
             cookies += cookiePerClick;
             updateCookieDisplay();
+            if (navigator.vibrate) navigator.vibrate(10); // Haptic feedback
         }
 
         function updateCookieDisplay() {
@@ -355,6 +356,7 @@
                 if (upgrade.passive) cookiePerSecond += upgrade.passive;
                 upgrade.cost = Math.floor(upgrade.cost * 1.5);
                 updateCookieDisplay();
+                saveCookieGame(); // Auto-save on purchase
             }
         }
 
@@ -366,12 +368,53 @@
             }, 100);
         }
 
-        function resetCookieGame() {
-            cookies = 0; cookiePerClick = 1; cookiePerSecond = 0;
-            cookieUpgrades[0].cost = 10; cookieUpgrades[1].cost = 50; cookieUpgrades[2].cost = 200;
-            cookieUpgrades[3].cost = 500; cookieUpgrades[4].cost = 1000;
-            updateCookieDisplay();
+        function saveCookieGame() {
+            const saveData = {
+                cookies,
+                cookiePerClick,
+                cookiePerSecond,
+                upgradeCosts: cookieUpgrades.map(u => u.cost),
+                timestamp: Date.now()
+            };
+            localStorage.setItem('cookieClickerSave', JSON.stringify(saveData));
         }
+        
+        function loadCookieGame() {
+            const saveData = localStorage.getItem('cookieClickerSave');
+            if (saveData) {
+                try {
+                    const data = JSON.parse(saveData);
+                    cookies = data.cookies || 0;
+                    cookiePerClick = data.cookiePerClick || 1;
+                    cookiePerSecond = data.cookiePerSecond || 0;
+                    if (data.upgradeCosts) {
+                        data.upgradeCosts.forEach((cost, i) => {
+                            if (cookieUpgrades[i]) cookieUpgrades[i].cost = cost;
+                        });
+                    }
+                    updateCookieDisplay();
+                } catch(e) {
+                    console.error('Failed to load save', e);
+                }
+            }
+        }
+        
+        function resetCookieGame() {
+            if (confirm('Reset all progress? This cannot be undone!')) {
+                cookies = 0; cookiePerClick = 1; cookiePerSecond = 0;
+                cookieUpgrades[0].cost = 10; cookieUpgrades[1].cost = 50; cookieUpgrades[2].cost = 200;
+                cookieUpgrades[3].cost = 500; cookieUpgrades[4].cost = 1000;
+                localStorage.removeItem('cookieClickerSave');
+                updateCookieDisplay();
+            }
+        }
+        
+        // Auto-save every 5 seconds
+        setInterval(() => {
+            if (document.getElementById('game-cookie').classList.contains('active')) {
+                saveCookieGame();
+            }
+        }, 5000);
 
         // IDLE FARM
         let farmMoney = 0, farmPerHarvest = 1, farmPerSecond = 0;
