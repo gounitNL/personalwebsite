@@ -995,12 +995,38 @@
             appId: "1:149888279159:web:48a53797f0c57f3a671c72"
         };
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        
-        // Make these globally accessible (use var instead of const for global scope)
-        var database = firebase.database();
-        var auth = firebase.auth();
+        // Global variables for Firebase (declared early)
+        var database = null;
+        var auth = null;
+
+        // Initialize Firebase when ready
+        function initFirebase() {
+            try {
+                if (typeof firebase === 'undefined') {
+                    console.error('Firebase SDK not loaded yet!');
+                    setTimeout(initFirebase, 100); // Retry after 100ms
+                    return;
+                }
+                
+                firebase.initializeApp(firebaseConfig);
+                database = firebase.database();
+                auth = firebase.auth();
+                console.log('Firebase initialized successfully!');
+                
+                // Setup auth state listener after initialization
+                setupAuthListener();
+            } catch (error) {
+                console.error('Firebase initialization error:', error);
+                alert('Failed to connect to Firebase. Please refresh the page.');
+            }
+        }
+
+        // Call initialization when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initFirebase);
+        } else {
+            initFirebase();
+        }
         
         // ========== FIREBASE AUTHENTICATION SYSTEM ==========
         
@@ -1263,6 +1289,12 @@
         
         // Login with Email/Password
         async function loginWithEmail() {
+            // Check if Firebase is initialized
+            if (!auth || !database) {
+                showAuthError('Firebase not initialized yet. Please wait a moment and try again.');
+                return;
+            }
+            
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
             
@@ -1300,6 +1332,12 @@
         
         // Sign up with Email/Password
         async function signupWithEmail() {
+            // Check if Firebase is initialized
+            if (!auth || !database) {
+                showAuthError('Firebase not initialized yet. Please wait a moment and try again.');
+                return;
+            }
+            
             const characterName = document.getElementById('signupCharacterName').value.trim();
             const email = document.getElementById('signupEmail').value.trim();
             const password = document.getElementById('signupPassword').value;
@@ -1400,6 +1438,12 @@
         
         // Login with Google
         async function loginWithGoogle() {
+            // Check if Firebase is initialized
+            if (!auth || !database) {
+                showAuthError('Firebase not initialized yet. Please wait a moment and try again.');
+                return;
+            }
+            
             try {
                 showAuthSuccess('Opening Google sign-in...');
                 const provider = new firebase.auth.GoogleAuthProvider();
@@ -1489,7 +1533,13 @@
         
         // ========== AUTH STATE LISTENER ==========
         
-        auth.onAuthStateChanged(async (user) => {
+        function setupAuthListener() {
+            if (!auth) {
+                console.error('Auth not initialized yet!');
+                return;
+            }
+            
+            auth.onAuthStateChanged(async (user) => {
             if (user) {
                 // User is logged in
                 currentUser = user;
@@ -1550,7 +1600,8 @@
                 document.getElementById('loginScreen').classList.remove('hidden');
                 document.getElementById('gameContainer').classList.add('hidden');
             }
-        });
+            });
+        }
         
         // ========== CLOUD SAVE FUNCTIONS ==========
         
