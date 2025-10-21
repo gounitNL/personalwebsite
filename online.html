@@ -1049,6 +1049,9 @@
 
             <div class="inventory-panel">
                 <h3 style="margin-bottom: 0.5rem; color: #f39c12;">🎒 Equipment</h3>
+                <button onclick="openEquipment()" style="width: 100%; padding: 0.75rem; margin-bottom: 0.5rem; background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                    ⚔️ Manage Equipment
+                </button>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem;">
                     <div style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 5px; text-align: center; font-size: 0.8rem;">
                         <div id="weaponSlot">🗡️ Weapon</div>
@@ -1203,6 +1206,52 @@
         <h2 style="color: #f39c12; margin-bottom: 1rem;">😊 Emotes</h2>
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;" id="emoteGrid"></div>
     </div>
+    
+    <!-- Bank Panel -->
+    <div class="quest-panel" id="bankPanel">
+        <button class="close-panel-btn" onclick="closeBank()">×</button>
+        <h2 style="color: #f39c12; margin-bottom: 1rem;">🏦 Bank</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div>
+                <h3 style="color: #3498db; margin-bottom: 0.5rem;">🎒 Inventory</h3>
+                <div id="bankInventoryGrid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; max-height: 400px; overflow-y: auto;"></div>
+            </div>
+            <div>
+                <h3 style="color: #2ecc71; margin-bottom: 0.5rem;">💼 Bank Storage</h3>
+                <div id="bankStorageGrid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; max-height: 400px; overflow-y: auto;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Equipment Panel (RuneScape style) -->
+    <div class="quest-panel" id="equipmentPanel">
+        <button class="close-panel-btn" onclick="closeEquipment()">×</button>
+        <h2 style="color: #f39c12; margin-bottom: 1rem;">⚔️ Equipment</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div>
+                <h3 style="color: #e74c3c; margin-bottom: 0.5rem;">Worn Equipment</h3>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+                    <div></div>
+                    <div class="equipment-slot" onclick="unequipItem('head')" style="aspect-ratio: 1; background: rgba(0,0,0,0.3); border: 2px solid #555; border-radius: 5px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 2rem;" id="equipSlotHead">⛑️</div>
+                    <div></div>
+                    <div class="equipment-slot" onclick="unequipItem('weapon')" style="aspect-ratio: 1; background: rgba(0,0,0,0.3); border: 2px solid #555; border-radius: 5px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 2rem;" id="equipSlotWeapon">🗡️</div>
+                    <div class="equipment-slot" onclick="unequipItem('body')" style="aspect-ratio: 1; background: rgba(0,0,0,0.3); border: 2px solid #555; border-radius: 5px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 2rem;" id="equipSlotBody">🛡️</div>
+                    <div class="equipment-slot" onclick="unequipItem('offhand')" style="aspect-ratio: 1; background: rgba(0,0,0,0.3); border: 2px solid #555; border-radius: 5px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 2rem;" id="equipSlotOffhand">🛡️</div>
+                    <div></div>
+                    <div class="equipment-slot" onclick="unequipItem('feet')" style="aspect-ratio: 1; background: rgba(0,0,0,0.3); border: 2px solid #555; border-radius: 5px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 2rem;" id="equipSlotFeet">👢</div>
+                    <div></div>
+                </div>
+                <div style="margin-top: 1rem; padding: 0.5rem; background: rgba(0,0,0,0.2); border-radius: 5px;">
+                    <div>⚔️ Damage: <span id="totalDamage">0</span></div>
+                    <div>🛡️ Defense: <span id="totalDefense">0</span></div>
+                </div>
+            </div>
+            <div>
+                <h3 style="color: #3498db; margin-bottom: 0.5rem;">Inventory</h3>
+                <div id="equipmentInventoryGrid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; max-height: 400px; overflow-y: auto;"></div>
+            </div>
+        </div>
+    </div>
 
     <!-- Weather Indicator -->
     <div id="weatherIndicator" style="position: fixed; top: 120px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.5); padding: 0.5rem 1rem; border-radius: 20px; display: flex; align-items: center; gap: 0.5rem; z-index: 100;">
@@ -1344,7 +1393,12 @@
                 pantsColor: 0x2c3e50,
                 hairStyle: 'short'
             },
-            inventory: {},
+            inventory: {
+                'Wooden Sword': 1,
+                'Leather Armor': 1,
+                'Bronze Axe': 1,
+                'Bronze Pickaxe': 1
+            },
             quests: { // NEW: Quest tracking
                 active: [],
                 completed: []
@@ -1401,11 +1455,33 @@
         let npcMeshes = []; // NPC 3D meshes
         let currentQuestStep = {}; // Track progress in multi-step quests
         let playerInsideHouse = false; // Track if player is inside a house
+        let bankStorage = {}; // Bank storage for items
+        let pvpEnabled = false; // PVP combat enabled
+        let targetPlayer = null; // Player being attacked in PVP
+        let worldDecorations = []; // Decorative world elements
+        
+        // PVP Area Definition
+        const PVP_AREA = {
+            x: 60,
+            z: -60,
+            width: 40,
+            depth: 40,
+            name: 'Wilderness'
+        };
+        
+        // Increased interaction radius
+        const INTERACTION_RADIUS = {
+            npc: 8,        // Increased from 4
+            monster: 10,   // Increased from 5
+            resource: 6,   // Increased from 3
+            player: 10     // For PVP
+        };
         
         // NPC Definitions
         const NPCS = [
             { id: 'elder_marcus', name: 'Elder Marcus', x: -10, z: 10, type: 'quest', color: 0x8b4513, dialogue: 'Welcome, young adventurer!' },
             { id: 'blacksmith_gareth', name: 'Blacksmith Gareth', x: 15, z: -15, type: 'shop', color: 0x696969, dialogue: 'Looking for quality equipment?' },
+            { id: 'banker', name: 'Banker', x: -30, z: -5, type: 'bank', color: 0xffd700, dialogue: 'Welcome to the bank!' },
             { id: 'pet_master', name: 'Pet Master Luna', x: -20, z: -20, type: 'pet', color: 0x9370db, dialogue: 'Want a loyal companion?' },
             { id: 'farmer_jane', name: 'Farmer Jane', x: 25, z: 15, type: 'quest', color: 0xdaa520, dialogue: 'Can you help me?' },
             { id: 'guard_captain', name: 'Guard Captain', x: 0, z: -30, type: 'quest', color: 0x4169e1, dialogue: 'The village needs defenders!' },
@@ -1429,30 +1505,38 @@
         const PLAYER_SPEED = 0.15;
         const MAP_SIZE = 200;  // Increased from 50 for bigger world
         
-        // NEW: Equipment Database
+        // NEW: Equipment Database with icons
         const EQUIPMENT = {
             weapons: {
-                'Wooden Sword': { damage: 5, value: 10, level: 1 },
-                'Iron Sword': { damage: 10, value: 50, level: 5 },
-                'Steel Sword': { damage: 20, value: 150, level: 10 },
-                'Dragon Sword': { damage: 40, value: 500, level: 20 },
-                'Magic Staff': { damage: 15, magic: 25, value: 200, level: 10 }
+                'Wooden Sword': { damage: 5, value: 10, level: 1, icon: '🗡️', type: 'weapon', slot: 'weapon' },
+                'Iron Sword': { damage: 10, value: 50, level: 5, icon: '⚔️', type: 'weapon', slot: 'weapon' },
+                'Steel Sword': { damage: 20, value: 150, level: 10, icon: '🗡️', type: 'weapon', slot: 'weapon' },
+                'Dragon Sword': { damage: 40, value: 500, level: 20, icon: '⚔️', type: 'weapon', slot: 'weapon' },
+                'Magic Staff': { damage: 15, magic: 25, value: 200, level: 10, icon: '🪄', type: 'weapon', slot: 'weapon' }
             },
             armor: {
-                'Leather Armor': { defense: 5, value: 15, level: 1 },
-                'Iron Armor': { defense: 15, value: 80, level: 5 },
-                'Steel Armor': { defense: 30, value: 250, level: 10 },
-                'Dragon Armor': { defense: 60, value: 800, level: 20 }
+                'Leather Armor': { defense: 5, value: 15, level: 1, icon: '🥼', type: 'armor', slot: 'body' },
+                'Iron Armor': { defense: 15, value: 80, level: 5, icon: '🛡️', type: 'armor', slot: 'body' },
+                'Steel Armor': { defense: 30, value: 250, level: 10, icon: '🦺', type: 'armor', slot: 'body' },
+                'Dragon Armor': { defense: 60, value: 800, level: 20, icon: '🛡️', type: 'armor', slot: 'body' }
             },
             helmets: {
-                'Leather Cap': { defense: 2, value: 8, level: 1 },
-                'Iron Helmet': { defense: 8, value: 40, level: 5 },
-                'Steel Helmet': { defense: 15, value: 120, level: 10 }
+                'Leather Cap': { defense: 2, value: 8, level: 1, icon: '🧢', type: 'helmet', slot: 'head' },
+                'Iron Helmet': { defense: 8, value: 40, level: 5, icon: '⛑️', type: 'helmet', slot: 'head' },
+                'Steel Helmet': { defense: 15, value: 120, level: 10, icon: '⛑️', type: 'helmet', slot: 'head' }
             },
             boots: {
-                'Leather Boots': { speed: 2, value: 10, level: 1 },
-                'Iron Boots': { defense: 5, speed: 3, value: 50, level: 5 },
-                'Dragon Boots': { defense: 10, speed: 5, value: 200, level: 10 }
+                'Leather Boots': { speed: 2, value: 10, level: 1, icon: '👢', type: 'boots', slot: 'feet' },
+                'Iron Boots': { defense: 5, speed: 3, value: 50, level: 5, icon: '🥾', type: 'boots', slot: 'feet' },
+                'Dragon Boots': { defense: 10, speed: 5, value: 200, level: 10, icon: '👢', type: 'boots', slot: 'feet' }
+            },
+            tools: {
+                'Bronze Axe': { bonus: 1, value: 5, level: 1, icon: '🪓', type: 'tool', skill: 'woodcutting' },
+                'Iron Axe': { bonus: 3, value: 25, level: 5, icon: '🪓', type: 'tool', skill: 'woodcutting' },
+                'Steel Axe': { bonus: 5, value: 100, level: 10, icon: '🪓', type: 'tool', skill: 'woodcutting' },
+                'Bronze Pickaxe': { bonus: 1, value: 5, level: 1, icon: '⛏️', type: 'tool', skill: 'mining' },
+                'Iron Pickaxe': { bonus: 3, value: 25, level: 5, icon: '⛏️', type: 'tool', skill: 'mining' },
+                'Steel Pickaxe': { bonus: 5, value: 100, level: 10, icon: '⛏️', type: 'tool', skill: 'mining' }
             }
         };
         
@@ -2530,12 +2614,22 @@
             canvas.addEventListener('mouseup', handleMouseUp);
             canvas.addEventListener('wheel', handleWheel);
             
+            // Minimap click-to-move
+            const miniMapCanvas = document.getElementById('miniMapCanvas');
+            if (miniMapCanvas) {
+                miniMapCanvas.addEventListener('click', handleMinimapClick);
+                miniMapCanvas.style.cursor = 'pointer';
+            }
+            
             document.getElementById('messageInput').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') sendMessage();
             });
 
             // Initialize mobile controls
             initMobileControls();
+            
+            // Create world decorations
+            createWorldDecorations();
 
             // Handle window resize
             window.addEventListener('resize', onWindowResize);
@@ -2602,6 +2696,139 @@
                 path.receiveShadow = true;
                 scene.add(path);
             }
+        }
+        
+        function createWorldDecorations() {
+            // Create realistic water bodies
+            const riverGeometry = new THREE.PlaneGeometry(8, 80);
+            const riverMaterial = new THREE.MeshStandardMaterial({
+                color: 0x1e90ff,
+                roughness: 0.1,
+                metalness: 0.8,
+                transparent: true,
+                opacity: 0.7
+            });
+            const river = new THREE.Mesh(riverGeometry, riverMaterial);
+            river.rotation.x = -Math.PI / 2;
+            river.position.set(-45, 0.1, 0);
+            scene.add(river);
+            
+            // Create a bridge over the river
+            const bridgeGeometry = new THREE.BoxGeometry(10, 0.5, 4);
+            const bridgeMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x8B4513,
+                roughness: 0.9
+            });
+            const bridge = new THREE.Mesh(bridgeGeometry, bridgeMaterial);
+            bridge.position.set(-45, 0.25, 0);
+            bridge.castShadow = true;
+            bridge.receiveShadow = true;
+            scene.add(bridge);
+            
+            // Add bridge railings
+            const railingGeometry = new THREE.BoxGeometry(10, 1, 0.2);
+            const railingMaterial = new THREE.MeshStandardMaterial({ color: 0x654321 });
+            const railing1 = new THREE.Mesh(railingGeometry, railingMaterial);
+            railing1.position.set(-45, 0.75, 2);
+            scene.add(railing1);
+            const railing2 = new THREE.Mesh(railingGeometry, railingMaterial);
+            railing2.position.set(-45, 0.75, -2);
+            scene.add(railing2);
+            
+            // Create grass patches
+            for (let i = 0; i < 20; i++) {
+                const grassGeometry = new THREE.CircleGeometry(2 + Math.random() * 3, 32);
+                const grassMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x228B22,
+                    roughness: 0.9
+                });
+                const grass = new THREE.Mesh(grassGeometry, grassMaterial);
+                grass.rotation.x = -Math.PI / 2;
+                grass.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.8;
+                grass.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.8;
+                grass.position.y = 0.01;
+                scene.add(grass);
+            }
+            
+            // Create PVP Area (Wilderness)
+            const pvpGeometry = new THREE.PlaneGeometry(PVP_AREA.width, PVP_AREA.depth);
+            const pvpMaterial = new THREE.MeshStandardMaterial({
+                color: 0x8B0000,
+                roughness: 0.8,
+                transparent: true,
+                opacity: 0.3
+            });
+            const pvpArea = new THREE.Mesh(pvpGeometry, pvpMaterial);
+            pvpArea.rotation.x = -Math.PI / 2;
+            pvpArea.position.set(PVP_AREA.x, 0.05, PVP_AREA.z);
+            scene.add(pvpArea);
+            
+            // Add PVP warning sign
+            const signGeometry = new THREE.BoxGeometry(3, 2, 0.2);
+            const signMaterial = new THREE.MeshStandardMaterial({ color: 0xFF0000 });
+            const sign = new THREE.Mesh(signGeometry, signMaterial);
+            sign.position.set(PVP_AREA.x - PVP_AREA.width/2 - 3, 1, PVP_AREA.z);
+            scene.add(sign);
+            
+            // Create stone paths connecting areas
+            const pathPositions = [
+                { x: 0, z: 0, length: 30, angle: 0 },
+                { x: 0, z: 0, length: 30, angle: Math.PI/2 },
+                { x: -20, z: -20, length: 20, angle: Math.PI/4 }
+            ];
+            
+            pathPositions.forEach(path => {
+                const pathGeometry = new THREE.PlaneGeometry(3, path.length);
+                const pathMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x808080,
+                    roughness: 0.8
+                });
+                const pathMesh = new THREE.Mesh(pathGeometry, pathMaterial);
+                pathMesh.rotation.x = -Math.PI / 2;
+                pathMesh.rotation.z = path.angle;
+                pathMesh.position.set(path.x, 0.02, path.z);
+                scene.add(pathMesh);
+            });
+            
+            // Add decorative rocks
+            for (let i = 0; i < 15; i++) {
+                const rockGeometry = new THREE.DodecahedronGeometry(0.5 + Math.random() * 0.5);
+                const rockMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x696969,
+                    roughness: 1.0
+                });
+                const rock = new THREE.Mesh(rockGeometry, rockMaterial);
+                rock.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.7;
+                rock.position.y = 0.3;
+                rock.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.7;
+                rock.castShadow = true;
+                scene.add(rock);
+            }
+        }
+        
+        function handleMinimapClick(e) {
+            const rect = e.target.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Convert minimap click to world position
+            const miniMapSize = 150;
+            const scale = (MAP_SIZE * 2) / miniMapSize;
+            
+            // Calculate relative position from center
+            const relativeX = (x - miniMapSize / 2) * scale;
+            const relativeZ = (y - miniMapSize / 2) * scale;
+            
+            // Calculate world position
+            const worldX = currentPlayer.x + relativeX;
+            const worldZ = currentPlayer.z + relativeZ;
+            
+            // Set target position
+            targetPosition = { x: worldX, z: worldZ };
+            targetMonster = null;
+            targetResource = null;
+            
+            addChatMessage('System', 'Walking to map location...', 'system');
         }
 
         function createPlayer() {
@@ -3063,6 +3290,8 @@
                 openShop();
             } else if (npc.type === 'pet') {
                 openPetShop();
+            } else if (npc.type === 'bank') {
+                openBank();
             } else if (npc.type === 'quest') {
                 openQuestDialogue(npc);
             }
@@ -3485,6 +3714,9 @@
             currentPlayer.z = Math.max(-MAP_SIZE/2, Math.min(MAP_SIZE/2, currentPlayer.z));
 
             currentPlayer.moving = moved;
+            
+            // Check PVP area
+            checkPVPArea();
 
             // Update player mesh position and animation
             if (playerMesh) {
@@ -3540,6 +3772,21 @@
             // Check exploration quests
             if (moved) {
                 updateQuestProgress('explore', null, { x: currentPlayer.x, z: currentPlayer.z });
+            }
+            
+            // Check if player entered PVP area
+            const inPvpArea = 
+                currentPlayer.x > PVP_AREA.x - PVP_AREA.width/2 &&
+                currentPlayer.x < PVP_AREA.x + PVP_AREA.width/2 &&
+                currentPlayer.z > PVP_AREA.z - PVP_AREA.depth/2 &&
+                currentPlayer.z < PVP_AREA.z + PVP_AREA.depth/2;
+            
+            if (inPvpArea && !pvpEnabled) {
+                pvpEnabled = true;
+                addChatMessage('System', '⚠️ You entered the WILDERNESS! PVP is enabled!', 'system');
+            } else if (!inPvpArea && pvpEnabled) {
+                pvpEnabled = false;
+                addChatMessage('System', '✅ You left the Wilderness. PVP is disabled.', 'system');
             }
 
             // Move monsters randomly - with null checks
@@ -3656,7 +3903,7 @@
                 const npc = npcGroup.userData;
                 if (npc && npc.npcId) {
                     const dist = Math.hypot(currentPlayer.x - npc.x, currentPlayer.z - npc.z);
-                    if (dist < 4) {
+                    if (dist < INTERACTION_RADIUS.npc) {
                         interactWithNPC(npc);
                         return;
                     } else {
@@ -3679,7 +3926,7 @@
                 const monster = monsterGroup.userData;
                 if (monster && monster.currentHp > 0) {
                     const dist = Math.hypot(currentPlayer.x - monster.x, currentPlayer.z - monster.z);
-                    if (dist < 5) {
+                    if (dist < INTERACTION_RADIUS.monster) {
                         attackMonster(monster, monsterGroup);
                         return;
                     } else {
@@ -3703,7 +3950,7 @@
                 const resource = resourceMesh.userData;
                 if (resource && resource.available) {
                     const dist = Math.hypot(currentPlayer.x - resource.x, currentPlayer.z - resource.z);
-                    if (dist < 3) {
+                    if (dist < INTERACTION_RADIUS.resource) {
                         harvestResource(resource, resourceMesh);
                         return;
                     } else {
@@ -3959,34 +4206,158 @@
 
         function renderInventory() {
             const grid = document.getElementById('inventoryGrid');
+            if (!grid) return;
             grid.innerHTML = '';
-            const items = {
-                'Wood': '🪵',
-                'Ore': '🪨',
-                'Fish': '🐟',
-                'Sword': '⚔️',
-                'Shield': '🛡️',
-                'Gem': '💎'
-            };
+            
+            const allItems = [];
+            
+            // Add regular items
+            Object.entries(currentPlayer.inventory).forEach(([name, count]) => {
+                if (count > 0) {
+                    allItems.push({ name, count, isEquipment: isEquipmentItem(name) });
+                }
+            });
             
             for (let i = 0; i < 16; i++) {
                 const slot = document.createElement('div');
                 slot.className = 'inventory-slot';
                 
-                const itemNames = Object.keys(currentPlayer.inventory);
-                const itemName = itemNames[i];
-                
-                if (itemName && currentPlayer.inventory[itemName]) {
+                if (allItems[i]) {
+                    const item = allItems[i];
                     slot.classList.add('has-item');
-                    slot.innerHTML = items[itemName] || '📦';
+                    
+                    const icon = getItemIcon(item.name);
+                    slot.innerHTML = icon;
+                    
                     const count = document.createElement('div');
                     count.className = 'item-count';
-                    count.textContent = currentPlayer.inventory[itemName];
+                    count.textContent = item.count;
                     slot.appendChild(count);
+                    
+                    // Add click handler for equipment items
+                    if (item.isEquipment) {
+                        slot.style.cursor = 'pointer';
+                        slot.onclick = () => equipItem(item.name);
+                        slot.title = `Click to equip ${item.name}`;
+                    }
                 }
                 
                 grid.appendChild(slot);
             }
+        }
+        
+        function isEquipmentItem(itemName) {
+            return Object.values(EQUIPMENT).some(category => 
+                Object.keys(category).includes(itemName)
+            );
+        }
+        
+        function getItemIcon(itemName) {
+            // Check equipment database
+            for (const category of Object.values(EQUIPMENT)) {
+                if (category[itemName]) {
+                    return category[itemName].icon || '📦';
+                }
+            }
+            
+            // Default icons for resources
+            const resourceIcons = {
+                'Wood': '🪵',
+                'Ore': '🪨',
+                'Fish': '🐟',
+                'Gem': '💎'
+            };
+            
+            return resourceIcons[itemName] || '📦';
+        }
+        
+        function equipItem(itemName) {
+            // Find item category and stats
+            let itemData = null;
+            let slot = null;
+            
+            for (const [category, items] of Object.entries(EQUIPMENT)) {
+                if (items[itemName]) {
+                    itemData = items[itemName];
+                    slot = itemData.slot;
+                    break;
+                }
+            }
+            
+            if (!itemData || !slot) return;
+            
+            // Remove from inventory
+            if (currentPlayer.inventory[itemName]) {
+                currentPlayer.inventory[itemName]--;
+                if (currentPlayer.inventory[itemName] <= 0) {
+                    delete currentPlayer.inventory[itemName];
+                }
+            }
+            
+            // Unequip current item in slot if any
+            const currentEquip = currentPlayer.equipment[slot];
+            if (currentEquip) {
+                currentPlayer.inventory[currentEquip] = (currentPlayer.inventory[currentEquip] || 0) + 1;
+            }
+            
+            // Equip new item
+            currentPlayer.equipment[slot] = itemName;
+            
+            addChatMessage('Equipment', `Equipped ${itemName}`, 'system');
+            updateEquipmentDisplay();
+            renderInventory();
+            updateStats();
+        }
+        
+        function unequipItem(slot) {
+            const itemName = currentPlayer.equipment[slot];
+            if (!itemName) return;
+            
+            // Add to inventory
+            currentPlayer.inventory[itemName] = (currentPlayer.inventory[itemName] || 0) + 1;
+            
+            // Remove from equipment
+            currentPlayer.equipment[slot] = null;
+            
+            addChatMessage('Equipment', `Unequipped ${itemName}`, 'system');
+            updateEquipmentDisplay();
+            renderInventory();
+            updateStats();
+        }
+        
+        function updateEquipmentDisplay() {
+            const slots = ['weapon', 'body', 'head', 'feet'];
+            const slotElements = {
+                'weapon': 'weaponSlot',
+                'body': 'armorSlot',
+                'head': 'helmetSlot',
+                'feet': 'bootsSlot'
+            };
+            
+            slots.forEach(slot => {
+                const element = document.getElementById(slotElements[slot]);
+                if (!element) return;
+                
+                const equippedItem = currentPlayer.equipment[slot];
+                if (equippedItem) {
+                    const icon = getItemIcon(equippedItem);
+                    element.innerHTML = `${icon}<br><small style="font-size:0.7rem;">${equippedItem}</small>`;
+                    element.style.cursor = 'pointer';
+                    element.onclick = () => unequipItem(slot);
+                    element.title = `Click to unequip`;
+                } else {
+                    const defaultIcons = {
+                        'weapon': '🗡️ Weapon',
+                        'body': '🛡️ Armor',
+                        'head': '⛑️ Helmet',
+                        'feet': '👢 Boots'
+                    };
+                    element.innerHTML = defaultIcons[slot];
+                    element.style.cursor = 'default';
+                    element.onclick = null;
+                    element.title = '';
+                }
+            });
         }
 
         function onWindowResize() {
@@ -4383,6 +4754,116 @@
             document.getElementById('shopPanel').classList.remove('active');
         }
         
+        function openBank() {
+            document.getElementById('bankPanel').classList.add('active');
+            renderBank();
+        }
+        
+        function closeBank() {
+            document.getElementById('bankPanel').classList.remove('active');
+        }
+        
+        function renderBank() {
+            renderBankInventory();
+            renderBankStorage();
+        }
+        
+        function renderBankInventory() {
+            const grid = document.getElementById('bankInventoryGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            
+            Object.entries(currentPlayer.inventory).forEach(([name, count]) => {
+                if (count > 0) {
+                    const slot = document.createElement('div');
+                    slot.className = 'inventory-slot has-item';
+                    slot.style.cursor = 'pointer';
+                    
+                    const icon = getItemIcon(name);
+                    slot.innerHTML = icon;
+                    
+                    const countDiv = document.createElement('div');
+                    countDiv.className = 'item-count';
+                    countDiv.textContent = count;
+                    slot.appendChild(countDiv);
+                    
+                    slot.onclick = () => depositItem(name, count);
+                    slot.title = `Click to deposit ${name}`;
+                    
+                    grid.appendChild(slot);
+                }
+            });
+        }
+        
+        function renderBankStorage() {
+            const grid = document.getElementById('bankStorageGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            
+            Object.entries(bankStorage).forEach(([name, count]) => {
+                if (count > 0) {
+                    const slot = document.createElement('div');
+                    slot.className = 'inventory-slot has-item';
+                    slot.style.cursor = 'pointer';
+                    
+                    const icon = getItemIcon(name);
+                    slot.innerHTML = icon;
+                    
+                    const countDiv = document.createElement('div');
+                    countDiv.className = 'item-count';
+                    countDiv.textContent = count;
+                    slot.appendChild(countDiv);
+                    
+                    slot.onclick = () => withdrawItem(name, count);
+                    slot.title = `Click to withdraw ${name}`;
+                    
+                    grid.appendChild(slot);
+                }
+            });
+        }
+        
+        function depositItem(itemName, maxCount) {
+            const amount = prompt(`How many ${itemName} to deposit? (Max: ${maxCount})`);
+            const count = parseInt(amount);
+            
+            if (isNaN(count) || count <= 0 || count > maxCount) {
+                addChatMessage('Bank', 'Invalid amount', 'system');
+                return;
+            }
+            
+            currentPlayer.inventory[itemName] -= count;
+            if (currentPlayer.inventory[itemName] <= 0) {
+                delete currentPlayer.inventory[itemName];
+            }
+            
+            bankStorage[itemName] = (bankStorage[itemName] || 0) + count;
+            
+            addChatMessage('Bank', `Deposited ${count} ${itemName}`, 'system');
+            renderBank();
+            renderInventory();
+        }
+        
+        function withdrawItem(itemName, maxCount) {
+            const amount = prompt(`How many ${itemName} to withdraw? (Max: ${maxCount})`);
+            const count = parseInt(amount);
+            
+            if (isNaN(count) || count <= 0 || count > maxCount) {
+                addChatMessage('Bank', 'Invalid amount', 'system');
+                return;
+            }
+            
+            bankStorage[itemName] -= count;
+            if (bankStorage[itemName] <= 0) {
+                delete bankStorage[itemName];
+            }
+            
+            currentPlayer.inventory[itemName] = (currentPlayer.inventory[itemName] || 0) + count;
+            
+            addChatMessage('Bank', `Withdrew ${count} ${itemName}`, 'system');
+            renderBank();
+            renderInventory();
+        }
+        
         function renderShop() {
             const shopDiv = document.getElementById('shopItems');
             document.getElementById('shopGold').textContent = currentPlayer.gold;
@@ -4447,6 +4928,230 @@
             addChatMessage('Shop', `Purchased ${itemName}!`, 'system');
             updateStats();
             renderShop();
+        }
+        
+        // Bank System
+        function openBank() {
+            document.getElementById('bankPanel').classList.add('active');
+            renderBank();
+        }
+        
+        function closeBank() {
+            document.getElementById('bankPanel').classList.remove('active');
+        }
+        
+        function renderBank() {
+            // Render inventory
+            const invGrid = document.getElementById('bankInventoryGrid');
+            invGrid.innerHTML = '';
+            
+            Object.entries(currentPlayer.inventory).forEach(([item, count]) => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'inventory-slot has-item';
+                itemEl.style.cursor = 'pointer';
+                itemEl.onclick = () => depositItem(item);
+                
+                const itemData = findItemData(item);
+                itemEl.innerHTML = `
+                    <div>${itemData ? itemData.icon : '📦'}</div>
+                    <div class="item-count">${count}</div>
+                `;
+                itemEl.title = `${item} (Click to deposit)`;
+                invGrid.appendChild(itemEl);
+            });
+            
+            // Render bank storage
+            const bankGrid = document.getElementById('bankStorageGrid');
+            bankGrid.innerHTML = '';
+            
+            Object.entries(bankStorage).forEach(([item, count]) => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'inventory-slot has-item';
+                itemEl.style.cursor = 'pointer';
+                itemEl.onclick = () => withdrawItem(item);
+                
+                const itemData = findItemData(item);
+                itemEl.innerHTML = `
+                    <div>${itemData ? itemData.icon : '📦'}</div>
+                    <div class="item-count">${count}</div>
+                `;
+                itemEl.title = `${item} (Click to withdraw)`;
+                bankGrid.appendChild(itemEl);
+            });
+        }
+        
+        function depositItem(item) {
+            if (!currentPlayer.inventory[item]) return;
+            
+            if (!bankStorage[item]) bankStorage[item] = 0;
+            bankStorage[item]++;
+            currentPlayer.inventory[item]--;
+            
+            if (currentPlayer.inventory[item] === 0) {
+                delete currentPlayer.inventory[item];
+            }
+            
+            addChatMessage('Bank', `Deposited 1x ${item}`, 'system');
+            renderBank();
+            renderInventory();
+        }
+        
+        function withdrawItem(item) {
+            if (!bankStorage[item]) return;
+            
+            if (!currentPlayer.inventory[item]) currentPlayer.inventory[item] = 0;
+            currentPlayer.inventory[item]++;
+            bankStorage[item]--;
+            
+            if (bankStorage[item] === 0) {
+                delete bankStorage[item];
+            }
+            
+            addChatMessage('Bank', `Withdrew 1x ${item}`, 'system');
+            renderBank();
+            renderInventory();
+        }
+        
+        // Equipment System (RuneScape style)
+        function openEquipment() {
+            document.getElementById('equipmentPanel').classList.add('active');
+            renderEquipmentPanel();
+        }
+        
+        function closeEquipment() {
+            document.getElementById('equipmentPanel').classList.remove('active');
+        }
+        
+        function renderEquipmentPanel() {
+            // Update worn equipment display
+            ['head', 'weapon', 'body', 'feet'].forEach(slot => {
+                const slotEl = document.getElementById(`equipSlot${slot.charAt(0).toUpperCase() + slot.slice(1)}`);
+                const equipped = currentPlayer.equipment[slot];
+                
+                if (equipped) {
+                    const itemData = findItemData(equipped);
+                    slotEl.innerHTML = `${itemData ? itemData.icon : '❓'}<br><small style="font-size:0.6rem;">${equipped}</small>`;
+                    slotEl.style.border = '2px solid #f39c12';
+                } else {
+                    const defaultIcons = { head: '⛑️', weapon: '🗡️', body: '🛡️', feet: '👢' };
+                    slotEl.innerHTML = defaultIcons[slot];
+                    slotEl.style.border = '2px solid #555';
+                }
+            });
+            
+            // Calculate totals
+            let totalDamage = 0;
+            let totalDefense = 0;
+            
+            Object.values(currentPlayer.equipment).forEach(itemName => {
+                if (!itemName) return;
+                const itemData = findItemData(itemName);
+                if (itemData) {
+                    totalDamage += itemData.damage || 0;
+                    totalDefense += itemData.defense || 0;
+                }
+            });
+            
+            document.getElementById('totalDamage').textContent = totalDamage;
+            document.getElementById('totalDefense').textContent = totalDefense;
+            
+            // Render inventory with equippable items
+            const invGrid = document.getElementById('equipmentInventoryGrid');
+            invGrid.innerHTML = '';
+            
+            Object.entries(currentPlayer.inventory).forEach(([item, count]) => {
+                const itemData = findItemData(item);
+                if (!itemData || !itemData.slot) return; // Only show equippable items
+                
+                const itemEl = document.createElement('div');
+                itemEl.className = 'inventory-slot has-item';
+                itemEl.style.cursor = 'pointer';
+                itemEl.onclick = () => equipItem(item);
+                
+                itemEl.innerHTML = `
+                    <div>${itemData.icon}</div>
+                    <div class="item-count">${count}</div>
+                `;
+                itemEl.title = `${item} (Click to equip)`;
+                invGrid.appendChild(itemEl);
+            });
+        }
+        
+        function equipItem(itemName) {
+            const itemData = findItemData(itemName);
+            if (!itemData || !itemData.slot) return;
+            
+            const slot = itemData.slot === 'body' ? 'body' : 
+                        itemData.slot === 'head' ? 'head' : 
+                        itemData.slot === 'feet' ? 'feet' : 
+                        itemData.slot === 'weapon' ? 'weapon' : null;
+            
+            if (!slot) return;
+            
+            // Unequip current item in that slot
+            if (currentPlayer.equipment[slot]) {
+                const oldItem = currentPlayer.equipment[slot];
+                if (!currentPlayer.inventory[oldItem]) currentPlayer.inventory[oldItem] = 0;
+                currentPlayer.inventory[oldItem]++;
+            }
+            
+            // Equip new item
+            currentPlayer.equipment[slot] = itemName;
+            currentPlayer.inventory[itemName]--;
+            
+            if (currentPlayer.inventory[itemName] === 0) {
+                delete currentPlayer.inventory[itemName];
+            }
+            
+            addChatMessage('Equipment', `Equipped ${itemName}`, 'system');
+            renderEquipmentPanel();
+            renderInventory();
+            updateStats();
+        }
+        
+        function unequipItem(slot) {
+            if (!currentPlayer.equipment[slot]) return;
+            
+            const itemName = currentPlayer.equipment[slot];
+            
+            // Add to inventory
+            if (!currentPlayer.inventory[itemName]) currentPlayer.inventory[itemName] = 0;
+            currentPlayer.inventory[itemName]++;
+            
+            // Remove from equipment
+            currentPlayer.equipment[slot] = null;
+            
+            addChatMessage('Equipment', `Unequipped ${itemName}`, 'system');
+            renderEquipmentPanel();
+            renderInventory();
+            updateStats();
+        }
+        
+        function findItemData(itemName) {
+            for (const category of Object.values(EQUIPMENT)) {
+                if (category[itemName]) {
+                    return category[itemName];
+                }
+            }
+            return null;
+        }
+        
+        // PVP System
+        function checkPVPArea() {
+            const inPVP = 
+                currentPlayer.x > PVP_AREA.x - PVP_AREA.width/2 &&
+                currentPlayer.x < PVP_AREA.x + PVP_AREA.width/2 &&
+                currentPlayer.z > PVP_AREA.z - PVP_AREA.depth/2 &&
+                currentPlayer.z < PVP_AREA.z + PVP_AREA.depth/2;
+            
+            if (inPVP && !pvpEnabled) {
+                pvpEnabled = true;
+                addChatMessage('PVP', 'You have entered the Wilderness! PVP is enabled!', 'system');
+            } else if (!inPVP && pvpEnabled) {
+                pvpEnabled = false;
+                targetPlayer = null;
+                addChatMessage('PVP', 'You have left the Wilderness. PVP is disabled.', 'system');
+            }
         }
         
         // Achievement System
@@ -4625,6 +5330,17 @@
                 }
             });
             
+            // Draw PVP Area
+            const pvpX = centerX + (PVP_AREA.x - currentPlayer.x) * scale;
+            const pvpY = centerY + (PVP_AREA.z - currentPlayer.z) * scale;
+            const pvpWidth = PVP_AREA.width * scale;
+            const pvpHeight = PVP_AREA.depth * scale;
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+            ctx.fillRect(pvpX - pvpWidth/2, pvpY - pvpHeight/2, pvpWidth, pvpHeight);
+            ctx.strokeStyle = '#FF0000';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(pvpX - pvpWidth/2, pvpY - pvpHeight/2, pvpWidth, pvpHeight);
+            
             // Draw houses
             HOUSES.forEach(houseData => {
                 const x = centerX + (houseData.x - currentPlayer.x) * scale;
@@ -4633,6 +5349,16 @@
                 ctx.lineWidth = 1;
                 ctx.strokeRect(x - 4, y - 4, 8, 8);
             });
+            
+            // Draw bank icon
+            const bankerNPC = NPCS.find(npc => npc.type === 'bank');
+            if (bankerNPC) {
+                const x = centerX + (bankerNPC.x - currentPlayer.x) * scale;
+                const y = centerY + (bankerNPC.z - currentPlayer.z) * scale;
+                ctx.fillStyle = '#FFD700';
+                ctx.font = 'bold 12px Arial';
+                ctx.fillText('$', x - 4, y + 4);
+            }
             
             // Draw other players
             Object.values(players).forEach(player => {
