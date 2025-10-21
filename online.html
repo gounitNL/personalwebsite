@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FantasyQuest MMORPG - PlayZone</title>
+    <title>FantasyQuest 3D MMORPG - PlayZone</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -89,7 +89,7 @@
 
         #gameContainer.hidden { display: none; }
 
-        /* Left Sidebar - Character Info */
+        /* Left Sidebar */
         #leftSidebar {
             width: 250px;
             background: rgba(44, 62, 80, 0.95);
@@ -192,13 +192,36 @@
             color: #2ecc71;
         }
 
-        #canvas {
+        #renderCanvas {
             flex: 1;
-            background: #1e2a33;
-            cursor: crosshair;
+            background: #87CEEB;
+            display: block;
         }
 
-        /* Right Sidebar - Chat & Actions */
+        .controls-hint {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            color: #ecf0f1;
+            text-align: center;
+        }
+
+        .camera-controls {
+            position: absolute;
+            top: 70px;
+            right: 330px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 0.5rem;
+            border-radius: 5px;
+            font-size: 0.8rem;
+        }
+
+        /* Right Sidebar */
         #rightSidebar {
             width: 300px;
             background: rgba(44, 62, 80, 0.95);
@@ -337,34 +360,234 @@
             text-shadow: 1px 1px 2px #000;
         }
 
-        /* Player sprite on canvas */
-        .sprite {
+        /* Mobile Virtual Controls */
+        #mobileControls {
+            display: none;
             position: absolute;
-            width: 32px;
-            height: 32px;
-            transition: all 0.2s;
+            bottom: 80px;
+            left: 20px;
+            z-index: 100;
         }
 
-        .nameplate {
+        .joystick-container {
+            width: 120px;
+            height: 120px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            position: relative;
+            touch-action: none;
+        }
+
+        .joystick-knob {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.6);
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
             position: absolute;
-            background: rgba(0, 0, 0, 0.7);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.1s;
+        }
+
+        #mobileActionButtons {
+            display: none;
+            position: absolute;
+            bottom: 80px;
+            right: 20px;
+            z-index: 100;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .mobile-action-btn {
+            width: 60px;
+            height: 60px;
+            background: rgba(231, 76, 60, 0.8);
+            border: 3px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
             color: white;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-size: 10px;
-            white-space: nowrap;
-            transform: translateX(-50%);
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            touch-action: none;
+        }
+
+        .mobile-action-btn.gather {
+            background: rgba(39, 174, 96, 0.8);
+        }
+
+        .toggle-sidebar-btn {
+            display: none;
+            position: absolute;
+            top: 70px;
+            background: rgba(44, 62, 80, 0.9);
+            border: 2px solid #34495e;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 150;
+            font-size: 1.2rem;
+        }
+
+        #toggleLeft {
+            left: 10px;
+        }
+
+        #toggleRight {
+            right: 10px;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 199;
+        }
+
+        @media (max-width: 1024px) {
+            #leftSidebar { width: 220px; }
+            #rightSidebar { width: 280px; }
+            .login-box { padding: 2rem; }
         }
 
         @media (max-width: 768px) {
-            #leftSidebar { width: 200px; }
-            #rightSidebar { width: 250px; }
+            #leftSidebar, #rightSidebar {
+                position: fixed;
+                top: 0;
+                height: 100vh;
+                z-index: 200;
+                transition: transform 0.3s;
+            }
+
+            #leftSidebar {
+                left: 0;
+                transform: translateX(-100%);
+                width: 250px;
+            }
+
+            #leftSidebar.open {
+                transform: translateX(0);
+            }
+
+            #rightSidebar {
+                right: 0;
+                transform: translateX(100%);
+                width: 280px;
+            }
+
+            #rightSidebar.open {
+                transform: translateX(0);
+            }
+
+            .sidebar-overlay.active {
+                display: block;
+            }
+
+            .toggle-sidebar-btn {
+                display: block;
+            }
+
+            #mobileControls {
+                display: block;
+            }
+
+            #mobileActionButtons {
+                display: flex;
+            }
+
+            .controls-hint {
+                display: none;
+            }
+
+            .camera-controls {
+                display: none;
+            }
+
+            #gameHeader {
+                padding: 0.75rem 1rem;
+            }
+
+            .action-buttons {
+                display: none;
+            }
         }
 
         @media (max-width: 480px) {
-            #leftSidebar, #rightSidebar { display: none; }
-            #gameHeader { padding: 0.5rem; }
-            #gameTitle { font-size: 1.2rem; }
+            #gameHeader { 
+                padding: 0.5rem; 
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            #gameTitle { 
+                font-size: 1rem; 
+            }
+
+            #onlineCount {
+                font-size: 0.8rem;
+            }
+
+            .login-box {
+                padding: 1.5rem;
+                width: 95%;
+            }
+
+            .login-box h1 {
+                font-size: 1.5rem;
+            }
+
+            #leftSidebar, #rightSidebar {
+                width: 90vw;
+                max-width: 300px;
+            }
+
+            .joystick-container {
+                width: 100px;
+                height: 100px;
+            }
+
+            .joystick-knob {
+                width: 40px;
+                height: 40px;
+            }
+
+            .mobile-action-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+
+            #mobileControls {
+                bottom: 60px;
+                left: 15px;
+            }
+
+            #mobileActionButtons {
+                bottom: 60px;
+                right: 15px;
+            }
+        }
+
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 1.5rem;
+            z-index: 3000;
+            text-align: center;
         }
     </style>
 </head>
@@ -372,16 +595,25 @@
     <!-- Login Screen -->
     <div id="loginScreen">
         <div class="login-box">
-            <h1>⚔️ FantasyQuest MMORPG</h1>
-            <p>Enter your character name to begin your adventure!</p>
+            <h1>⚔️ FantasyQuest 3D MMORPG</h1>
+            <p>Enter your character name to begin your 3D adventure!</p>
             <input type="text" id="usernameInput" placeholder="Enter character name" maxlength="20">
             <button onclick="login()">Start Adventure</button>
-            <p style="margin-top: 1rem; font-size: 0.8rem; color: #999;">Play with other players in real-time!</p>
+            <p style="margin-top: 1rem; font-size: 0.8rem; color: #999;">Play with other players in real-time 3D!</p>
         </div>
     </div>
 
+    <div id="loading" class="loading hidden">Loading 3D World...</div>
+
     <!-- Game Container -->
     <div id="gameContainer" class="hidden">
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebars()"></div>
+
+        <!-- Toggle Buttons -->
+        <button class="toggle-sidebar-btn" id="toggleLeft" onclick="toggleLeftSidebar()">📊</button>
+        <button class="toggle-sidebar-btn" id="toggleRight" onclick="toggleRightSidebar()">💬</button>
+
         <!-- Left Sidebar -->
         <div id="leftSidebar">
             <div class="character-panel">
@@ -437,12 +669,29 @@
         <div id="gameArea">
             <div id="gameHeader">
                 <div>
-                    <div id="gameTitle">⚔️ FantasyQuest Online</div>
+                    <div id="gameTitle">⚔️ FantasyQuest 3D Online</div>
                     <a href="index.html" style="color: #95a5a6; text-decoration: none; font-size: 0.9rem;">← Back to Home</a>
                 </div>
                 <div id="onlineCount">🟢 0 players online</div>
             </div>
-            <canvas id="canvas"></canvas>
+            <canvas id="renderCanvas"></canvas>
+            <div class="controls-hint">WASD: Move • Mouse: Rotate Camera • Click: Interact<br>Q/E: Rotate Camera • Scroll: Zoom</div>
+            <div class="camera-controls">
+                Camera: Q/E to rotate • Mouse drag to look around
+            </div>
+            
+            <!-- Mobile Virtual Joystick -->
+            <div id="mobileControls">
+                <div class="joystick-container" id="joystickContainer">
+                    <div class="joystick-knob" id="joystickKnob"></div>
+                </div>
+            </div>
+
+            <!-- Mobile Action Buttons -->
+            <div id="mobileActionButtons">
+                <div class="mobile-action-btn" ontouchstart="attackNearestMonster()">⚔️</div>
+                <div class="mobile-action-btn gather" ontouchstart="gatherResource()">⛏️</div>
+            </div>
         </div>
 
         <!-- Right Sidebar -->
@@ -463,6 +712,9 @@
         </div>
     </div>
 
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
@@ -483,12 +735,28 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
+        // Three.js variables
+        let scene, camera, renderer, canvas;
+        let playerMesh, playerMeshes = {};
+        let monsterMeshes = [];
+        let resourceMeshes = [];
+        let groundMesh;
+        let raycaster, mouse;
+        let cameraAngle = Math.PI / 4; // 45 degrees
+        let cameraDistance = 25;
+        let cameraHeight = 15;
+        let isMouseDown = false;
+        let mouseStartX = 0;
+
         // Game State
         let currentPlayer = {
             id: null,
             name: '',
-            x: 400,
-            y: 300,
+            x: 0,
+            y: 0,
+            z: 0,
+            rotation: 0,
+            moving: false,
             hp: 100,
             maxHp: 100,
             xp: 0,
@@ -506,8 +774,17 @@
         let players = {};
         let monsters = [];
         let resources = [];
-        let canvas, ctx;
         let playersRef, chatRef;
+        let keys = {};
+        
+        // Mobile controls
+        let joystickActive = false;
+        let joystickDirection = { x: 0, y: 0 };
+        let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+        // Constants
+        const PLAYER_SPEED = 0.15;
+        const MAP_SIZE = 50;
 
         // Login
         function login() {
@@ -521,19 +798,58 @@
             currentPlayer.id = 'player_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
             
             document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('gameContainer').classList.remove('hidden');
+            document.getElementById('loading').classList.remove('hidden');
             
-            initGame();
+            setTimeout(() => {
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('gameContainer').classList.remove('hidden');
+                initGame();
+            }, 1000);
         }
 
-        // Initialize Game
+        // Initialize 3D Game
         function initGame() {
-            canvas = document.getElementById('canvas');
-            ctx = canvas.getContext('2d');
+            canvas = document.getElementById('renderCanvas');
             
-            // Set canvas size
-            resizeCanvas();
-            window.addEventListener('resize', resizeCanvas);
+            // Scene setup
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87CEEB); // Sky blue
+            scene.fog = new THREE.Fog(0x87CEEB, 30, 80);
+
+            // Camera setup (isometric-like view)
+            camera = new THREE.PerspectiveCamera(60, canvas.offsetWidth / canvas.offsetHeight, 0.1, 1000);
+            updateCameraPosition();
+
+            // Renderer setup
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+            renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(20, 40, 20);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            directionalLight.shadow.camera.left = -50;
+            directionalLight.shadow.camera.right = 50;
+            directionalLight.shadow.camera.top = 50;
+            directionalLight.shadow.camera.bottom = -50;
+            scene.add(directionalLight);
+
+            // Create terrain
+            createTerrain();
+
+            // Create player
+            createPlayer();
+
+            // Raycaster for clicking
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
 
             // Update UI
             document.getElementById('playerName').textContent = currentPlayer.name;
@@ -550,6 +866,8 @@
                 name: currentPlayer.name,
                 x: currentPlayer.x,
                 y: currentPlayer.y,
+                z: currentPlayer.z,
+                rotation: currentPlayer.rotation,
                 level: currentPlayer.level,
                 lastActive: Date.now()
             });
@@ -565,10 +883,19 @@
                     const player = child.val();
                     if (child.key !== currentPlayer.id) {
                         players[child.key] = player;
+                        updatePlayerMesh(child.key, player);
                     }
                     onlineCount++;
                 });
                 document.getElementById('onlineCount').textContent = `🟢 ${onlineCount} players online`;
+                
+                // Remove disconnected players
+                Object.keys(playerMeshes).forEach(id => {
+                    if (!players[id] && id !== currentPlayer.id) {
+                        scene.remove(playerMeshes[id]);
+                        delete playerMeshes[id];
+                    }
+                });
             });
 
             // Listen for chat messages
@@ -582,193 +909,613 @@
             initResources();
 
             // Controls
+            window.addEventListener('keydown', (e) => {
+                keys[e.key.toLowerCase()] = true;
+                
+                if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+                    e.preventDefault();
+                }
+            });
+
+            window.addEventListener('keyup', (e) => {
+                keys[e.key.toLowerCase()] = false;
+            });
+
             canvas.addEventListener('click', handleCanvasClick);
+            canvas.addEventListener('mousedown', handleMouseDown);
+            canvas.addEventListener('mousemove', handleMouseMove);
+            canvas.addEventListener('mouseup', handleMouseUp);
+            canvas.addEventListener('wheel', handleWheel);
+            
             document.getElementById('messageInput').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') sendMessage();
             });
 
+            // Initialize mobile controls
+            initMobileControls();
+
+            // Handle window resize
+            window.addEventListener('resize', onWindowResize);
+
             // Game loop
-            setInterval(gameLoop, 1000 / 30); // 30 FPS
+            animate();
             setInterval(updatePlayerPosition, 100);
 
             // Add system message
-            addChatMessage('System', `${currentPlayer.name} joined the adventure!`, 'system');
+            addChatMessage('System', `${currentPlayer.name} joined the 3D adventure!`, 'system');
         }
 
-        function resizeCanvas() {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
-        }
-
-        function updateStats() {
-            document.getElementById('combatLevel').textContent = currentPlayer.level;
-            document.getElementById('hpBar').style.width = (currentPlayer.hp / currentPlayer.maxHp * 100) + '%';
-            document.getElementById('hpBar').textContent = `${currentPlayer.hp}/${currentPlayer.maxHp}`;
+        function createTerrain() {
+            // Create ground plane with texture-like appearance
+            const groundGeometry = new THREE.PlaneGeometry(MAP_SIZE * 2, MAP_SIZE * 2, MAP_SIZE, MAP_SIZE);
             
-            const xpNeeded = currentPlayer.level * 100;
-            document.getElementById('xpBar').style.width = (currentPlayer.xp / xpNeeded * 100) + '%';
-            document.getElementById('xpBar').textContent = `${currentPlayer.xp}/${xpNeeded}`;
-
-            document.getElementById('combatSkill').textContent = currentPlayer.skills.combat;
-            document.getElementById('miningSkill').textContent = currentPlayer.skills.mining;
-            document.getElementById('woodcuttingSkill').textContent = currentPlayer.skills.woodcutting;
-            document.getElementById('fishingSkill').textContent = currentPlayer.skills.fishing;
-            document.getElementById('craftingSkill').textContent = currentPlayer.skills.crafting;
-        }
-
-        function renderInventory() {
-            const grid = document.getElementById('inventoryGrid');
-            grid.innerHTML = '';
-            const items = ['⚔️', '🛡️', '💎', '🪓', '🎣', '🪵', '🪨', '🐟'];
-            
-            for (let i = 0; i < 16; i++) {
-                const slot = document.createElement('div');
-                slot.className = 'inventory-slot';
-                
-                const itemName = Object.keys(currentPlayer.inventory)[i];
-                if (itemName && currentPlayer.inventory[itemName]) {
-                    slot.classList.add('has-item');
-                    slot.innerHTML = items[i % items.length];
-                    const count = document.createElement('div');
-                    count.className = 'item-count';
-                    count.textContent = currentPlayer.inventory[itemName];
-                    slot.appendChild(count);
-                }
-                
-                grid.appendChild(slot);
+            // Add variation to terrain height
+            const vertices = groundGeometry.attributes.position.array;
+            for (let i = 0; i < vertices.length; i += 3) {
+                vertices[i + 2] = Math.random() * 0.5; // Random height variation
             }
+            groundGeometry.computeVertexNormals();
+
+            const groundMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x3a7d44,
+                roughness: 0.8,
+                metalness: 0.2
+            });
+            
+            groundMesh = new THREE.Mesh(groundGeometry, groundMaterial);
+            groundMesh.rotation.x = -Math.PI / 2;
+            groundMesh.receiveShadow = true;
+            scene.add(groundMesh);
+
+            // Add some water patches
+            for (let i = 0; i < 5; i++) {
+                const waterGeometry = new THREE.CircleGeometry(3 + Math.random() * 2, 32);
+                const waterMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x1e90ff,
+                    roughness: 0.1,
+                    metalness: 0.5
+                });
+                const water = new THREE.Mesh(waterGeometry, waterMaterial);
+                water.rotation.x = -Math.PI / 2;
+                water.position.x = (Math.random() - 0.5) * MAP_SIZE;
+                water.position.z = (Math.random() - 0.5) * MAP_SIZE;
+                water.position.y = 0.05;
+                water.receiveShadow = true;
+                scene.add(water);
+            }
+
+            // Add some dirt paths
+            for (let i = 0; i < 8; i++) {
+                const pathGeometry = new THREE.PlaneGeometry(2, 5);
+                const pathMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x8B4513,
+                    roughness: 0.9
+                });
+                const path = new THREE.Mesh(pathGeometry, pathMaterial);
+                path.rotation.x = -Math.PI / 2;
+                path.position.x = (Math.random() - 0.5) * MAP_SIZE;
+                path.position.z = (Math.random() - 0.5) * MAP_SIZE;
+                path.position.y = 0.02;
+                path.receiveShadow = true;
+                scene.add(path);
+            }
+        }
+
+        function createPlayer() {
+            // Create player character (RuneScape-style blocky)
+            const playerGroup = new THREE.Group();
+
+            // Body
+            const bodyGeometry = new THREE.BoxGeometry(0.6, 1.2, 0.4);
+            const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x3498db });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            body.position.y = 0.8;
+            body.castShadow = true;
+            playerGroup.add(body);
+
+            // Head
+            const headGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+            const headMaterial = new THREE.MeshStandardMaterial({ color: 0xffdbac });
+            const head = new THREE.Mesh(headGeometry, headMaterial);
+            head.position.y = 1.65;
+            head.castShadow = true;
+            playerGroup.add(head);
+
+            // Arms
+            const armGeometry = new THREE.BoxGeometry(0.3, 0.8, 0.3);
+            const armMaterial = new THREE.MeshStandardMaterial({ color: 0x3498db });
+            
+            const leftArm = new THREE.Mesh(armGeometry, armMaterial);
+            leftArm.position.set(-0.5, 0.8, 0);
+            leftArm.castShadow = true;
+            playerGroup.add(leftArm);
+
+            const rightArm = new THREE.Mesh(armGeometry, armMaterial);
+            rightArm.position.set(0.5, 0.8, 0);
+            rightArm.castShadow = true;
+            playerGroup.add(rightArm);
+
+            // Legs
+            const legGeometry = new THREE.BoxGeometry(0.25, 0.6, 0.3);
+            const legMaterial = new THREE.MeshStandardMaterial({ color: 0x2c3e50 });
+            
+            const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
+            leftLeg.position.set(-0.2, 0.3, 0);
+            leftLeg.castShadow = true;
+            playerGroup.add(leftLeg);
+
+            const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
+            rightLeg.position.set(0.2, 0.3, 0);
+            rightLeg.castShadow = true;
+            playerGroup.add(rightLeg);
+
+            playerGroup.position.set(currentPlayer.x, currentPlayer.y, currentPlayer.z);
+            playerMesh = playerGroup;
+            scene.add(playerMesh);
+
+            // Add name label
+            createNameLabel(playerGroup, currentPlayer.name, 0xf39c12);
+        }
+
+        function createNameLabel(parentMesh, name, color) {
+            // Create canvas for name
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = 256;
+            canvas.height = 64;
+            
+            context.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            
+            context.font = 'Bold 32px Arial';
+            context.fillStyle = '#' + color.toString(16).padStart(6, '0');
+            context.textAlign = 'center';
+            context.fillText(name, 128, 42);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+            const sprite = new THREE.Sprite(spriteMaterial);
+            sprite.position.y = 2.5;
+            sprite.scale.set(2, 0.5, 1);
+            parentMesh.add(sprite);
+        }
+
+        function updatePlayerMesh(playerId, playerData) {
+            if (!playerMeshes[playerId]) {
+                // Create new player mesh
+                const playerGroup = new THREE.Group();
+
+                // Body
+                const bodyGeometry = new THREE.BoxGeometry(0.6, 1.2, 0.4);
+                const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0xe74c3c });
+                const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+                body.position.y = 0.8;
+                body.castShadow = true;
+                playerGroup.add(body);
+
+                // Head
+                const headGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+                const headMaterial = new THREE.MeshStandardMaterial({ color: 0xffdbac });
+                const head = new THREE.Mesh(headGeometry, headMaterial);
+                head.position.y = 1.65;
+                head.castShadow = true;
+                playerGroup.add(head);
+
+                // Arms
+                const armGeometry = new THREE.BoxGeometry(0.3, 0.8, 0.3);
+                const armMaterial = new THREE.MeshStandardMaterial({ color: 0xe74c3c });
+                
+                const leftArm = new THREE.Mesh(armGeometry, armMaterial);
+                leftArm.position.set(-0.5, 0.8, 0);
+                leftArm.castShadow = true;
+                playerGroup.add(leftArm);
+
+                const rightArm = new THREE.Mesh(armGeometry, armMaterial);
+                rightArm.position.set(0.5, 0.8, 0);
+                rightArm.castShadow = true;
+                playerGroup.add(rightArm);
+
+                // Legs
+                const legGeometry = new THREE.BoxGeometry(0.25, 0.6, 0.3);
+                const legMaterial = new THREE.MeshStandardMaterial({ color: 0x2c3e50 });
+                
+                const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
+                leftLeg.position.set(-0.2, 0.3, 0);
+                leftLeg.castShadow = true;
+                playerGroup.add(leftLeg);
+
+                const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
+                rightLeg.position.set(0.2, 0.3, 0);
+                rightLeg.castShadow = true;
+                playerGroup.add(rightLeg);
+
+                createNameLabel(playerGroup, playerData.name, 0x3498db);
+                
+                playerMeshes[playerId] = playerGroup;
+                scene.add(playerGroup);
+            }
+
+            // Update position
+            playerMeshes[playerId].position.set(playerData.x, playerData.y, playerData.z);
+            playerMeshes[playerId].rotation.y = playerData.rotation || 0;
         }
 
         function initMonsters() {
             const monsterTypes = [
-                { name: 'Goblin', emoji: '👺', hp: 30, xp: 20, level: 1 },
-                { name: 'Skeleton', emoji: '💀', hp: 50, xp: 35, level: 2 },
-                { name: 'Orc', emoji: '👹', hp: 80, xp: 50, level: 3 },
-                { name: 'Dragon', emoji: '🐉', hp: 200, xp: 150, level: 5 }
+                { name: 'Goblin', color: 0x8B4513, hp: 30, xp: 20, level: 1, scale: 0.8 },
+                { name: 'Skeleton', color: 0xD3D3D3, hp: 50, xp: 35, level: 2, scale: 0.9 },
+                { name: 'Orc', color: 0x556B2F, hp: 80, xp: 50, level: 3, scale: 1.0 },
+                { name: 'Dragon', color: 0x8B0000, hp: 200, xp: 150, level: 5, scale: 1.5 }
             ];
 
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < 15; i++) {
                 const type = monsterTypes[Math.floor(Math.random() * monsterTypes.length)];
-                monsters.push({
+                const monster = {
                     id: 'monster_' + i,
                     ...type,
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
+                    x: (Math.random() - 0.5) * MAP_SIZE,
+                    y: 0,
+                    z: (Math.random() - 0.5) * MAP_SIZE,
                     currentHp: type.hp,
-                    maxHp: type.hp
-                });
+                    maxHp: type.hp,
+                    direction: Math.random() * Math.PI * 2,
+                    speed: 0.02
+                };
+                monsters.push(monster);
+                
+                // Create 3D monster
+                const monsterGroup = new THREE.Group();
+                
+                // Body
+                const bodyGeometry = new THREE.BoxGeometry(0.6 * type.scale, 1.0 * type.scale, 0.6 * type.scale);
+                const bodyMaterial = new THREE.MeshStandardMaterial({ color: type.color });
+                const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+                body.position.y = 0.5 * type.scale;
+                body.castShadow = true;
+                monsterGroup.add(body);
+
+                // Head
+                const headGeometry = new THREE.BoxGeometry(0.4 * type.scale, 0.4 * type.scale, 0.4 * type.scale);
+                const headMaterial = new THREE.MeshStandardMaterial({ color: type.color });
+                const head = new THREE.Mesh(headGeometry, headMaterial);
+                head.position.y = 1.2 * type.scale;
+                head.castShadow = true;
+                monsterGroup.add(head);
+
+                // Eyes (red)
+                const eyeGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.05);
+                const eyeMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000 });
+                
+                const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+                leftEye.position.set(-0.1 * type.scale, 1.25 * type.scale, 0.2 * type.scale);
+                monsterGroup.add(leftEye);
+
+                const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+                rightEye.position.set(0.1 * type.scale, 1.25 * type.scale, 0.2 * type.scale);
+                monsterGroup.add(rightEye);
+
+                monsterGroup.position.set(monster.x, monster.y, monster.z);
+                monsterGroup.userData = monster;
+                monsterMeshes.push(monsterGroup);
+                scene.add(monsterGroup);
+
+                createNameLabel(monsterGroup, `${type.name} Lv.${type.level}`, 0xff0000);
             }
         }
 
         function initResources() {
             const resourceTypes = [
-                { name: 'Tree', emoji: '🌲', skill: 'woodcutting', item: 'Wood' },
-                { name: 'Rock', emoji: '🪨', skill: 'mining', item: 'Ore' },
-                { name: 'Fish Spot', emoji: '🌊', skill: 'fishing', item: 'Fish' }
+                { name: 'Tree', color: 0x228B22, skill: 'woodcutting', item: 'Wood', height: 3 },
+                { name: 'Rock', color: 0x696969, skill: 'mining', item: 'Ore', height: 1.5 },
+                { name: 'Fish Spot', color: 0x4169E1, skill: 'fishing', item: 'Fish', height: 0.3 }
             ];
 
-            for (let i = 0; i < 15; i++) {
+            for (let i = 0; i < 25; i++) {
                 const type = resourceTypes[Math.floor(Math.random() * resourceTypes.length)];
-                resources.push({
+                const resource = {
                     id: 'resource_' + i,
                     ...type,
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
+                    x: (Math.random() - 0.5) * MAP_SIZE,
+                    y: 0,
+                    z: (Math.random() - 0.5) * MAP_SIZE,
                     available: true
-                });
+                };
+                resources.push(resource);
+
+                // Create 3D resource
+                let resourceMesh;
+                
+                if (type.name === 'Tree') {
+                    const treeGroup = new THREE.Group();
+                    
+                    // Trunk
+                    const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.25, 1.5, 8);
+                    const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+                    const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+                    trunk.position.y = 0.75;
+                    trunk.castShadow = true;
+                    treeGroup.add(trunk);
+
+                    // Leaves
+                    const leavesGeometry = new THREE.SphereGeometry(1, 8, 8);
+                    const leavesMaterial = new THREE.MeshStandardMaterial({ color: type.color });
+                    const leaves = new THREE.Mesh(leavesGeometry, leavesMaterial);
+                    leaves.position.y = 2.5;
+                    leaves.castShadow = true;
+                    treeGroup.add(leaves);
+
+                    resourceMesh = treeGroup;
+                } else if (type.name === 'Rock') {
+                    const rockGeometry = new THREE.DodecahedronGeometry(0.8, 0);
+                    const rockMaterial = new THREE.MeshStandardMaterial({ color: type.color, roughness: 0.9 });
+                    resourceMesh = new THREE.Mesh(rockGeometry, rockMaterial);
+                    resourceMesh.position.y = 0.5;
+                    resourceMesh.castShadow = true;
+                } else { // Fish Spot
+                    const waterGeometry = new THREE.CylinderGeometry(0.8, 0.8, 0.2, 16);
+                    const waterMaterial = new THREE.MeshStandardMaterial({ 
+                        color: type.color, 
+                        transparent: true, 
+                        opacity: 0.7,
+                        roughness: 0.1
+                    });
+                    resourceMesh = new THREE.Mesh(waterGeometry, waterMaterial);
+                    resourceMesh.position.y = 0.1;
+                    resourceMesh.receiveShadow = true;
+                }
+
+                resourceMesh.position.x = resource.x;
+                resourceMesh.position.z = resource.z;
+                resourceMesh.userData = resource;
+                resourceMeshes.push(resourceMesh);
+                scene.add(resourceMesh);
             }
         }
 
-        function gameLoop() {
-            // Clear canvas
-            ctx.fillStyle = '#1e2a33';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        function animate() {
+            requestAnimationFrame(animate);
 
-            // Draw grid
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-            ctx.lineWidth = 1;
-            for (let x = 0; x < canvas.width; x += 50) {
-                ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, canvas.height);
-                ctx.stroke();
+            // Handle movement
+            let moved = false;
+            const moveSpeed = PLAYER_SPEED;
+
+            // Keyboard controls
+            if (keys['w']) {
+                currentPlayer.x += Math.sin(cameraAngle) * moveSpeed;
+                currentPlayer.z += Math.cos(cameraAngle) * moveSpeed;
+                currentPlayer.rotation = cameraAngle;
+                moved = true;
             }
-            for (let y = 0; y < canvas.height; y += 50) {
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(canvas.width, y);
-                ctx.stroke();
+            if (keys['s']) {
+                currentPlayer.x -= Math.sin(cameraAngle) * moveSpeed;
+                currentPlayer.z -= Math.cos(cameraAngle) * moveSpeed;
+                currentPlayer.rotation = cameraAngle + Math.PI;
+                moved = true;
+            }
+            if (keys['a']) {
+                currentPlayer.x += Math.sin(cameraAngle - Math.PI/2) * moveSpeed;
+                currentPlayer.z += Math.cos(cameraAngle - Math.PI/2) * moveSpeed;
+                currentPlayer.rotation = cameraAngle - Math.PI/2;
+                moved = true;
+            }
+            if (keys['d']) {
+                currentPlayer.x += Math.sin(cameraAngle + Math.PI/2) * moveSpeed;
+                currentPlayer.z += Math.cos(cameraAngle + Math.PI/2) * moveSpeed;
+                currentPlayer.rotation = cameraAngle + Math.PI/2;
+                moved = true;
             }
 
-            // Draw resources
-            resources.forEach(resource => {
-                if (resource.available) {
-                    ctx.font = '24px Arial';
-                    ctx.fillText(resource.emoji, resource.x, resource.y);
+            // Camera rotation with Q/E
+            if (keys['q']) {
+                cameraAngle -= 0.02;
+            }
+            if (keys['e']) {
+                cameraAngle += 0.02;
+            }
+
+            // Mobile joystick controls
+            if (joystickActive) {
+                const threshold = 0.2;
+                if (Math.abs(joystickDirection.x) > threshold || Math.abs(joystickDirection.y) > threshold) {
+                    const angle = cameraAngle;
+                    const dx = joystickDirection.x * Math.cos(angle) - joystickDirection.y * Math.sin(angle);
+                    const dz = joystickDirection.x * Math.sin(angle) + joystickDirection.y * Math.cos(angle);
+                    
+                    currentPlayer.x += dx * moveSpeed;
+                    currentPlayer.z += dz * moveSpeed;
+                    currentPlayer.rotation = Math.atan2(dx, dz);
+                    moved = true;
                 }
-            });
+            }
 
-            // Draw monsters
-            monsters.forEach(monster => {
+            // Keep player in bounds
+            currentPlayer.x = Math.max(-MAP_SIZE/2, Math.min(MAP_SIZE/2, currentPlayer.x));
+            currentPlayer.z = Math.max(-MAP_SIZE/2, Math.min(MAP_SIZE/2, currentPlayer.z));
+
+            currentPlayer.moving = moved;
+
+            // Update player mesh position
+            if (playerMesh) {
+                playerMesh.position.set(currentPlayer.x, currentPlayer.y, currentPlayer.z);
+                playerMesh.rotation.y = currentPlayer.rotation;
+            }
+
+            // Move monsters randomly
+            monsters.forEach((monster, index) => {
+                if (monster.currentHp > 0 && Math.random() < 0.01) {
+                    monster.direction = Math.random() * Math.PI * 2;
+                }
+                
                 if (monster.currentHp > 0) {
-                    ctx.font = '32px Arial';
-                    ctx.fillText(monster.emoji, monster.x, monster.y);
+                    monster.x += Math.sin(monster.direction) * monster.speed;
+                    monster.z += Math.cos(monster.direction) * monster.speed;
                     
-                    // HP bar
-                    const hpPercent = monster.currentHp / monster.maxHp;
-                    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-                    ctx.fillRect(monster.x - 20, monster.y - 40, 40, 6);
-                    ctx.fillStyle = hpPercent > 0.5 ? '#2ecc71' : hpPercent > 0.25 ? '#f39c12' : '#e74c3c';
-                    ctx.fillRect(monster.x - 20, monster.y - 40, 40 * hpPercent, 6);
-                    
-                    // Name
-                    ctx.fillStyle = 'white';
-                    ctx.font = '10px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.fillText(monster.name + ' Lv.' + monster.level, monster.x, monster.y - 45);
+                    // Keep in bounds
+                    monster.x = Math.max(-MAP_SIZE/2, Math.min(MAP_SIZE/2, monster.x));
+                    monster.z = Math.max(-MAP_SIZE/2, Math.min(MAP_SIZE/2, monster.z));
+
+                    monsterMeshes[index].position.x = monster.x;
+                    monsterMeshes[index].position.z = monster.z;
+                    monsterMeshes[index].rotation.y = monster.direction;
                 }
             });
 
-            // Draw current player
-            ctx.font = '32px Arial';
-            ctx.fillText('🧙', currentPlayer.x, currentPlayer.y);
-            ctx.fillStyle = '#3498db';
-            ctx.font = '12px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText(currentPlayer.name, currentPlayer.x, currentPlayer.y - 35);
-
-            // Draw other players
-            Object.keys(players).forEach(playerId => {
-                const player = players[playerId];
-                ctx.font = '32px Arial';
-                ctx.fillText('🧙', player.x, player.y);
-                ctx.fillStyle = '#2ecc71';
-                ctx.font = '12px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText(player.name, player.x, player.y - 35);
+            // Animate resources
+            resourceMeshes.forEach((mesh, index) => {
+                if (resources[index].name === 'Fish Spot' && resources[index].available) {
+                    mesh.rotation.y += 0.01;
+                }
             });
 
-            ctx.textAlign = 'left';
+            // Update camera position
+            updateCameraPosition();
+
+            // Render scene
+            renderer.render(scene, camera);
+        }
+
+        function updateCameraPosition() {
+            const offset = {
+                x: Math.sin(cameraAngle) * cameraDistance,
+                y: cameraHeight,
+                z: Math.cos(cameraAngle) * cameraDistance
+            };
+
+            camera.position.x = currentPlayer.x - offset.x;
+            camera.position.y = currentPlayer.y + offset.y;
+            camera.position.z = currentPlayer.z - offset.z;
+            camera.lookAt(currentPlayer.x, currentPlayer.y, currentPlayer.z);
+        }
+
+        function handleMouseDown(e) {
+            isMouseDown = true;
+            mouseStartX = e.clientX;
+        }
+
+        function handleMouseMove(e) {
+            if (isMouseDown) {
+                const deltaX = e.clientX - mouseStartX;
+                cameraAngle += deltaX * 0.005;
+                mouseStartX = e.clientX;
+            }
+        }
+
+        function handleMouseUp(e) {
+            isMouseDown = false;
+        }
+
+        function handleWheel(e) {
+            e.preventDefault();
+            cameraDistance += e.deltaY * 0.01;
+            cameraDistance = Math.max(10, Math.min(40, cameraDistance));
         }
 
         function handleCanvasClick(e) {
             const rect = canvas.getBoundingClientRect();
-            const targetX = e.clientX - rect.left;
-            const targetY = e.clientY - rect.top;
-            
-            // Move player towards click
-            const dx = targetX - currentPlayer.x;
-            const dy = targetY - currentPlayer.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if (distance > 5) {
-                currentPlayer.x += (dx / distance) * 10;
-                currentPlayer.y += (dy / distance) * 10;
-                
-                // Keep in bounds
-                currentPlayer.x = Math.max(20, Math.min(canvas.width - 20, currentPlayer.x));
-                currentPlayer.y = Math.max(40, Math.min(canvas.height - 20, currentPlayer.y));
+            mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+
+            // Check monsters
+            const monsterIntersects = raycaster.intersectObjects(monsterMeshes, true);
+            if (monsterIntersects.length > 0) {
+                let monsterGroup = monsterIntersects[0].object;
+                while (monsterGroup.parent && !monsterGroup.userData.id) {
+                    monsterGroup = monsterGroup.parent;
+                }
+                const monster = monsterGroup.userData;
+                if (monster && monster.currentHp > 0) {
+                    const dist = Math.hypot(currentPlayer.x - monster.x, currentPlayer.z - monster.z);
+                    if (dist < 5) {
+                        attackMonster(monster, monsterGroup);
+                        return;
+                    }
+                }
             }
+
+            // Check resources
+            const resourceIntersects = raycaster.intersectObjects(resourceMeshes, true);
+            if (resourceIntersects.length > 0) {
+                let resourceMesh = resourceIntersects[0].object;
+                while (resourceMesh.parent && !resourceMesh.userData.id) {
+                    resourceMesh = resourceMesh.parent;
+                }
+                const resource = resourceMesh.userData;
+                if (resource && resource.available) {
+                    const dist = Math.hypot(currentPlayer.x - resource.x, currentPlayer.z - resource.z);
+                    if (dist < 3) {
+                        harvestResource(resource, resourceMesh);
+                    }
+                }
+            }
+        }
+
+        function attackMonster(monster, monsterMesh) {
+            const damage = 10 + currentPlayer.skills.combat * 2;
+            monster.currentHp -= damage;
+            addChatMessage('Combat', `You hit ${monster.name} for ${damage} damage!`, 'system');
+            
+            // Visual feedback
+            monsterMesh.position.y += 0.2;
+            setTimeout(() => {
+                monsterMesh.position.y = monster.y;
+            }, 200);
+
+            if (monster.currentHp <= 0) {
+                currentPlayer.xp += monster.xp;
+                currentPlayer.skills.combat++;
+                addChatMessage('Victory', `You defeated ${monster.name}! +${monster.xp} XP`, 'system');
+                
+                // Hide monster
+                monsterMesh.visible = false;
+                
+                // Check level up
+                const xpNeeded = currentPlayer.level * 100;
+                if (currentPlayer.xp >= xpNeeded) {
+                    currentPlayer.level++;
+                    currentPlayer.xp = 0;
+                    currentPlayer.maxHp += 10;
+                    currentPlayer.hp = currentPlayer.maxHp;
+                    addChatMessage('Level Up!', `You are now level ${currentPlayer.level}!`, 'system');
+                }
+                
+                // Respawn monster
+                setTimeout(() => {
+                    monster.currentHp = monster.maxHp;
+                    monster.x = (Math.random() - 0.5) * MAP_SIZE;
+                    monster.z = (Math.random() - 0.5) * MAP_SIZE;
+                    monsterMesh.position.x = monster.x;
+                    monsterMesh.position.z = monster.z;
+                    monsterMesh.visible = true;
+                }, 5000);
+            }
+            
+            updateStats();
+        }
+
+        function harvestResource(resource, resourceMesh) {
+            resource.available = false;
+            currentPlayer.skills[resource.skill]++;
+            
+            if (!currentPlayer.inventory[resource.item]) {
+                currentPlayer.inventory[resource.item] = 0;
+            }
+            currentPlayer.inventory[resource.item]++;
+            
+            addChatMessage('Gathering', `You gathered ${resource.item}! ${resource.skill} +1`, 'system');
+            
+            // Visual feedback
+            resourceMesh.visible = false;
+            
+            renderInventory();
+            updateStats();
+            
+            // Respawn resource
+            setTimeout(() => {
+                resource.available = true;
+                resourceMesh.visible = true;
+            }, 10000);
         }
 
         function updatePlayerPosition() {
@@ -776,6 +1523,8 @@
                 playersRef.child(currentPlayer.id).update({
                     x: currentPlayer.x,
                     y: currentPlayer.y,
+                    z: currentPlayer.z,
+                    rotation: currentPlayer.rotation,
                     lastActive: Date.now()
                 });
             }
@@ -783,47 +1532,22 @@
 
         function attackNearestMonster() {
             let nearest = null;
+            let nearestMesh = null;
             let minDist = Infinity;
             
-            monsters.forEach(monster => {
+            monsters.forEach((monster, index) => {
                 if (monster.currentHp > 0) {
-                    const dist = Math.hypot(monster.x - currentPlayer.x, monster.y - currentPlayer.y);
-                    if (dist < minDist && dist < 150) {
+                    const dist = Math.hypot(monster.x - currentPlayer.x, monster.z - currentPlayer.z);
+                    if (dist < minDist && dist < 5) {
                         minDist = dist;
                         nearest = monster;
+                        nearestMesh = monsterMeshes[index];
                     }
                 }
             });
             
             if (nearest) {
-                const damage = 10 + currentPlayer.skills.combat * 2;
-                nearest.currentHp -= damage;
-                addChatMessage('Combat', `You hit ${nearest.name} for ${damage} damage!`, 'system');
-                
-                if (nearest.currentHp <= 0) {
-                    currentPlayer.xp += nearest.xp;
-                    currentPlayer.skills.combat++;
-                    addChatMessage('Victory', `You defeated ${nearest.name}! +${nearest.xp} XP`, 'system');
-                    
-                    // Check level up
-                    const xpNeeded = currentPlayer.level * 100;
-                    if (currentPlayer.xp >= xpNeeded) {
-                        currentPlayer.level++;
-                        currentPlayer.xp = 0;
-                        currentPlayer.maxHp += 10;
-                        currentPlayer.hp = currentPlayer.maxHp;
-                        addChatMessage('Level Up!', `You are now level ${currentPlayer.level}!`, 'system');
-                    }
-                    
-                    // Respawn monster
-                    setTimeout(() => {
-                        nearest.currentHp = nearest.maxHp;
-                        nearest.x = Math.random() * canvas.width;
-                        nearest.y = Math.random() * canvas.height;
-                    }, 5000);
-                }
-                
-                updateStats();
+                attackMonster(nearest, nearestMesh);
             } else {
                 addChatMessage('Combat', 'No monsters nearby!', 'system');
             }
@@ -831,35 +1555,22 @@
 
         function gatherResource() {
             let nearest = null;
+            let nearestMesh = null;
             let minDist = Infinity;
             
-            resources.forEach(resource => {
+            resources.forEach((resource, index) => {
                 if (resource.available) {
-                    const dist = Math.hypot(resource.x - currentPlayer.x, resource.y - currentPlayer.y);
-                    if (dist < minDist && dist < 100) {
+                    const dist = Math.hypot(resource.x - currentPlayer.x, resource.z - currentPlayer.z);
+                    if (dist < minDist && dist < 3) {
                         minDist = dist;
                         nearest = resource;
+                        nearestMesh = resourceMeshes[index];
                     }
                 }
             });
             
             if (nearest) {
-                nearest.available = false;
-                currentPlayer.skills[nearest.skill]++;
-                
-                if (!currentPlayer.inventory[nearest.item]) {
-                    currentPlayer.inventory[nearest.item] = 0;
-                }
-                currentPlayer.inventory[nearest.item]++;
-                
-                addChatMessage('Gathering', `You gathered ${nearest.item}! ${nearest.skill} +1`, 'system');
-                renderInventory();
-                updateStats();
-                
-                // Respawn resource
-                setTimeout(() => {
-                    nearest.available = true;
-                }, 10000);
+                harvestResource(nearest, nearestMesh);
             } else {
                 addChatMessage('Gathering', 'No resources nearby!', 'system');
             }
@@ -906,6 +1617,148 @@
             while (chatArea.children.length > 50) {
                 chatArea.removeChild(chatArea.firstChild);
             }
+        }
+
+        function updateStats() {
+            document.getElementById('combatLevel').textContent = currentPlayer.level;
+            document.getElementById('hpBar').style.width = (currentPlayer.hp / currentPlayer.maxHp * 100) + '%';
+            document.getElementById('hpBar').textContent = `${currentPlayer.hp}/${currentPlayer.maxHp}`;
+            
+            const xpNeeded = currentPlayer.level * 100;
+            document.getElementById('xpBar').style.width = (currentPlayer.xp / xpNeeded * 100) + '%';
+            document.getElementById('xpBar').textContent = `${currentPlayer.xp}/${xpNeeded}`;
+
+            document.getElementById('combatSkill').textContent = currentPlayer.skills.combat;
+            document.getElementById('miningSkill').textContent = currentPlayer.skills.mining;
+            document.getElementById('woodcuttingSkill').textContent = currentPlayer.skills.woodcutting;
+            document.getElementById('fishingSkill').textContent = currentPlayer.skills.fishing;
+            document.getElementById('craftingSkill').textContent = currentPlayer.skills.crafting;
+        }
+
+        function renderInventory() {
+            const grid = document.getElementById('inventoryGrid');
+            grid.innerHTML = '';
+            const items = {
+                'Wood': '🪵',
+                'Ore': '🪨',
+                'Fish': '🐟',
+                'Sword': '⚔️',
+                'Shield': '🛡️',
+                'Gem': '💎'
+            };
+            
+            for (let i = 0; i < 16; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'inventory-slot';
+                
+                const itemNames = Object.keys(currentPlayer.inventory);
+                const itemName = itemNames[i];
+                
+                if (itemName && currentPlayer.inventory[itemName]) {
+                    slot.classList.add('has-item');
+                    slot.innerHTML = items[itemName] || '📦';
+                    const count = document.createElement('div');
+                    count.className = 'item-count';
+                    count.textContent = currentPlayer.inventory[itemName];
+                    slot.appendChild(count);
+                }
+                
+                grid.appendChild(slot);
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = canvas.offsetWidth / canvas.offsetHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
+        }
+
+        // Mobile Controls
+        function initMobileControls() {
+            const joystickContainer = document.getElementById('joystickContainer');
+            const joystickKnob = document.getElementById('joystickKnob');
+
+            function handleJoystickStart(e) {
+                e.preventDefault();
+                joystickActive = true;
+                updateJoystick(e);
+            }
+
+            function handleJoystickMove(e) {
+                e.preventDefault();
+                if (joystickActive) {
+                    updateJoystick(e);
+                }
+            }
+
+            function handleJoystickEnd(e) {
+                e.preventDefault();
+                joystickActive = false;
+                joystickDirection = { x: 0, y: 0 };
+                joystickKnob.style.transform = 'translate(-50%, -50%)';
+            }
+
+            function updateJoystick(e) {
+                const touch = e.touches ? e.touches[0] : e;
+                const rect = joystickContainer.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                
+                let deltaX = touch.clientX - centerX;
+                let deltaY = touch.clientY - centerY;
+                
+                const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                const maxDistance = rect.width / 2 - 25;
+                
+                if (distance > maxDistance) {
+                    const angle = Math.atan2(deltaY, deltaX);
+                    deltaX = Math.cos(angle) * maxDistance;
+                    deltaY = Math.sin(angle) * maxDistance;
+                }
+                
+                joystickKnob.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
+                
+                // Normalize direction
+                joystickDirection.x = deltaX / maxDistance;
+                joystickDirection.y = deltaY / maxDistance;
+            }
+
+            // Touch events
+            joystickContainer.addEventListener('touchstart', handleJoystickStart);
+            joystickContainer.addEventListener('touchmove', handleJoystickMove);
+            joystickContainer.addEventListener('touchend', handleJoystickEnd);
+            
+            // Mouse events for testing
+            joystickContainer.addEventListener('mousedown', handleJoystickStart);
+            joystickContainer.addEventListener('mousemove', handleJoystickMove);
+            joystickContainer.addEventListener('mouseup', handleJoystickEnd);
+            joystickContainer.addEventListener('mouseleave', handleJoystickEnd);
+        }
+
+        function toggleLeftSidebar() {
+            const sidebar = document.getElementById('leftSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const rightSidebar = document.getElementById('rightSidebar');
+            
+            rightSidebar.classList.remove('open');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        function toggleRightSidebar() {
+            const sidebar = document.getElementById('rightSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const leftSidebar = document.getElementById('leftSidebar');
+            
+            leftSidebar.classList.remove('open');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        function closeSidebars() {
+            document.getElementById('leftSidebar').classList.remove('open');
+            document.getElementById('rightSidebar').classList.remove('open');
+            document.getElementById('sidebarOverlay').classList.remove('active');
         }
 
         // Cleanup on page unload
