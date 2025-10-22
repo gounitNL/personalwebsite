@@ -315,6 +315,54 @@ input {
     border-color: var(--rs-gold);
 }
 
+/* ==================== MAIN GAME AREA ==================== */
+.main-game-area {
+    flex: 1;
+    display: flex;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    overflow: hidden;
+    background: var(--rs-brown-dark);
+}
+
+/* Left Sidebar - Skills & Inventory */
+.left-sidebar {
+    width: 250px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    flex-shrink: 0;
+}
+
+/* Center - Game Canvas */
+.game-canvas-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    border: var(--border-width) solid var(--rs-panel-border);
+    border-radius: var(--border-radius);
+    position: relative;
+    overflow: hidden;
+    min-width: 0;
+}
+
+#gameCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* Right Sidebar - Chat & Actions */
+.right-sidebar {
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    flex-shrink: 0;
+}
+
 /* ==================== MAIN CONTENT ==================== */
 .main-content {
     flex: 1;
@@ -370,10 +418,15 @@ input {
     background: var(--rs-brown-light);
 }
 
-/* ==================== LEFT PANEL ==================== */
-.left-panel {
-    width: 300px;
-    border-right: none;
+/* ==================== LEFT SIDEBAR PANELS ==================== */
+.skills-panel {
+    flex: 1;
+    min-height: 0;
+}
+
+.inventory-panel {
+    flex: 1;
+    min-height: 0;
 }
 
 /* Skills Grid */
@@ -381,6 +434,9 @@ input {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    overflow-y: auto;
+    max-height: 100%;
 }
 
 .skill-item {
@@ -435,7 +491,9 @@ input {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: var(--spacing-xs);
-    margin-top: var(--spacing-md);
+    padding: var(--spacing-md);
+    overflow-y: auto;
+    max-height: 100%;
 }
 
 .inventory-slot {
@@ -504,7 +562,94 @@ input {
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
 }
 
-/* ==================== RIGHT PANEL ==================== */
+/* ==================== RIGHT SIDEBAR PANELS ==================== */
+.actions-panel {
+    flex-shrink: 0;
+}
+
+.action-buttons {
+    padding: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.action-btn {
+    width: 100%;
+    padding: var(--spacing-md);
+    background: var(--button-primary);
+    color: var(--rs-text-light);
+    border: var(--border-width) solid var(--rs-gold-dark);
+    border-radius: var(--border-radius);
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.action-btn:hover {
+    background: var(--button-hover);
+    border-color: var(--rs-gold);
+    transform: translateY(-1px);
+}
+
+.chat-panel {
+    flex: 1;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: var(--spacing-md);
+    overflow-y: auto;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.chat-msg {
+    margin-bottom: var(--spacing-sm);
+    color: var(--rs-text-light);
+}
+
+.chat-msg.system {
+    color: var(--rs-gold);
+}
+
+.chat-msg.error {
+    color: var(--hp-red);
+}
+
+.chat-input {
+    width: 100%;
+    padding: var(--spacing-sm);
+    background: var(--rs-brown-dark);
+    border: 1px solid var(--rs-border-dark);
+    border-top: 2px solid var(--rs-panel-border);
+    color: var(--rs-text-light);
+    font-size: 12px;
+    outline: none;
+}
+
+.chat-input:focus {
+    border-color: var(--rs-gold);
+}
+
+.system-panel {
+    flex: 1;
+    min-height: 150px;
+}
+
+.system-messages {
+    padding: var(--spacing-md);
+    overflow-y: auto;
+    font-size: 11px;
+    line-height: 1.4;
+    max-height: 100%;
+}
+
+/* ==================== RIGHT PANEL (OLD) ==================== */
 .right-panel {
     width: 300px;
     border-left: none;
@@ -607,6 +752,20 @@ input {
 }
 
 /* ==================== LOADING OVERLAY ==================== */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
 #loadingOverlay {
     position: fixed;
     top: 0;
