@@ -5888,6 +5888,9 @@
         }
 
         function updateStats() {
+            // Safety check - don't run before game UI is loaded
+            if (!document.getElementById('combatLevel')) return;
+            
             document.getElementById('combatLevel').textContent = currentPlayer.level;
             document.getElementById('goldCount').textContent = currentPlayer.gold;
             
