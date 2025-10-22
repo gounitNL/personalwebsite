@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>FantasyQuest 3D MORPG - PlayZone v2.0</title>
+    <title>FantasyQuest 3D MMORPG - PlayZone v2.0</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -15,20 +15,6 @@
             background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
             color: #ecf0f1;
             overflow: auto;
-            -webkit-user-select: none;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: pan-x pan-y;
-        }
-        
-        input, textarea {
-            -webkit-user-select: text;
-            user-select: text;
-        }
-        
-        #renderCanvas {
-            touch-action: none;
-            -webkit-touch-callout: none;
         }
 
         #loginScreen {
@@ -373,39 +359,6 @@
         #onlineCount {
             font-size: 0.9rem;
             color: #2ecc71;
-        }
-        
-        /* Top-center info panel for logout and online count */
-        .top-info-panel {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            background: rgba(44, 62, 80, 0.95);
-            padding: 0.75rem 1.5rem;
-            border-radius: 10px;
-            border: 2px solid rgba(52, 73, 94, 0.8);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            z-index: 100;
-        }
-        
-        .logout-btn {
-            padding: 0.5rem 1rem;
-            background: #e74c3c;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background 0.3s, transform 0.2s;
-        }
-        
-        .logout-btn:hover {
-            background: #c0392b;
-            transform: scale(1.05);
         }
 
         #renderCanvas {
@@ -825,12 +778,6 @@
             .action-buttons {
                 display: none;
             }
-            
-            .top-info-panel {
-                top: 10px;
-                padding: 0.5rem 1rem;
-                font-size: 0.9rem;
-            }
         }
 
         @media (max-width: 480px) {
@@ -888,18 +835,6 @@
                 bottom: 60px;
                 right: 15px;
             }
-            
-            .top-info-panel {
-                top: 5px;
-                padding: 0.4rem 0.8rem;
-                font-size: 0.75rem;
-                gap: 0.5rem;
-            }
-            
-            .logout-btn {
-                padding: 0.4rem 0.8rem;
-                font-size: 0.75rem;
-            }
         }
 
         .loading {
@@ -918,7 +853,7 @@
     <!-- Login Screen -->
     <div id="loginScreen">
         <div class="login-box">
-            <h1>⚔️ FantasyQuest 3D MORPG</h1>
+            <h1>⚔️ FantasyQuest 3D MMORPG</h1>
             
             <!-- Home Button -->
             <a href="index.html" class="home-btn">
@@ -1083,58 +1018,50 @@
             </div>
 
             <div class="skills-panel">
-                <h3 onclick="toggleStatsPanel()" style="margin-bottom: 0.5rem; color: #f39c12; cursor: pointer; user-select: none;">
-                    <span id="statsToggle">▼</span> 📊 Stats
-                </h3>
-                <div id="statsContent">
-                    <div class="skill-item">
-                        <span class="skill-name">⚔️ Strength</span>
-                        <span class="skill-level" id="strengthStat">10</span>
-                    </div>
-                    <div class="skill-item">
-                        <span class="skill-name">🛡️ Defense</span>
-                        <span class="skill-level" id="defenseStat">10</span>
-                    </div>
-                    <div class="skill-item">
-                        <span class="skill-name">✨ Magic</span>
-                        <span class="skill-level" id="magicStat">10</span>
-                    </div>
-                    <div class="skill-item">
-                        <span class="skill-name">⚡ Speed</span>
-                        <span class="skill-level" id="speedStat">10</span>
-                    </div>
+                <h3 style="margin-bottom: 0.5rem; color: #f39c12;">📊 Stats</h3>
+                <div class="skill-item">
+                    <span class="skill-name">⚔️ Strength</span>
+                    <span class="skill-level" id="strengthStat">10</span>
+                </div>
+                <div class="skill-item">
+                    <span class="skill-name">🛡️ Defense</span>
+                    <span class="skill-level" id="defenseStat">10</span>
+                </div>
+                <div class="skill-item">
+                    <span class="skill-name">✨ Magic</span>
+                    <span class="skill-level" id="magicStat">10</span>
+                </div>
+                <div class="skill-item">
+                    <span class="skill-name">⚡ Speed</span>
+                    <span class="skill-level" id="speedStat">10</span>
                 </div>
             </div>
 
             <div class="skills-panel">
-                <h3 onclick="toggleSkillsPanel()" style="margin-bottom: 0.5rem; color: #f39c12; cursor: pointer; user-select: none;">
-                    <span id="skillsToggle">▼</span> ⚔️ Skills
-                </h3>
-                <div id="skillsContent">
-                    <div class="skill-item">
-                        <span class="skill-name">Combat</span>
-                        <span class="skill-level" id="combatSkill">1</span>
-                    </div>
-                    <div class="skill-item">
-                        <span class="skill-name">Mining</span>
-                        <span class="skill-level" id="miningSkill">1</span>
-                    </div>
-                    <div class="skill-item">
-                        <span class="skill-name">Woodcutting</span>
-                        <span class="skill-level" id="woodcuttingSkill">1</span>
-                    </div>
-                    <div class="skill-item">
-                        <span class="skill-name">Fishing</span>
-                        <span class="skill-level" id="fishingSkill">1</span>
-                    </div>
-                    <div class="skill-item">
-                        <span class="skill-name">Crafting</span>
-                        <span class="skill-level" id="craftingSkill">1</span>
-                    </div>
-                    <div class="skill-item">
-                        <span class="skill-name">Magic</span>
-                        <span class="skill-level" id="magicSkill">1</span>
-                    </div>
+                <h3 style="margin-bottom: 0.5rem; color: #f39c12;">⚔️ Skills</h3>
+                <div class="skill-item">
+                    <span class="skill-name">Combat</span>
+                    <span class="skill-level" id="combatSkill">1</span>
+                </div>
+                <div class="skill-item">
+                    <span class="skill-name">Mining</span>
+                    <span class="skill-level" id="miningSkill">1</span>
+                </div>
+                <div class="skill-item">
+                    <span class="skill-name">Woodcutting</span>
+                    <span class="skill-level" id="woodcuttingSkill">1</span>
+                </div>
+                <div class="skill-item">
+                    <span class="skill-name">Fishing</span>
+                    <span class="skill-level" id="fishingSkill">1</span>
+                </div>
+                <div class="skill-item">
+                    <span class="skill-name">Crafting</span>
+                    <span class="skill-level" id="craftingSkill">1</span>
+                </div>
+                <div class="skill-item">
+                    <span class="skill-name">Magic</span>
+                    <span class="skill-level" id="magicSkill">1</span>
                 </div>
             </div>
 
@@ -1143,6 +1070,20 @@
                 <button onclick="openEquipment()" style="width: 100%; padding: 0.75rem; margin-bottom: 0.5rem; background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
                     ⚔️ Manage Equipment
                 </button>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem;">
+                    <div style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 5px; text-align: center; font-size: 0.8rem;">
+                        <div id="weaponSlot">🗡️ Weapon</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 5px; text-align: center; font-size: 0.8rem;">
+                        <div id="armorSlot">🛡️ Armor</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 5px; text-align: center; font-size: 0.8rem;">
+                        <div id="helmetSlot">⛑️ Helmet</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 5px; text-align: center; font-size: 0.8rem;">
+                        <div id="bootsSlot">👢 Boots</div>
+                    </div>
+                </div>
                 <h3 style="margin-bottom: 0.5rem; color: #f39c12;">🎒 Inventory</h3>
                 <div class="inventory-grid" id="inventoryGrid"></div>
             </div>
@@ -1157,23 +1098,20 @@
         <div id="gameArea">
             <div id="gameHeader">
                 <div>
-                    <div id="gameTitle">⚔️ FantasyQuest</div>
+                    <div id="gameTitle">⚔️ FantasyQuest 3D Online</div>
                     <a href="index.html" style="color: #95a5a6; text-decoration: none; font-size: 0.9rem;">← Back to Home</a>
                 </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div id="onlineCount">🟢 0 players online</div>
+                    <button onclick="logoutUser()" style="padding: 0.5rem 1rem; background: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                        🚪 Logout
+                    </button>
+                </div>
             </div>
-            
-            <!-- Top-center info panel with logout and online count -->
-            <div class="top-info-panel">
-                <div id="onlineCount">🟢 0 players online</div>
-                <button onclick="logoutUser()" class="logout-btn">
-                    🚪 Logout
-                </button>
-            </div>
-            
             <canvas id="renderCanvas"></canvas>
-            <div class="controls-hint" style="display: none;">Click to Move • ← → Rotate Camera • ↑ ↓ Tilt Camera<br>Mouse Drag: Look Around • Scroll: Zoom • 1/2/3: Abilities</div>
-            <div class="camera-controls" style="display: none;">
-                Camera: ← → to rotate • ↑ ↓ to tilt • Mouse drag to look around
+            <div class="controls-hint">Click to Move • Arrow Keys: Rotate Camera • Click: Interact<br>Mouse Drag: Look Around • Scroll: Zoom • 1/2/3: Abilities</div>
+            <div class="camera-controls">
+                Camera: Arrow Keys to rotate • Mouse drag to look around
             </div>
             <div class="day-night-indicator">
                 <span id="timeIcon">☀️</span>
@@ -1203,7 +1141,6 @@
                 <button class="action-btn" onclick="openShop()">🏪 Shop</button>
                 <button class="action-btn" onclick="openQuestsPanel()">📜 Quests</button>
                 <button class="action-btn" style="background: linear-gradient(135deg, #e74c3c, #c0392b);" onclick="openEmoteMenu()">😊 Emote</button>
-                <button class="action-btn" style="background: linear-gradient(135deg, #3498db, #2980b9);" onclick="openControlsPanel()">🎮 Controls</button>
             </div>
             
             <div style="padding: 1rem; border-top: 1px solid #34495e; border-bottom: 1px solid #34495e;">
@@ -1336,31 +1273,6 @@
     </div>
     
     <!-- Equipment Panel (RuneScape style) -->
-    <!-- Controls Panel -->
-    <div class="quest-panel" id="controlsPanel">
-        <button class="close-panel-btn" onclick="closeControlsPanel()">×</button>
-        <h2 style="color: #3498db; margin-bottom: 1rem;">🎮 Controls</h2>
-        <div style="background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 10px; line-height: 2;">
-            <h3 style="color: #f39c12; margin-bottom: 0.5rem;">🖱️ Mouse Controls:</h3>
-            <p>• <strong>Click on Ground:</strong> Move to location</p>
-            <p>• <strong>Click on NPC/Monster/Resource:</strong> Interact</p>
-            <p>• <strong>Mouse Drag:</strong> Rotate camera</p>
-            <p>• <strong>Mouse Scroll:</strong> Zoom in/out</p>
-            <br>
-            <h3 style="color: #f39c12; margin-bottom: 0.5rem;">⌨️ Keyboard Controls:</h3>
-            <p>• <strong>W/A/S/D or Arrow Keys:</strong> Move character</p>
-            <p>• <strong>← →:</strong> Rotate camera left/right</p>
-            <p>• <strong>↑:</strong> Tilt camera down (show more ground)</p>
-            <p>• <strong>↓:</strong> Tilt camera up (show more sky)</p>
-            <p>• <strong>1/2/3:</strong> Use abilities</p>
-            <br>
-            <h3 style="color: #f39c12; margin-bottom: 0.5rem;">📱 Mobile Controls:</h3>
-            <p>• <strong>Joystick (Bottom Left):</strong> Move character</p>
-            <p>• <strong>Tap on Ground:</strong> Move to location</p>
-            <p>• <strong>Action Buttons (Bottom Right):</strong> Attack/Gather</p>
-        </div>
-    </div>
-
     <div class="quest-panel" id="equipmentPanel">
         <button class="close-panel-btn" onclick="closeEquipment()">×</button>
         <h2 style="color: #f39c12; margin-bottom: 1rem;">⚔️ Equipment</h2>
@@ -1481,16 +1393,11 @@
         let resourceMeshes = [];
         let groundMesh;
         let raycaster, mouse;
-        let cameraAngle = Math.PI / 4; // 45 degrees (horizontal rotation)
-        let cameraPitch = 0.5; // Vertical tilt (0 = looking straight ahead, positive = looking down)
+        let cameraAngle = Math.PI / 4; // 45 degrees
         let cameraDistance = 25;
         let cameraHeight = 15;
         let isMouseDown = false;
         let mouseStartX = 0;
-        
-        // Camera pitch limits (in radians)
-        const MIN_PITCH = -0.8; // Looking up (more sky)
-        const MAX_PITCH = 1.2; // Looking down (more ground)
 
         // Game State
         let currentPlayer = {
@@ -1900,7 +1807,7 @@
         }
         
         function showSignupTab() {
-            document.getElementById('signupTab').classList.aentById('signupTab').classList.add('active');
+            document.getElementById('signupTab').classList.add('active');
             document.getElementById('signupTab').style.background = '#667eea';
             document.getElementById('signupTab').style.color = 'white';
             document.getElementById('loginTab').classList.remove('active');
@@ -2617,23 +2524,14 @@
             scene.fog = new THREE.Fog(0x87CEEB, 150, 500);  // Reduced fog density for better visibility
 
             // Camera setup (isometric-like view)
-            // Use window size if canvas dimensions are not available yet
-            const canvasWidth = canvas.offsetWidth || window.innerWidth;
-            const canvasHeight = canvas.offsetHeight || window.innerHeight;
-            camera = new THREE.PerspectiveCamera(60, canvasWidth / canvasHeight, 0.1, 1000);
+            camera = new THREE.PerspectiveCamera(60, canvas.offsetWidth / canvas.offsetHeight, 0.1, 1000);
             updateCameraPosition();
 
             // Renderer setup
             renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
-            renderer.setSize(canvasWidth, canvasHeight);
+            renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            
-            // Force canvas to take full available space
-            canvas.style.width = '100%';
-            canvas.style.height = '100%';
-            
-            console.log('Renderer initialized with size:', canvasWidth, 'x', canvasHeight);
 
             // Lighting
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -2766,7 +2664,6 @@
             });
 
             canvas.addEventListener('click', handleCanvasClick);
-            canvas.addEventListener('touchend', handleCanvasTouchEnd);
             canvas.addEventListener('mousedown', handleMouseDown);
             canvas.addEventListener('mousemove', handleMouseMove);
             canvas.addEventListener('mouseup', handleMouseUp);
@@ -2776,7 +2673,6 @@
             const miniMapCanvas = document.getElementById('miniMapCanvas');
             if (miniMapCanvas) {
                 miniMapCanvas.addEventListener('click', handleMinimapClick);
-                miniMapCanvas.addEventListener('touchend', handleMinimapTouchEnd);
                 miniMapCanvas.style.cursor = 'pointer';
             }
             
@@ -2792,12 +2688,6 @@
 
             // Handle window resize
             window.addEventListener('resize', onWindowResize);
-
-            // Ensure proper sizing after layout
-            setTimeout(() => {
-                onWindowResize();
-                console.log('Canvas resized to:', canvas.offsetWidth, 'x', canvas.offsetHeight);
-            }, 100);
 
             // Game loop
             animate();
@@ -2955,693 +2845,22 @@
                 scene.add(pathMesh);
             });
             
-            // Environment assets and props moved to createEnvironmentAssets()
-            createEnvironmentAssets();
-        }
-        
-        function createEnvironmentAssets() {
-            // === BIOME DEFINITIONS ===
-            const biomes = [
-                { name: 'forest', centerX: -400, centerZ: -400, radius: 200, color: 0x2d5016 },
-                { name: 'desert', centerX: 400, centerZ: -400, radius: 180, color: 0xc2b280 },
-                { name: 'snow', centerX: -400, centerZ: 400, radius: 150, color: 0xf0f8ff },
-                { name: 'swamp', centerX: 0, centerZ: -400, radius: 120, color: 0x4a5d23 },
-                { name: 'volcanic', centerX: 400, centerZ: 400, radius: 140, color: 0x3d0c02 }
-            ];
-            
-            // Draw biome ground patches
-            biomes.forEach(biome => {
-                const biomeGeo = new THREE.CircleGeometry(biome.radius, 32);
-                const biomeMat = new THREE.MeshStandardMaterial({ 
-                    color: biome.color, 
-                    roughness: 0.9 
+            // Add decorative rocks
+            for (let i = 0; i < 15; i++) {
+                const rockGeometry = new THREE.DodecahedronGeometry(0.5 + Math.random() * 0.5);
+                const rockMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x696969,
+                    roughness: 1.0
                 });
-                const biomeMesh = new THREE.Mesh(biomeGeo, biomeMat);
-                biomeMesh.rotation.x = -Math.PI / 2;
-                biomeMesh.position.set(biome.centerX, 0.01, biome.centerZ);
-                scene.add(biomeMesh);
-            });
-            
-            // === DECORATIVE BOULDERS (100 varied rocks) ===
-            for (let i = 0; i < 100; i++) {
-                const size = 0.4 + Math.random() * 1.2;
-                const rockTypes = [
-                    new THREE.DodecahedronGeometry(size),
-                    new THREE.IcosahedronGeometry(size),
-                    new THREE.OctahedronGeometry(size * 1.2),
-                    new THREE.TetrahedronGeometry(size * 1.3)
-                ];
-                const rockGeo = rockTypes[Math.floor(Math.random() * rockTypes.length)];
-                const rockMat = new THREE.MeshStandardMaterial({ 
-                    color: [0x696969, 0x808080, 0x556B2F, 0x8B7355][Math.floor(Math.random() * 4)],
-                    roughness: 0.95
-                });
-                const rock = new THREE.Mesh(rockGeo, rockMat);
-                rock.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.9;
-                rock.position.y = size * 0.5;
-                rock.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.9;
-                rock.rotation.y = Math.random() * Math.PI * 2;
+                const rock = new THREE.Mesh(rockGeometry, rockMaterial);
+                rock.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.7;
+                rock.position.y = 0.3;
+                rock.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.7;
                 rock.castShadow = true;
                 scene.add(rock);
             }
-            
-            // === MUSHROOM CIRCLES (20 clusters) ===
-            for (let i = 0; i < 20; i++) {
-                const centerX = (Math.random() - 0.5) * MAP_SIZE * 0.8;
-                const centerZ = (Math.random() - 0.5) * MAP_SIZE * 0.8;
-                const numMushrooms = 5 + Math.floor(Math.random() * 8);
-                
-                for (let j = 0; j < numMushrooms; j++) {
-                    const angle = (j / numMushrooms) * Math.PI * 2;
-                    const radius = 2 + Math.random();
-                    
-                    // Mushroom stem
-                    const stemGeo = new THREE.CylinderGeometry(0.1, 0.12, 0.3, 8);
-                    const stemMat = new THREE.MeshStandardMaterial({ color: 0xFFF8DC });
-                    const stem = new THREE.Mesh(stemGeo, stemMat);
-                    
-                    // Mushroom cap
-                    const capGeo = new THREE.ConeGeometry(0.25, 0.2, 8);
-                    const capMat = new THREE.MeshStandardMaterial({ 
-                        color: [0xFF4500, 0xFF6347, 0x8B0000][Math.floor(Math.random() * 3)]
-                    });
-                    const cap = new THREE.Mesh(capGeo, capMat);
-                    cap.position.y = 0.25;
-                    
-                    const mushroom = new THREE.Group();
-                    mushroom.add(stem);
-                    mushroom.add(cap);
-                    mushroom.position.set(
-                        centerX + Math.cos(angle) * radius,
-                        0.15,
-                        centerZ + Math.sin(angle) * radius
-                    );
-                    mushroom.castShadow = true;
-                    scene.add(mushroom);
-                }
-            }
-            
-            // === WOODEN BENCHES (30) ===
-            for (let i = 0; i < 30; i++) {
-                const bench = new THREE.Group();
-                
-                // Seat
-                const seatGeo = new THREE.BoxGeometry(1.5, 0.1, 0.5);
-                const seatMat = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
-                const seat = new THREE.Mesh(seatGeo, seatMat);
-                seat.position.y = 0.4;
-                
-                // Back
-                const backGeo = new THREE.BoxGeometry(1.5, 0.6, 0.1);
-                const back = new THREE.Mesh(backGeo, seatMat);
-                back.position.set(0, 0.7, -0.2);
-                
-                // Legs
-                const legGeo = new THREE.BoxGeometry(0.1, 0.4, 0.1);
-                for (let x of [-0.6, 0.6]) {
-                    for (let z of [-0.2, 0.2]) {
-                        const leg = new THREE.Mesh(legGeo, seatMat);
-                        leg.position.set(x, 0.2, z);
-                        bench.add(leg);
-                    }
-                }
-                
-                bench.add(seat);
-                bench.add(back);
-                bench.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.7;
-                bench.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.7;
-                bench.rotation.y = Math.random() * Math.PI * 2;
-                bench.castShadow = true;
-                scene.add(bench);
-            }
-            
-            // === STONE FOUNTAINS (15) ===
-            for (let i = 0; i < 15; i++) {
-                const fountain = new THREE.Group();
-                
-                // Base
-                const baseGeo = new THREE.CylinderGeometry(1.5, 1.8, 0.3, 8);
-                const baseMat = new THREE.MeshStandardMaterial({ color: 0x808080 });
-                const base = new THREE.Mesh(baseGeo, baseMat);
-                
-                // Pool
-                const poolGeo = new THREE.CylinderGeometry(1.2, 1.2, 0.5, 8);
-                const poolMat = new THREE.MeshStandardMaterial({ 
-                    color: 0x4682B4, 
-                    transparent: true, 
-                    opacity: 0.7 
-                });
-                const pool = new THREE.Mesh(poolGeo, poolMat);
-                pool.position.y = 0.4;
-                
-                // Central pillar
-                const pillarGeo = new THREE.CylinderGeometry(0.2, 0.2, 1.5, 8);
-                const pillar = new THREE.Mesh(pillarGeo, baseMat);
-                pillar.position.y = 1.1;
-                
-                // Top sphere
-                const topGeo = new THREE.SphereGeometry(0.3, 8, 8);
-                const top = new THREE.Mesh(topGeo, baseMat);
-                top.position.y = 1.9;
-                
-                fountain.add(base, pool, pillar, top);
-                fountain.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.6;
-                fountain.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.6;
-                fountain.castShadow = true;
-                scene.add(fountain);
-            }
-            
-            // === ANCIENT STATUES (25) ===
-            for (let i = 0; i < 25; i++) {
-                const statue = new THREE.Group();
-                const stoneMat = new THREE.MeshStandardMaterial({ color: 0x696969, roughness: 0.9 });
-                
-                // Pedestal
-                const pedestalGeo = new THREE.CylinderGeometry(0.6, 0.7, 0.8, 8);
-                const pedestal = new THREE.Mesh(pedestalGeo, stoneMat);
-                
-                // Body
-                const bodyGeo = new THREE.CylinderGeometry(0.4, 0.5, 1.5, 8);
-                const body = new THREE.Mesh(bodyGeo, stoneMat);
-                body.position.y = 1.55;
-                
-                // Head
-                const headGeo = new THREE.SphereGeometry(0.35, 8, 8);
-                const head = new THREE.Mesh(headGeo, stoneMat);
-                head.position.y = 2.5;
-                
-                // Arms
-                const armGeo = new THREE.BoxGeometry(0.2, 0.8, 0.2);
-                const leftArm = new THREE.Mesh(armGeo, stoneMat);
-                leftArm.position.set(-0.5, 1.8, 0);
-                leftArm.rotation.z = 0.3;
-                const rightArm = new THREE.Mesh(armGeo, stoneMat);
-                rightArm.position.set(0.5, 1.8, 0);
-                rightArm.rotation.z = -0.3;
-                
-                statue.add(pedestal, body, head, leftArm, rightArm);
-                statue.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.8;
-                statue.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.8;
-                statue.rotation.y = Math.random() * Math.PI * 2;
-                statue.castShadow = true;
-                scene.add(statue);
-            }
-            
-            // === TRAINING DUMMIES (20) ===
-            for (let i = 0; i < 20; i++) {
-                const dummy = new THREE.Group();
-                const dummyMat = new THREE.MeshStandardMaterial({ color: 0x8B7355 });
-                
-                // Post
-                const postGeo = new THREE.CylinderGeometry(0.15, 0.15, 2, 8);
-                const post = new THREE.Mesh(postGeo, dummyMat);
-                post.position.y = 1;
-                
-                // Body (barrel shape)
-                const bodyGeo = new THREE.CylinderGeometry(0.5, 0.45, 1, 8);
-                const body = new THREE.Mesh(bodyGeo, dummyMat);
-                body.position.y = 1.5;
-                
-                // Head (sphere)
-                const headGeo = new THREE.SphereGeometry(0.3, 8, 8);
-                const head = new THREE.Mesh(headGeo, dummyMat);
-                head.position.y = 2.3;
-                
-                // Crossbar for arms
-                const crossGeo = new THREE.CylinderGeometry(0.1, 0.1, 1.2, 8);
-                const cross = new THREE.Mesh(crossGeo, dummyMat);
-                cross.rotation.z = Math.PI / 2;
-                cross.position.y = 1.8;
-                
-                dummy.add(post, body, head, cross);
-                dummy.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.7;
-                dummy.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.7;
-                dummy.castShadow = true;
-                scene.add(dummy);
-            }
-            
-            // === STONE WELLS (12) ===
-            for (let i = 0; i < 12; i++) {
-                const well = new THREE.Group();
-                const stoneMat = new THREE.MeshStandardMaterial({ color: 0x696969 });
-                
-                // Well base
-                const baseGeo = new THREE.CylinderGeometry(1, 1.1, 1.5, 16);
-                const base = new THREE.Mesh(baseGeo, stoneMat);
-                base.position.y = 0.75;
-                
-                // Roof supports
-                const supportGeo = new THREE.CylinderGeometry(0.1, 0.1, 2, 8);
-                const support1 = new THREE.Mesh(supportGeo, new THREE.MeshStandardMaterial({ color: 0x8B4513 }));
-                support1.position.set(-0.8, 2, 0);
-                const support2 = support1.clone();
-                support2.position.set(0.8, 2, 0);
-                
-                // Roof
-                const roofGeo = new THREE.ConeGeometry(1.2, 1, 4);
-                const roofMat = new THREE.MeshStandardMaterial({ color: 0xDC143C });
-                const roof = new THREE.Mesh(roofGeo, roofMat);
-                roof.position.y = 3.5;
-                roof.rotation.y = Math.PI / 4;
-                
-                well.add(base, support1, support2, roof);
-                well.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.6;
-                well.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.6;
-                well.castShadow = true;
-                scene.add(well);
-            }
-            
-            // === CAMPFIRES (40) ===
-            for (let i = 0; i < 40; i++) {
-                const campfire = new THREE.Group();
-                
-                // Stone circle
-                const stoneGeo = new THREE.BoxGeometry(0.3, 0.2, 0.3);
-                const stoneMat = new THREE.MeshStandardMaterial({ color: 0x696969 });
-                for (let j = 0; j < 8; j++) {
-                    const angle = (j / 8) * Math.PI * 2;
-                    const stone = new THREE.Mesh(stoneGeo, stoneMat);
-                    stone.position.set(Math.cos(angle) * 0.6, 0.1, Math.sin(angle) * 0.6);
-                    campfire.add(stone);
-                }
-                
-                // Logs
-                const logGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.8, 6);
-                const logMat = new THREE.MeshStandardMaterial({ color: 0x654321 });
-                for (let j = 0; j < 4; j++) {
-                    const log = new THREE.Mesh(logGeo, logMat);
-                    log.rotation.z = (j * Math.PI / 2) + 0.3;
-                    log.position.y = 0.2;
-                    campfire.add(log);
-                }
-                
-                // Fire (glowing cone)
-                const fireGeo = new THREE.ConeGeometry(0.3, 0.8, 4);
-                const fireMat = new THREE.MeshStandardMaterial({ 
-                    color: 0xFF4500, 
-                    emissive: 0xFF4500,
-                    emissiveIntensity: 0.8
-                });
-                const fire = new THREE.Mesh(fireGeo, fireMat);
-                fire.position.y = 0.5;
-                campfire.add(fire);
-                
-                campfire.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.85;
-                campfire.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.85;
-                scene.add(campfire);
-            }
-            
-            // === STONE MONUMENTS/OBELISKS (15) ===
-            for (let i = 0; i < 15; i++) {
-                const obelisk = new THREE.Group();
-                const stoneMat = new THREE.MeshStandardMaterial({ color: 0x556B2F, roughness: 0.95 });
-                
-                // Base platform
-                const platformGeo = new THREE.CylinderGeometry(2, 2.2, 0.5, 8);
-                const platform = new THREE.Mesh(platformGeo, stoneMat);
-                
-                // Main obelisk
-                const obeliskGeo = new THREE.CylinderGeometry(0.4, 0.6, 6, 4);
-                const obeliskMesh = new THREE.Mesh(obeliskGeo, stoneMat);
-                obeliskMesh.position.y = 3.25;
-                
-                // Pyramid top
-                const topGeo = new THREE.ConeGeometry(0.5, 1, 4);
-                const top = new THREE.Mesh(topGeo, stoneMat);
-                top.position.y = 6.5;
-                
-                obelisk.add(platform, obeliskMesh, top);
-                obelisk.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.8;
-                obelisk.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.8;
-                obelisk.castShadow = true;
-                scene.add(obelisk);
-            }
-            
-            // === ANCIENT SHRINES (10) ===
-            for (let i = 0; i < 10; i++) {
-                const shrine = new THREE.Group();
-                
-                // Platform with steps
-                for (let step = 0; step < 3; step++) {
-                    const stepGeo = new THREE.BoxGeometry(3 - step * 0.4, 0.3, 3 - step * 0.4);
-                    const stepMat = new THREE.MeshStandardMaterial({ color: 0x8B8878 });
-                    const stepMesh = new THREE.Mesh(stepGeo, stepMat);
-                    stepMesh.position.y = step * 0.3;
-                    shrine.add(stepMesh);
-                }
-                
-                // Pillars
-                const pillarGeo = new THREE.CylinderGeometry(0.2, 0.25, 2.5, 8);
-                const pillarMat = new THREE.MeshStandardMaterial({ color: 0xF5F5DC });
-                const positions = [[-0.8, 0, -0.8], [0.8, 0, -0.8], [-0.8, 0, 0.8], [0.8, 0, 0.8]];
-                positions.forEach(pos => {
-                    const pillar = new THREE.Mesh(pillarGeo, pillarMat);
-                    pillar.position.set(pos[0], 2.15, pos[2]);
-                    shrine.add(pillar);
-                });
-                
-                // Roof
-                const roofGeo = new THREE.BoxGeometry(2.5, 0.3, 2.5);
-                const roofMat = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
-                const roof = new THREE.Mesh(roofGeo, roofMat);
-                roof.position.y = 3.5;
-                shrine.add(roof);
-                
-                // Crystal orb on top
-                const orbGeo = new THREE.SphereGeometry(0.3, 16, 16);
-                const orbMat = new THREE.MeshStandardMaterial({ 
-                    color: 0x9370DB,
-                    emissive: 0x9370DB,
-                    emissiveIntensity: 0.5,
-                    transparent: true,
-                    opacity: 0.8
-                });
-                const orb = new THREE.Mesh(orbGeo, orbMat);
-                orb.position.y = 4;
-                shrine.add(orb);
-                
-                shrine.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.7;
-                shrine.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.7;
-                shrine.castShadow = true;
-                scene.add(shrine);
-            }
-            
-            // === RUINED WALLS (30) ===
-            for (let i = 0; i < 30; i++) {
-                const wallGeo = new THREE.BoxGeometry(
-                    3 + Math.random() * 4,
-                    1.5 + Math.random() * 2,
-                    0.5
-                );
-                const wallMat = new THREE.MeshStandardMaterial({ 
-                    color: 0x8B8878,
-                    roughness: 1.0
-                });
-                const wall = new THREE.Mesh(wallGeo, wallMat);
-                wall.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.85;
-                wall.position.y = wallGeo.parameters.height / 2;
-                wall.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.85;
-                wall.rotation.y = Math.random() * Math.PI * 2;
-                wall.castShadow = true;
-                scene.add(wall);
-            }
-            
-            // === WOODEN BRIDGES (8) ===
-            for (let i = 0; i < 8; i++) {
-                const bridge = new THREE.Group();
-                const woodMat = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
-                
-                // Deck
-                const deckGeo = new THREE.BoxGeometry(12, 0.3, 3);
-                const deck = new THREE.Mesh(deckGeo, woodMat);
-                deck.position.y = 0.5;
-                
-                // Support beams
-                for (let x = -5; x <= 5; x += 2.5) {
-                    const beamGeo = new THREE.BoxGeometry(0.3, 1, 0.3);
-                    const beam = new THREE.Mesh(beamGeo, woodMat);
-                    beam.position.set(x, 0, 1.2);
-                    bridge.add(beam);
-                    const beam2 = beam.clone();
-                    beam2.position.z = -1.2;
-                    bridge.add(beam2);
-                }
-                
-                // Railings
-                const railGeo = new THREE.BoxGeometry(12, 0.2, 0.2);
-                const rail1 = new THREE.Mesh(railGeo, woodMat);
-                rail1.position.set(0, 1, 1.5);
-                const rail2 = rail1.clone();
-                rail2.position.z = -1.5;
-                
-                bridge.add(deck, rail1, rail2);
-                bridge.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.7;
-                bridge.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.7;
-                bridge.rotation.y = Math.random() * Math.PI * 2;
-                bridge.castShadow = true;
-                scene.add(bridge);
-            }
-            
-            // === DECORATIVE TREES (not harvestable, just scenery) (200) ===
-            const treeTypes = [
-                { color: 0x228B22, height: 4, foliageType: 'sphere' },
-                { color: 0x006400, height: 5, foliageType: 'cone' },
-                { color: 0x8FBC8F, height: 3, foliageType: 'sphere' },
-                { color: 0x2F4F4F, height: 6, foliageType: 'cone' }
-            ];
-            
-            for (let i = 0; i < 200; i++) {
-                const treeType = treeTypes[Math.floor(Math.random() * treeTypes.length)];
-                const tree = new THREE.Group();
-                
-                // Trunk
-                const trunkGeo = new THREE.CylinderGeometry(0.3, 0.4, treeType.height, 8);
-                const trunkMat = new THREE.MeshStandardMaterial({ color: 0x654321 });
-                const trunk = new THREE.Mesh(trunkGeo, trunkMat);
-                trunk.position.y = treeType.height / 2;
-                
-                // Foliage
-                let foliageGeo;
-                if (treeType.foliageType === 'cone') {
-                    foliageGeo = new THREE.ConeGeometry(1.5, 2.5, 8);
-                } else {
-                    foliageGeo = new THREE.SphereGeometry(1.8, 8, 8);
-                }
-                const foliageMat = new THREE.MeshStandardMaterial({ color: treeType.color });
-                const foliage = new THREE.Mesh(foliageGeo, foliageMat);
-                foliage.position.y = treeType.height + 1.5;
-                
-                tree.add(trunk, foliage);
-                tree.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.95;
-                tree.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.95;
-                tree.castShadow = true;
-                scene.add(tree);
-            }
-            
-            // === CAVE ENTRANCES (8) ===
-            for (let i = 0; i < 8; i++) {
-                const cave = new THREE.Group();
-                
-                // Cave mouth (dark archway)
-                const archGeo = new THREE.TorusGeometry(2, 0.5, 8, 16, Math.PI);
-                const archMat = new THREE.MeshStandardMaterial({ color: 0x4A4A4A });
-                const arch = new THREE.Mesh(archGeo, archMat);
-                arch.rotation.x = Math.PI / 2;
-                arch.position.y = 2;
-                
-                // Dark interior
-                const interiorGeo = new THREE.PlaneGeometry(4, 4);
-                const interiorMat = new THREE.MeshStandardMaterial({ color: 0x0A0A0A });
-                const interior = new THREE.Mesh(interiorGeo, interiorMat);
-                interior.position.set(0, 2, -0.1);
-                
-                // Rocks around entrance
-                for (let j = 0; j < 6; j++) {
-                    const rockGeo = new THREE.DodecahedronGeometry(0.5 + Math.random() * 0.8);
-                    const rockMat = new THREE.MeshStandardMaterial({ color: 0x696969 });
-                    const rock = new THREE.Mesh(rockGeo, rockMat);
-                    const angle = (j / 6) * Math.PI;
-                    rock.position.set(
-                        Math.cos(angle) * 3,
-                        0.5,
-                        Math.sin(angle) * 1.5
-                    );
-                    cave.add(rock);
-                }
-                
-                cave.add(arch, interior);
-                cave.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.8;
-                cave.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.8;
-                cave.rotation.y = Math.random() * Math.PI * 2;
-                cave.castShadow = true;
-                scene.add(cave);
-            }
-            
-            // === FLOWER GARDENS (25 patches) ===
-            for (let i = 0; i < 25; i++) {
-                const gardenX = (Math.random() - 0.5) * MAP_SIZE * 0.7;
-                const gardenZ = (Math.random() - 0.5) * MAP_SIZE * 0.7;
-                
-                // Create 10-20 flowers per garden
-                const flowerCount = 10 + Math.floor(Math.random() * 10);
-                for (let j = 0; j < flowerCount; j++) {
-                    const flower = new THREE.Group();
-                    
-                    // Stem
-                    const stemGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.4, 4);
-                    const stemMat = new THREE.MeshStandardMaterial({ color: 0x228B22 });
-                    const stem = new THREE.Mesh(stemGeo, stemMat);
-                    stem.position.y = 0.2;
-                    
-                    // Flower petals (simple sphere)
-                    const petalGeo = new THREE.SphereGeometry(0.1, 6, 6);
-                    const colors = [0xFF1493, 0xFFFF00, 0xFF4500, 0x9370DB, 0xFFFFFF];
-                    const petalMat = new THREE.MeshStandardMaterial({ 
-                        color: colors[Math.floor(Math.random() * colors.length)]
-                    });
-                    const petals = new THREE.Mesh(petalGeo, petalMat);
-                    petals.position.y = 0.42;
-                    
-                    flower.add(stem, petals);
-                    flower.position.set(
-                        gardenX + (Math.random() - 0.5) * 3,
-                        0,
-                        gardenZ + (Math.random() - 0.5) * 3
-                    );
-                    scene.add(flower);
-                }
-            }
-            
-            // === LANTERN POSTS (35) ===
-            for (let i = 0; i < 35; i++) {
-                const lanternPost = new THREE.Group();
-                
-                // Post
-                const postGeo = new THREE.CylinderGeometry(0.1, 0.12, 3, 8);
-                const postMat = new THREE.MeshStandardMaterial({ color: 0x2F4F4F });
-                const post = new THREE.Mesh(postGeo, postMat);
-                post.position.y = 1.5;
-                
-                // Lantern box
-                const lanternGeo = new THREE.BoxGeometry(0.4, 0.6, 0.4);
-                const lanternMat = new THREE.MeshStandardMaterial({ 
-                    color: 0xFFD700,
-                    emissive: 0xFFA500,
-                    emissiveIntensity: 0.6
-                });
-                const lantern = new THREE.Mesh(lanternGeo, lanternMat);
-                lantern.position.y = 3.3;
-                
-                // Small roof
-                const roofGeo = new THREE.ConeGeometry(0.3, 0.3, 4);
-                const roofMat = new THREE.MeshStandardMaterial({ color: 0x2F4F4F });
-                const roof = new THREE.Mesh(roofGeo, roofMat);
-                roof.position.y = 3.75;
-                
-                lanternPost.add(post, lantern, roof);
-                lanternPost.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.7;
-                lanternPost.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.7;
-                lanternPost.castShadow = true;
-                scene.add(lanternPost);
-            }
-            
-            // === FALLEN LOGS (50) ===
-            for (let i = 0; i < 50; i++) {
-                const logGeo = new THREE.CylinderGeometry(0.4, 0.5, 4 + Math.random() * 3, 8);
-                const logMat = new THREE.MeshStandardMaterial({ color: 0x654321, roughness: 0.95 });
-                const log = new THREE.Mesh(logGeo, logMat);
-                log.rotation.z = Math.PI / 2;
-                log.rotation.y = Math.random() * Math.PI * 2;
-                log.position.set(
-                    (Math.random() - 0.5) * MAP_SIZE * 0.9,
-                    0.4,
-                    (Math.random() - 0.5) * MAP_SIZE * 0.9
-                );
-                log.castShadow = true;
-                scene.add(log);
-            }
-            
-            // === DESERT CACTI (in desert biome) (30) ===
-            for (let i = 0; i < 30; i++) {
-                const cactus = new THREE.Group();
-                const cactusMat = new THREE.MeshStandardMaterial({ color: 0x3CB371 });
-                
-                // Main trunk
-                const trunkGeo = new THREE.CylinderGeometry(0.3, 0.35, 2.5, 8);
-                const trunk = new THREE.Mesh(trunkGeo, cactusMat);
-                trunk.position.y = 1.25;
-                
-                // Arms
-                if (Math.random() > 0.5) {
-                    const armGeo = new THREE.CylinderGeometry(0.2, 0.22, 1.2, 8);
-                    const arm = new THREE.Mesh(armGeo, cactusMat);
-                    arm.position.set(0.4, 1.5, 0);
-                    arm.rotation.z = Math.PI / 3;
-                    cactus.add(arm);
-                }
-                
-                cactus.add(trunk);
-                const desertBiome = biomes.find(b => b.name === 'desert');
-                const angle = Math.random() * Math.PI * 2;
-                const dist = Math.random() * desertBiome.radius * 0.8;
-                cactus.position.set(
-                    desertBiome.centerX + Math.cos(angle) * dist,
-                    0,
-                    desertBiome.centerZ + Math.sin(angle) * dist
-                );
-                cactus.castShadow = true;
-                scene.add(cactus);
-            }
-            
-            // === SNOW-COVERED PINES (in snow biome) (25) ===
-            const snowBiome = biomes.find(b => b.name === 'snow');
-            for (let i = 0; i < 25; i++) {
-                const pine = new THREE.Group();
-                
-                // Trunk
-                const trunkGeo = new THREE.CylinderGeometry(0.2, 0.25, 4, 8);
-                const trunkMat = new THREE.MeshStandardMaterial({ color: 0x3D2817 });
-                const trunk = new THREE.Mesh(trunkGeo, trunkMat);
-                trunk.position.y = 2;
-                
-                // Three layers of snow-covered branches
-                for (let layer = 0; layer < 3; layer++) {
-                    const branchGeo = new THREE.ConeGeometry(1.5 - layer * 0.3, 1.5, 8);
-                    const branchMat = new THREE.MeshStandardMaterial({ color: 0xF0F8FF });
-                    const branch = new THREE.Mesh(branchGeo, branchMat);
-                    branch.position.y = 3 + layer * 1.2;
-                    pine.add(branch);
-                }
-                
-                pine.add(trunk);
-                const angle = Math.random() * Math.PI * 2;
-                const dist = Math.random() * snowBiome.radius * 0.8;
-                pine.position.set(
-                    snowBiome.centerX + Math.cos(angle) * dist,
-                    0,
-                    snowBiome.centerZ + Math.sin(angle) * dist
-                );
-                pine.castShadow = true;
-                scene.add(pine);
-            }
-            
-            // === LAVA ROCKS (in volcanic biome) (20) ===
-            const volcanicBiome = biomes.find(b => b.name === 'volcanic');
-            for (let i = 0; i < 20; i++) {
-                const lavaRockGeo = new THREE.DodecahedronGeometry(0.8 + Math.random() * 0.6);
-                const lavaRockMat = new THREE.MeshStandardMaterial({ 
-                    color: 0x8B0000,
-                    emissive: 0xFF4500,
-                    emissiveIntensity: 0.3,
-                    roughness: 0.9
-                });
-                const lavaRock = new THREE.Mesh(lavaRockGeo, lavaRockMat);
-                const angle = Math.random() * Math.PI * 2;
-                const dist = Math.random() * volcanicBiome.radius * 0.9;
-                lavaRock.position.set(
-                    volcanicBiome.centerX + Math.cos(angle) * dist,
-                    0.5,
-                    volcanicBiome.centerZ + Math.sin(angle) * dist
-                );
-                lavaRock.castShadow = true;
-                scene.add(lavaRock);
-            }
         }
         
-        function handleMinimapTouchEnd(e) {
-            e.preventDefault();
-            if (e.changedTouches && e.changedTouches.length > 0) {
-                const touch = e.changedTouches[0];
-                const rect = e.target.getBoundingClientRect();
-                const fakeEvent = {
-                    clientX: touch.clientX,
-                    clientY: touch.clientY,
-                    target: e.target
-                };
-                handleMinimapClick(fakeEvent);
-            }
-        }
-
         function handleMinimapClick(e) {
             const rect = e.target.getBoundingClientRect();
             const x = e.clientX - rect.left;
@@ -3668,442 +2887,6 @@
             addChatMessage('System', 'Walking to map location...', 'system');
         }
 
-        function createMassiveWorldContent() {
-            // Define themed biome areas
-            const themedAreas = [
-                { name: 'Crystal Cavern', x: -2000, z: -2000, radius: 400, color: 0x9370DB },
-                { name: 'Autumn Forest', x: 2000, z: -2000, radius: 400, color: 0xFF8C00 },
-                { name: 'Frozen Tundra', x: -2000, z: 2000, radius: 400, color: 0xE0FFFF },
-                { name: 'Volcanic Wasteland', x: 2000, z: 2000, radius: 400, color: 0xFF4500 },
-                { name: 'Mystic Swamp', x: 0, z: -2200, radius: 350, color: 0x556B2F }
-            ];
-            
-            // === CRYSTAL FORMATIONS (50 clusters in Crystal Cavern) ===
-            for (let i = 0; i < 50; i++) {
-                const cluster = new THREE.Group();
-                const crystalColors = [0x9370DB, 0x00CED1, 0xFF69B4, 0x7FFF00];
-                const numCrystals = 3 + Math.floor(Math.random() * 5);
-                
-                for (let j = 0; j < numCrystals; j++) {
-                    const height = 1 + Math.random() * 3;
-                    const crystalGeo = new THREE.ConeGeometry(0.2 + Math.random() * 0.3, height, 6);
-                    const crystalMat = new THREE.MeshStandardMaterial({ 
-                        color: crystalColors[Math.floor(Math.random() * crystalColors.length)],
-                        emissive: crystalColors[Math.floor(Math.random() * crystalColors.length)],
-                        emissiveIntensity: 0.3,
-                        transparent: true,
-                        opacity: 0.8
-                    });
-                    const crystal = new THREE.Mesh(crystalGeo, crystalMat);
-                    crystal.position.set(
-                        (Math.random() - 0.5) * 2,
-                        height / 2,
-                        (Math.random() - 0.5) * 2
-                    );
-                    crystal.rotation.z = (Math.random() - 0.5) * 0.5;
-                    cluster.add(crystal);
-                }
-                
-                cluster.position.x = themedAreas[0].x + (Math.random() - 0.5) * themedAreas[0].radius * 2;
-                cluster.position.z = themedAreas[0].z + (Math.random() - 0.5) * themedAreas[0].radius * 2;
-                scene.add(cluster);
-            }
-            
-            // === ANCIENT RUINS (20 structures) ===
-            for (let i = 0; i < 20; i++) {
-                const ruin = new THREE.Group();
-                
-                // Broken pillars
-                for (let j = 0; j < 4; j++) {
-                    const pillarHeight = 2 + Math.random() * 4;
-                    const pillarGeo = new THREE.CylinderGeometry(0.4, 0.5, pillarHeight, 8);
-                    const pillarMat = new THREE.MeshStandardMaterial({ color: 0xD3D3D3, roughness: 0.9 });
-                    const pillar = new THREE.Mesh(pillarGeo, pillarMat);
-                    pillar.position.set(
-                        (j % 2) * 4 - 2,
-                        pillarHeight / 2,
-                        Math.floor(j / 2) * 4 - 2
-                    );
-                    pillar.rotation.z = (Math.random() - 0.5) * 0.3;
-                    pillar.castShadow = true;
-                    ruin.add(pillar);
-                }
-                
-                // Broken archway
-                const archGeo = new THREE.TorusGeometry(2.5, 0.4, 8, 16, Math.PI);
-                const archMat = new THREE.MeshStandardMaterial({ color: 0xA9A9A9 });
-                const arch = new THREE.Mesh(archGeo, archMat);
-                arch.rotation.x = Math.PI / 2;
-                arch.position.y = 3;
-                ruin.add(arch);
-                
-                ruin.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.85;
-                ruin.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.85;
-                ruin.rotation.y = Math.random() * Math.PI * 2;
-                scene.add(ruin);
-            }
-            
-            // === MAGICAL PORTALS (10) ===
-            for (let i = 0; i < 10; i++) {
-                const portal = new THREE.Group();
-                
-                // Portal frame
-                const frameGeo = new THREE.TorusGeometry(2, 0.3, 8, 16);
-                const frameMat = new THREE.MeshStandardMaterial({ 
-                    color: 0x4B0082,
-                    emissive: 0x8A2BE2,
-                    emissiveIntensity: 0.5
-                });
-                const frame = new THREE.Mesh(frameGeo, frameMat);
-                frame.rotation.y = Math.PI / 2;
-                
-                // Portal energy
-                const portalGeo = new THREE.CircleGeometry(1.8, 32);
-                const portalMat = new THREE.MeshBasicMaterial({ 
-                    color: 0x00FFFF,
-                    transparent: true,
-                    opacity: 0.5,
-                    side: THREE.DoubleSide
-                });
-                const portalEnergy = new THREE.Mesh(portalGeo, portalMat);
-                portalEnergy.rotation.y = Math.PI / 2;
-                
-                portal.add(frame, portalEnergy);
-                portal.position.set(
-                    (Math.random() - 0.5) * MAP_SIZE * 0.8,
-                    2,
-                    (Math.random() - 0.5) * MAP_SIZE * 0.8
-                );
-                scene.add(portal);
-            }
-            
-            // === WINDMILLS (8) ===
-            for (let i = 0; i < 8; i++) {
-                const windmill = new THREE.Group();
-                
-                // Tower
-                const towerGeo = new THREE.CylinderGeometry(1.5, 2, 8, 8);
-                const towerMat = new THREE.MeshStandardMaterial({ color: 0xF5DEB3 });
-                const tower = new THREE.Mesh(towerGeo, towerMat);
-                tower.position.y = 4;
-                tower.castShadow = true;
-                
-                // Blades
-                const bladeGroup = new THREE.Group();
-                for (let j = 0; j < 4; j++) {
-                    const bladeGeo = new THREE.BoxGeometry(0.3, 4, 0.1);
-                    const bladeMat = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
-                    const blade = new THREE.Mesh(bladeGeo, bladeMat);
-                    blade.position.y = 2;
-                    blade.rotation.z = (j * Math.PI / 2);
-                    bladeGroup.add(blade);
-                }
-                bladeGroup.position.set(0, 8, 2);
-                
-                windmill.add(tower, bladeGroup);
-                windmill.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.7;
-                windmill.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.7;
-                windmill.castShadow = true;
-                scene.add(windmill);
-            }
-            
-            // === WATCHTOWERS (15) ===
-            for (let i = 0; i < 15; i++) {
-                const tower = new THREE.Group();
-                
-                // Base
-                const baseGeo = new THREE.CylinderGeometry(2, 2.5, 10, 8);
-                const baseMat = new THREE.MeshStandardMaterial({ color: 0x696969 });
-                const base = new THREE.Mesh(baseGeo, baseMat);
-                base.position.y = 5;
-                base.castShadow = true;
-                
-                // Platform
-                const platformGeo = new THREE.CylinderGeometry(3, 2.5, 0.5, 8);
-                const platform = new THREE.Mesh(platformGeo, baseMat);
-                platform.position.y = 10.25;
-                
-                // Roof
-                const roofGeo = new THREE.ConeGeometry(3.5, 2, 8);
-                const roofMat = new THREE.MeshStandardMaterial({ color: 0x8B0000 });
-                const roof = new THREE.Mesh(roofGeo, roofMat);
-                roof.position.y = 11.5;
-                
-                tower.add(base, platform, roof);
-                tower.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.9;
-                tower.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.9;
-                scene.add(tower);
-            }
-            
-            // === GIANT MUSHROOMS (Mystic Swamp - 40) ===
-            for (let i = 0; i < 40; i++) {
-                const mushroom = new THREE.Group();
-                const height = 3 + Math.random() * 4;
-                
-                // Stem
-                const stemGeo = new THREE.CylinderGeometry(0.6, 0.8, height, 12);
-                const stemMat = new THREE.MeshStandardMaterial({ color: 0xF5F5DC });
-                const stem = new THREE.Mesh(stemGeo, stemMat);
-                stem.position.y = height / 2;
-                
-                // Cap
-                const capGeo = new THREE.SphereGeometry(2, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2);
-                const capMat = new THREE.MeshStandardMaterial({ 
-                    color: [0xFF0000, 0xFF69B4, 0x9370DB, 0x00CED1][Math.floor(Math.random() * 4)]
-                });
-                const cap = new THREE.Mesh(capGeo, capMat);
-                cap.position.y = height + 0.5;
-                
-                // Spots on cap
-                for (let j = 0; j < 8; j++) {
-                    const spotGeo = new THREE.SphereGeometry(0.3, 8, 8);
-                    const spotMat = new THREE.MeshStandardMaterial({ color: 0xFFFFFF });
-                    const spot = new THREE.Mesh(spotGeo, spotMat);
-                    const angle = (j / 8) * Math.PI * 2;
-                    spot.position.set(
-                        Math.cos(angle) * 1.5,
-                        height + 1.5,
-                        Math.sin(angle) * 1.5
-                    );
-                    mushroom.add(spot);
-                }
-                
-                mushroom.add(stem, cap);
-                mushroom.position.x = themedAreas[4].x + (Math.random() - 0.5) * themedAreas[4].radius * 2;
-                mushroom.position.z = themedAreas[4].z + (Math.random() - 0.5) * themedAreas[4].radius * 2;
-                scene.add(mushroom);
-            }
-            
-            // === ICE SPIKES (Frozen Tundra - 60) ===
-            for (let i = 0; i < 60; i++) {
-                const height = 2 + Math.random() * 5;
-                const spikeGeo = new THREE.ConeGeometry(0.5, height, 6);
-                const spikeMat = new THREE.MeshStandardMaterial({ 
-                    color: 0xE0FFFF,
-                    transparent: true,
-                    opacity: 0.8,
-                    emissive: 0xADD8E6,
-                    emissiveIntensity: 0.2
-                });
-                const spike = new THREE.Mesh(spikeGeo, spikeMat);
-                spike.position.set(
-                    themedAreas[2].x + (Math.random() - 0.5) * themedAreas[2].radius * 2,
-                    height / 2,
-                    themedAreas[2].z + (Math.random() - 0.5) * themedAreas[2].radius * 2
-                );
-                spike.castShadow = true;
-                scene.add(spike);
-            }
-            
-            // === LAVA POOLS (Volcanic Wasteland - 20) ===
-            for (let i = 0; i < 20; i++) {
-                const pool = new THREE.Group();
-                const radius = 2 + Math.random() * 3;
-                
-                // Lava surface
-                const lavaGeo = new THREE.CircleGeometry(radius, 32);
-                const lavaMat = new THREE.MeshStandardMaterial({ 
-                    color: 0xFF4500,
-                    emissive: 0xFF6347,
-                    emissiveIntensity: 0.8
-                });
-                const lava = new THREE.Mesh(lavaGeo, lavaMat);
-                lava.rotation.x = -Math.PI / 2;
-                lava.position.y = 0.1;
-                
-                // Rock rim
-                const rimGeo = new THREE.TorusGeometry(radius, 0.3, 8, 32);
-                const rimMat = new THREE.MeshStandardMaterial({ color: 0x2F4F4F });
-                const rim = new THREE.Mesh(rimGeo, rimMat);
-                rim.rotation.x = Math.PI / 2;
-                rim.position.y = 0.1;
-                
-                pool.add(lava, rim);
-                pool.position.x = themedAreas[3].x + (Math.random() - 0.5) * themedAreas[3].radius * 2;
-                pool.position.z = themedAreas[3].z + (Math.random() - 0.5) * themedAreas[3].radius * 2;
-                scene.add(pool);
-            }
-            
-            // === AUTUMN TREES (Autumn Forest - 100) ===
-            const autumnColors = [0xFF8C00, 0xFF4500, 0xFFD700, 0xDC143C];
-            for (let i = 0; i < 100; i++) {
-                const tree = new THREE.Group();
-                
-                // Trunk
-                const trunkGeo = new THREE.CylinderGeometry(0.4, 0.5, 5, 8);
-                const trunkMat = new THREE.MeshStandardMaterial({ color: 0x654321 });
-                const trunk = new THREE.Mesh(trunkGeo, trunkMat);
-                trunk.position.y = 2.5;
-                
-                // Foliage
-                const foliageGeo = new THREE.SphereGeometry(2, 8, 8);
-                const foliageMat = new THREE.MeshStandardMaterial({ 
-                    color: autumnColors[Math.floor(Math.random() * autumnColors.length)]
-                });
-                const foliage = new THREE.Mesh(foliageGeo, foliageMat);
-                foliage.position.y = 6;
-                
-                tree.add(trunk, foliage);
-                tree.position.x = themedAreas[1].x + (Math.random() - 0.5) * themedAreas[1].radius * 2;
-                tree.position.z = themedAreas[1].z + (Math.random() - 0.5) * themedAreas[1].radius * 2;
-                tree.castShadow = true;
-                scene.add(tree);
-            }
-            
-            // === OBELISKS (25) ===
-            for (let i = 0; i < 25; i++) {
-                const obelisk = new THREE.Group();
-                const height = 6 + Math.random() * 4;
-                
-                // Main pillar
-                const pillarGeo = new THREE.BoxGeometry(1, height, 1);
-                const pillarMat = new THREE.MeshStandardMaterial({ 
-                    color: 0x2F4F4F,
-                    emissive: 0x00CED1,
-                    emissiveIntensity: 0.3
-                });
-                const pillar = new THREE.Mesh(pillarGeo, pillarMat);
-                pillar.position.y = height / 2;
-                
-                // Pyramid top
-                const topGeo = new THREE.ConeGeometry(0.7, 1, 4);
-                const top = new THREE.Mesh(topGeo, pillarMat);
-                top.position.y = height + 0.5;
-                top.rotation.y = Math.PI / 4;
-                
-                obelisk.add(pillar, top);
-                obelisk.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.9;
-                obelisk.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.9;
-                obelisk.castShadow = true;
-                scene.add(obelisk);
-            }
-            
-            // === STONE CIRCLES (Mystical Sites - 12) ===
-            for (let i = 0; i < 12; i++) {
-                const circle = new THREE.Group();
-                const radius = 5 + Math.random() * 3;
-                const numStones = 8 + Math.floor(Math.random() * 4);
-                
-                for (let j = 0; j < numStones; j++) {
-                    const angle = (j / numStones) * Math.PI * 2;
-                    const stoneHeight = 3 + Math.random() * 2;
-                    const stoneGeo = new THREE.BoxGeometry(1, stoneHeight, 0.8);
-                    const stoneMat = new THREE.MeshStandardMaterial({ color: 0x696969 });
-                    const stone = new THREE.Mesh(stoneGeo, stoneMat);
-                    stone.position.set(
-                        Math.cos(angle) * radius,
-                        stoneHeight / 2,
-                        Math.sin(angle) * radius
-                    );
-                    stone.rotation.y = angle;
-                    stone.castShadow = true;
-                    circle.add(stone);
-                }
-                
-                circle.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.85;
-                circle.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.85;
-                scene.add(circle);
-            }
-            
-            // === ROPE BRIDGES (15) ===
-            for (let i = 0; i < 15; i++) {
-                const bridge = new THREE.Group();
-                const length = 15 + Math.random() * 10;
-                
-                // Wooden planks
-                for (let j = 0; j < length; j++) {
-                    const plankGeo = new THREE.BoxGeometry(2, 0.2, 1);
-                    const plankMat = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
-                    const plank = new THREE.Mesh(plankGeo, plankMat);
-                    plank.position.z = j;
-                    plank.rotation.x = Math.sin(j * 0.5) * 0.1;
-                    bridge.add(plank);
-                }
-                
-                // Rope sides
-                const ropeGeo = new THREE.CylinderGeometry(0.05, 0.05, length, 8);
-                const ropeMat = new THREE.MeshStandardMaterial({ color: 0x8B7355 });
-                const rope1 = new THREE.Mesh(ropeGeo, ropeMat);
-                rope1.rotation.x = Math.PI / 2;
-                rope1.position.set(1, 0.5, length / 2);
-                const rope2 = rope1.clone();
-                rope2.position.x = -1;
-                bridge.add(rope1, rope2);
-                
-                bridge.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.8;
-                bridge.position.y = 2;
-                bridge.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.8;
-                bridge.rotation.y = Math.random() * Math.PI * 2;
-                scene.add(bridge);
-            }
-            
-            // === GLOWING ORB GARDENS (30 clusters) ===
-            for (let i = 0; i < 30; i++) {
-                const cluster = new THREE.Group();
-                const numOrbs = 5 + Math.floor(Math.random() * 10);
-                
-                for (let j = 0; j < numOrbs; j++) {
-                    const orbSize = 0.2 + Math.random() * 0.4;
-                    const orbGeo = new THREE.SphereGeometry(orbSize, 16, 16);
-                    const orbColor = [0x00FF00, 0x00FFFF, 0xFF00FF, 0xFFFF00][Math.floor(Math.random() * 4)];
-                    const orbMat = new THREE.MeshStandardMaterial({ 
-                        color: orbColor,
-                        emissive: orbColor,
-                        emissiveIntensity: 0.8
-                    });
-                    const orb = new THREE.Mesh(orbGeo, orbMat);
-                    orb.position.set(
-                        (Math.random() - 0.5) * 5,
-                        0.5 + Math.random() * 2,
-                        (Math.random() - 0.5) * 5
-                    );
-                    cluster.add(orb);
-                }
-                
-                cluster.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.9;
-                cluster.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.9;
-                scene.add(cluster);
-            }
-            
-            // === DECORATIVE WELLS (20) ===
-            for (let i = 0; i < 20; i++) {
-                const well = new THREE.Group();
-                
-                // Stone wall
-                const wallGeo = new THREE.CylinderGeometry(1.2, 1.2, 1.5, 12);
-                const wallMat = new THREE.MeshStandardMaterial({ color: 0x808080 });
-                const wall = new THREE.Mesh(wallGeo, wallMat);
-                wall.position.y = 0.75;
-                
-                // Roof supports
-                const post1Geo = new THREE.CylinderGeometry(0.1, 0.1, 2.5, 8);
-                const postMat = new THREE.MeshStandardMaterial({ color: 0x654321 });
-                const post1 = new THREE.Mesh(post1Geo, postMat);
-                post1.position.set(-1.2, 2, 0);
-                const post2 = post1.clone();
-                post2.position.x = 1.2;
-                
-                // Roof
-                const roofGeo = new THREE.ConeGeometry(1.5, 1, 8);
-                const roofMat = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
-                const roof = new THREE.Mesh(roofGeo, roofMat);
-                roof.position.y = 4;
-                
-                // Bucket
-                const bucketGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.4, 8);
-                const bucketMat = new THREE.MeshStandardMaterial({ color: 0x8B7355 });
-                const bucket = new THREE.Mesh(bucketGeo, bucketMat);
-                bucket.position.set(0, 1, 0.8);
-                
-                well.add(wall, post1, post2, roof, bucket);
-                well.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.75;
-                well.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.75;
-                well.castShadow = true;
-                scene.add(well);
-            }
-            
-            console.log('Massive world content created with themed areas!');
-        }
         function createPlayer() {
             // Create more realistic player character with customizable appearance
             const playerGroup = new THREE.Group();
@@ -4457,7 +3240,7 @@
                         roughness: 0.9
                     });
                     const chimney = new THREE.Mesh(chimneyGeo, chimneyMat);
-                    chimney.position.set(houseData.width * 0.3, houseData.height + houseData.height * 0.3 + 0.3, -housseData.height * 0.3 + 0.3, -houseData.depth * 0.3);
+                    chimney.position.set(houseData.width * 0.3, houseData.height + houseData.height * 0.3 + 0.3, -houseData.depth * 0.3);
                     chimney.castShadow = true;
                     houseGroup.add(chimney);
                 }
@@ -4993,98 +3776,31 @@
                 // Create 3D resource
                 let resourceMesh;
                 
-                if (type.skill === 'woodcutting') {  // Trees
+                if (type.name === 'Tree') {
                     const treeGroup = new THREE.Group();
                     
-                    // Different trunk colors and sizes for tree types
-                    let trunkColor = 0x8B4513;  // Default brown
-                    let trunkRadius = 0.2;
-                    let trunkHeight = 1.5;
-                    let leavesShape = 'sphere';  // Default shape
-                    let leavesSize = 1;
-                    
-                    if (type.name.includes('Oak')) {
-                        trunkColor = 0x654321;
-                        trunkRadius = 0.25;
-                        trunkHeight = 2;
-                        leavesSize = 1.2;
-                        leavesShape = 'sphere';
-                    } else if (type.name.includes('Willow')) {
-                        trunkColor = 0x8B7355;
-                        trunkRadius = 0.18;
-                        trunkHeight = 2.5;
-                        leavesSize = 1.3;
-                        leavesShape = 'cone';
-                    } else if (type.name.includes('Maple')) {
-                        trunkColor = 0x5C4033;
-                        trunkRadius = 0.22;
-                        trunkHeight = 2.2;
-                        leavesSize = 1.4;
-                        leavesShape = 'sphere';
-                    } else if (type.name.includes('Yew')) {
-                        trunkColor = 0x3D2817;
-                        trunkRadius = 0.28;
-                        trunkHeight = 2.5;
-                        leavesSize = 1.5;
-                        leavesShape = 'cone';
-                    } else if (type.name.includes('Magic')) {
-                        trunkColor = 0x6A0DAD;
-                        trunkRadius = 0.3;
-                        trunkHeight = 3;
-                        leavesSize = 1.6;
-                        leavesShape = 'octahedron';
-                    }
-                    
                     // Trunk
-                    const trunkGeometry = new THREE.CylinderGeometry(trunkRadius, trunkRadius + 0.05, trunkHeight, 8);
-                    const trunkMaterial = new THREE.MeshStandardMaterial({ color: trunkColor, roughness: 0.9 });
+                    const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.25, 1.5, 8);
+                    const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
                     const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
-                    trunk.position.y = trunkHeight / 2;
+                    trunk.position.y = 0.75;
                     trunk.castShadow = true;
                     treeGroup.add(trunk);
 
-                    // Leaves with different shapes
-                    let leavesGeometry;
-                    if (leavesShape === 'cone') {
-                        leavesGeometry = new THREE.ConeGeometry(leavesSize, leavesSize * 2, 8);
-                    } else if (leavesShape === 'octahedron') {
-                        leavesGeometry = new THREE.OctahedronGeometry(leavesSize, 0);
-                    } else {
-                        leavesGeometry = new THREE.SphereGeometry(leavesSize, 8, 8);
-                    }
+                    // Leaves
+                    const leavesGeometry = new THREE.SphereGeometry(1, 8, 8);
                     const leavesMaterial = new THREE.MeshStandardMaterial({ color: type.color });
                     const leaves = new THREE.Mesh(leavesGeometry, leavesMaterial);
-                    leaves.position.y = trunkHeight + leavesSize;
+                    leaves.position.y = 2.5;
                     leaves.castShadow = true;
                     treeGroup.add(leaves);
 
                     resourceMesh = treeGroup;
-                } else if (type.skill === 'mining') {  // Rocks
-                    // Different shapes for rock types
-                    let rockGeometry;
-                    let rockSize = 0.8;
-                    
-                    if (type.name.includes('Copper') || type.name.includes('Tin')) {
-                        rockGeometry = new THREE.DodecahedronGeometry(rockSize, 0);
-                    } else if (type.name.includes('Iron') || type.name.includes('Coal')) {
-                        rockGeometry = new THREE.IcosahedronGeometry(rockSize, 0);
-                        rockSize = 0.9;
-                    } else if (type.name.includes('Mithril')) {
-                        rockGeometry = new THREE.OctahedronGeometry(rockSize, 0);
-                        rockSize = 1.0;
-                    } else if (type.name.includes('Adamant')) {
-                        rockGeometry = new THREE.TetrahedronGeometry(rockSize, 0);
-                        rockSize = 1.1;
-                    } else if (type.name.includes('Runite')) {
-                        rockGeometry = new THREE.DodecahedronGeometry(rockSize, 1);
-                        rockSize = 1.2;
-                    } else {
-                        rockGeometry = new THREE.DodecahedronGeometry(rockSize, 0);
-                    }
-                    
+                } else if (type.name === 'Rock') {
+                    const rockGeometry = new THREE.DodecahedronGeometry(0.8, 0);
                     const rockMaterial = new THREE.MeshStandardMaterial({ color: type.color, roughness: 0.9 });
                     resourceMesh = new THREE.Mesh(rockGeometry, rockMaterial);
-                    resourceMesh.position.y = rockSize * 0.5;
+                    resourceMesh.position.y = 0.5;
                     resourceMesh.castShadow = true;
                 } else { // Fish Spot
                     const waterGeometry = new THREE.CylinderGeometry(0.8, 0.8, 0.2, 16);
@@ -5268,18 +3984,16 @@
             // WASD removed - only click-to-move now
             // Camera rotation with Arrow Keys
             if (keys['arrowleft']) {
-                cameraAngle -= 0.02; // Rotate camera left (horizontal)
+                cameraAngle -= 0.02;
             }
             if (keys['arrowright']) {
-                cameraAngle += 0.02; // Rotate camera right (horizontal)
-            }
-            if (keys['arrowdown']) {
-                cameraPitch -= 0.02; // Down arrow: Tilt camera up (show more sky)
-                cameraPitch = Math.max(MIN_PITCH, cameraPitch); // Clamp
+                cameraAngle += 0.02;
             }
             if (keys['arrowup']) {
-                cameraPitch += 0.02; // Up arrow: Tilt camera down (show more ground)
-                cameraPitch = Math.max(MIN_PITCH, Math.min(MAX_PITCH, cameraPitch)); // Clamp
+                cameraAngle -= 0.02;
+            }
+            if (keys['arrowdown']) {
+                cameraAngle += 0.02;
             }
 
             // Mobile joystick controls
@@ -5541,15 +4255,10 @@
         function updateCameraPosition() {
             if (!camera || !currentPlayer) return;  // Safety check
             
-            // Calculate camera position using both horizontal angle and vertical pitch
-            // Horizontal distance from player based on pitch
-            const horizontalDistance = cameraDistance * Math.cos(cameraPitch);
-            const verticalOffset = cameraDistance * Math.sin(cameraPitch);
-            
             const offset = {
-                x: Math.sin(cameraAngle) * horizontalDistance,
-                y: cameraHeight + verticalOffset,
-                z: Math.cos(cameraAngle) * horizontalDistance
+                x: Math.sin(cameraAngle) * cameraDistance,
+                y: cameraHeight,
+                z: Math.cos(cameraAngle) * cameraDistance
             };
 
             // Calculate camera position
@@ -5561,7 +4270,6 @@
             camera.position.x = Math.max(-MAP_SIZE, Math.min(MAP_SIZE, camera.position.x));
             camera.position.z = Math.max(-MAP_SIZE, Math.min(MAP_SIZE, camera.position.z));
             
-            // Look at player position
             camera.lookAt(currentPlayer.x, currentPlayer.y, currentPlayer.z);
         }
 
@@ -5586,19 +4294,6 @@
             e.preventDefault();
             cameraDistance += e.deltaY * 0.01;
             cameraDistance = Math.max(10, Math.min(40, cameraDistance));
-        }
-
-        function handleCanvasTouchEnd(e) {
-            e.preventDefault();
-            if (e.changedTouches && e.changedTouches.length > 0) {
-                const touch = e.changedTouches[0];
-                const rect = canvas.getBoundingClientRect();
-                const fakeEvent = {
-                    clientX: touch.clientX,
-                    clientY: touch.clientY
-                };
-                handleCanvasClick(fakeEvent);
-            }
         }
 
         function handleCanvasClick(e) {
@@ -5888,9 +4583,6 @@
         }
 
         function updateStats() {
-            // Safety check - don't run before game UI is loaded
-            if (!document.getElementById('combatLevel')) return;
-            
             document.getElementById('combatLevel').textContent = currentPlayer.level;
             document.getElementById('goldCount').textContent = currentPlayer.gold;
             
@@ -6769,38 +5461,6 @@
         }
         
         // Equipment System (RuneScape style)
-        function toggleStatsPanel() {
-            const content = document.getElementById('statsContent');
-            const toggle = document.getElementById('statsToggle');
-            if (content.style.display === 'none') {
-                content.style.display = 'block';
-                toggle.textContent = '▼';
-            } else {
-                content.style.display = 'none';
-                toggle.textContent = '▶';
-            }
-        }
-        
-        function toggleSkillsPanel() {
-            const content = document.getElementById('skillsContent');
-            const toggle = document.getElementById('skillsToggle');
-            if (content.style.display === 'none') {
-                content.style.display = 'block';
-                toggle.textContent = '▼';
-            } else {
-                content.style.display = 'none';
-                toggle.textContent = '▶';
-            }
-        }
-        
-        function openControlsPanel() {
-            document.getElementById('controlsPanel').classList.add('active');
-        }
-        
-        function closeControlsPanel() {
-            document.getElementById('controlsPanel').classList.remove('active');
-        }
-        
         function openEquipment() {
             document.getElementById('equipmentPanel').classList.add('active');
             renderEquipmentPanel();
@@ -7047,8 +5707,6 @@
         }
         
         function updateParticles() {
-            if (!scene) return; // Safety check - don't run before initGame
-            
             const now = Date.now();
             particles = particles.filter(particle => {
                 const age = now - particle.created;
@@ -7068,8 +5726,6 @@
         
         // Day/Night Cycle
         function updateDayNightCycle() {
-            if (!scene) return; // Safety check - don't run before initGame
-            
             timeOfDay += dayNightSpeed;
             if (timeOfDay >= 24) timeOfDay = 0;
             
@@ -7082,19 +5738,15 @@
                 intensity = 0.8;
                 color = 0xffffff;
                 scene.background = new THREE.Color(0x87CEEB);
-                const timeIcon = document.getElementById('timeIcon');
-                const timeText = document.getElementById('timeText');
-                if (timeIcon) timeIcon.textContent = '☀️';
-                if (timeText) timeText.textContent = 'Day';
+                document.getElementById('timeIcon').textContent = '☀️';
+                document.getElementById('timeText').textContent = 'Day';
             } else {
                 // Night
                 intensity = 0.3;
                 color = 0x6666ff;
                 scene.background = new THREE.Color(0x001a33);
-                const timeIcon = document.getElementById('timeIcon');
-                const timeText = document.getElementById('timeText');
-                if (timeIcon) timeIcon.textContent = '🌙';
-                if (timeText) timeText.textContent = 'Night';
+                document.getElementById('timeIcon').textContent = '🌙';
+                document.getElementById('timeText').textContent = 'Night';
             }
             
             scene.children.forEach(child => {
@@ -7165,20 +5817,19 @@
                 ctx.arc(x, y, 8, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // Draw icon based on NPC type with dedicated symbols
-                ctx.font = 'bold 14px Arial';
+                // Draw icon based on NPC type
                 if (npc.type === 'bank') {
                     ctx.fillStyle = '#FFD700'; // Gold for bank
-                    ctx.fillText('🏦', x, y);  // Bank symbol
+                    ctx.fillText('$', x, y);
                 } else if (npc.type === 'shop') {
                     ctx.fillStyle = '#FF8C00'; // Orange for shop
-                    ctx.fillText('🏪', x, y);  // Shop symbol
+                    ctx.fillText('🛒', x, y);
                 } else if (npc.type === 'quest') {
                     ctx.fillStyle = '#FFA500'; // Orange for quest
-                    ctx.fillText('❗', x, y);  // Quest symbol
+                    ctx.fillText('!', x, y);
                 } else if (npc.type === 'pet') {
                     ctx.fillStyle = '#9370DB'; // Purple for pets
-                    ctx.fillText('🐾', x, y);  // Pet symbol
+                    ctx.fillText('🐾', x, y);
                 }
             });
             
@@ -7202,7 +5853,15 @@
                 ctx.strokeRect(x - 4, y - 4, 8, 8);
             });
             
-            // Bank icon already drawn in NPC loop above
+            // Draw bank icon
+            const bankerNPC = NPCS.find(npc => npc.type === 'bank');
+            if (bankerNPC) {
+                const x = centerX + (bankerNPC.x - currentPlayer.x) * scale;
+                const y = centerY + (bankerNPC.z - currentPlayer.z) * scale;
+                ctx.fillStyle = '#FFD700';
+                ctx.font = 'bold 12px Arial';
+                ctx.fillText('$', x - 4, y + 4);
+            }
             
             // Draw other players
             Object.values(players).forEach(player => {
@@ -7957,8 +6616,6 @@
         }
         
         function setWeather(weatherType) {
-            if (!scene) return; // Safety check - don't run before initGame
-            
             currentWeather = weatherType;
             
             // Clear old weather particles
@@ -7966,10 +6623,8 @@
             weatherParticles = [];
             
             const weatherIcons = { clear: '☀️', rain: '🌧️', snow: '❄️', fog: '🌫️', storm: '⛈️' };
-            const weatherIcon = document.getElementById('weatherIcon');
-            const weatherText = document.getElementById('weatherText');
-            if (weatherIcon) weatherIcon.textContent = weatherIcons[weatherType];
-            if (weatherText) weatherText.textContent = weatherType.charAt(0).toUpperCase() + weatherType.slice(1);
+            document.getElementById('weatherIcon').textContent = weatherIcons[weatherType];
+            document.getElementById('weatherText').textContent = weatherType.charAt(0).toUpperCase() + weatherType.slice(1);
             
             // Create weather effects
             if (weatherType === 'rain' || weatherType === 'snow' || weatherType === 'storm') {
