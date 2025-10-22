@@ -24,7 +24,7 @@
             width: 100vw;
             height: 100vh;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: center;
             z-index: 2000;
@@ -1358,13 +1358,17 @@
     <!-- Three.js Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <!-- Firebase SDK - DISABLED (moved to MyScape game) -->
+    <!-- <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script> -->
     
     <script>
-        // Firebase Configuration
+        // Firebase Configuration - DISABLED (moved to MyScape game)
+        // Authentication has been removed from FantasyQuest
+        // For authentication, please play MyScape instead
+        
+        /*
         const firebaseConfig = {
             apiKey: "AIzaSyCqMqav_HFKid6XdmbnfhG5llgCMZoYQV0",
             authDomain: "fantasyquest-mmorpg.firebaseapp.com",
@@ -1375,47 +1379,23 @@
             appId: "1:149888279159:web:48a53797f0c57f3a671c72",
             measurementId: "G-4R4YVKSRSE"
         };
+        */
 
-        // Global variables for Firebase (declared early)
+        // Global variables for Firebase (declared early) - DISABLED
         var database = null;
         var auth = null;
 
-        // Initialize Firebase when ready
+        // Firebase initialization DISABLED - Game runs without authentication
         function initFirebase() {
-            try {
-                if (typeof firebase === 'undefined') {
-                    console.log('Firebase SDK not loaded yet, retrying...');
-                    setTimeout(initFirebase, 100); // Retry after 100ms
-                    return;
-                }
-                
-                // Check if already initialized
-                if (!firebase.apps.length) {
-                    firebase.initializeApp(firebaseConfig);
-                    console.log('Firebase initialized successfully!');
-                } else {
-                    console.log('Firebase already initialized');
-                }
-                
-                database = firebase.database();
-                auth = firebase.auth();
-                console.log('Firebase services ready!');
-                
-                // Setup auth state listener after initialization
-                setupAuthListener();
-            } catch (error) {
-                console.error('Firebase initialization error:', error);
-                // Don't alert immediately, retry a few times
-                if (!window.firebaseRetryCount) window.firebaseRetryCount = 0;
-                window.firebaseRetryCount++;
-                
-                if (window.firebaseRetryCount < 10) {
-                    console.log('Retrying Firebase initialization...');
-                    setTimeout(initFirebase, 200);
-                } else {
-                    alert('Failed to connect to Firebase. Please refresh the page.');
-                }
-            }
+            console.log('Firebase disabled for FantasyQuest - starting game directly');
+            // Hide login screen and start game
+            document.getElementById('loginScreen').classList.add('hidden');
+            // Set a default player
+            currentUser = { uid: 'guest_' + Date.now(), email: 'guest@game.local' };
+            currentPlayer.id = currentUser.uid;
+            currentPlayer.name = 'Guest Player';
+            // Initialize game
+            initGame();
         }
 
         // Call initialization when DOM is ready
@@ -1425,10 +1405,10 @@
             initFirebase();
         }
         
-        // ========== FIREBASE AUTHENTICATION SYSTEM ==========
+        // ========== FIREBASE AUTHENTICATION SYSTEM - DISABLED ==========
         
-        let currentUser = null; // Firebase user object
-        let userProfileRef = null; // Database reference for user profile
+        let currentUser = null; // Firebase user object - now just a guest user
+        let userProfileRef = null; // Database reference for user profile - disabled
 
         // Three.js variables
         let scene, camera, renderer, canvas;

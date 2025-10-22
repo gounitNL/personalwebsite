@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyScape Enhanced - RuneScape-Style MMORPG</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-box">
+            <h1 class="game-title-login">⚔️ MyScape Enhanced</h1>
+            <p class="game-subtitle">A Full-Featured RuneScape-Style MMORPG</p>
+            
+            <div id="authContainer">
+                <div id="loginForm">
+                    <h2>Login to Play</h2>
+                    <input type="email" id="loginEmail" placeholder="Email" class="auth-input" autocomplete="email">
+                    <input type="password" id="loginPassword" placeholder="Password" class="auth-input" autocomplete="current-password">
+                    <button onclick="loginUser()" class="auth-btn">Login</button>
+                    <p class="auth-switch">Don't have an account? <a href="#" onclick="showRegister(); return false;">Register</a></p>
+                </div>
+
+                <div id="registerForm" style="display: none;">
+                    <h2>Create Account</h2>
+                    <input type="text" id="registerUsername" placeholder="Username" class="auth-input" maxlength="20">
+                    <input type="email" id="registerEmail" placeholder="Email" class="auth-input" autocomplete="email">
+                    <input type="password" id="registerPassword" placeholder="Password (min 6 characters)" class="auth-input" autocomplete="new-password">
+                    <button onclick="registerUser()" class="auth-btn">Create Account</button>
+                    <p class="auth-switch">Already have an account? <a href="#" onclick="showLogin(); return false;">Login</a></p>
+                </div>
+
+                <div id="authMessage" class="auth-message"></div>
+            </div>
+            
+            <p class="auth-footer">Play a complete RuneScape-style adventure with 15 skills, quests, and more!</p>
+        </div>
+    </div>
+
+    <!-- Main Game Container -->
+    <div id="gameContainer" class="game-container" style="display: none;">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <div class="game-title">⚔️ MyScape Enhanced</div>
+                <div class="player-info">
+                    <span id="playerNameDisplay">Player</span>
+                    <span class="separator">|</span>
+                    <span id="combatLevelDisplay">Combat Lvl: 3</span>
+                    <span class="separator">|</span>
+                    <span id="totalLevelDisplay">Total Lvl: 32</span>
+                </div>
+            </div>
+            <div class="top-bar-right">
+                <button class="top-btn" onclick="toggleSettings()">⚙️ Settings</button>
+                <button class="top-btn logout" onclick="logoutUser()">🚪 Logout</button>
+            </div>
+        </div>
+
+        <!-- Main Game Area -->
+        <div class="main-game-area">
+            <!-- Left Sidebar - Skills & Inventory -->
+            <div class="left-sidebar">
+                <!-- Skills Panel -->
+                <div class="panel skills-panel">
+                    <div class="panel-header">📊 Skills</div>
+                    <div class="skills-grid" id="skillsGrid">
+                        <!-- Skills will be dynamically populated -->
+                    </div>
+                </div>
+
+                <!-- Inventory Panel -->
+                <div class="panel inventory-panel">
+                    <div class="panel-header">🎒 Inventory</div>
+                    <div class="inventory-grid" id="inventoryGrid">
+                        <!-- 28 inventory slots -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center - Game Canvas -->
+            <div class="game-canvas-wrapper">
+                <canvas id="gameCanvas"></canvas>
+                
+                <!-- Loading Overlay -->
+                <div id="loadingOverlay" class="loading-overlay">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">Loading MyScape...</div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar - Chat & Actions -->
+            <div class="right-sidebar">
+                <!-- Quick Actions -->
+                <div class="panel actions-panel">
+                    <div class="panel-header">⚡ Quick Actions</div>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="openEquipment()">⚔️ Equipment</button>
+                        <button class="action-btn" onclick="openBank()">🏦 Bank</button>
+                        <button class="action-btn" onclick="openQuests()">📜 Quests</button>
+                        <button class="action-btn" onclick="openShop()">🏪 Shop</button>
+                    </div>
+                </div>
+
+                <!-- Chat Panel -->
+                <div class="panel chat-panel">
+                    <div class="panel-header">💬 Chat</div>
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="chat-msg system">Welcome to MyScape Enhanced!</div>
+                        <div class="chat-msg system">Right-click entities to interact.</div>
+                        <div class="chat-msg system">Use WASD or click to move.</div>
+                    </div>
+                    <input type="text" id="chatInput" class="chat-input" placeholder="Type message..." maxlength="200">
+                </div>
+
+                <!-- System Messages -->
+                <div class="panel system-panel">
+                    <div class="panel-header">📢 System</div>
+                    <div class="system-messages" id="systemMessages">
+                        <!-- System messages will appear here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Context Menu (Right-click) -->
+    <div id="contextMenu" class="context-menu hidden"></div>
+
+    <!-- Modal Panels (Equipment, Bank, etc.) -->
+    <div id="modalOverlay" class="modal-overlay hidden"></div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <!-- Game Configuration -->
+    <script src="data/game-config.js"></script>
+
+    <!-- Core Engine Files -->
+    <script src="js/core/Camera.js"></script>
+    <script src="js/core/Renderer.js"></script>
+    <script src="js/core/InputHandler.js"></script>
+    
+    <!-- Entity Classes -->
+    <script src="js/entities/Player.js"></script>
+    
+    <!-- Game Systems -->
+    <script src="js/systems/SkillsSystem.js"></script>
+    <script src="js/systems/InventorySystem.js"></script>
+    
+    <!-- UI Components -->
+    <script src="js/ui/UIManager.js"></script>
+    
+    <!-- Main Game Engine (must load last) -->
+    <script src="js/core/GameEngine.js"></script>
+
+    <!-- Firebase Authentication & Game Initialization -->
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCqMqav_HFKid6XdmbnfhG5llgCMZoYQV0",
+            authDomain: "fantasyquest-mmorpg.firebaseapp.com",
+            databaseURL: "https://fantasyquest-mmorpg-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "fantasyquest-mmorpg",
+            storageBucket: "fantasyquest-mmorpg.firebasestorage.app",
+            messagingSenderId: "149888279159",
+            appId: "1:149888279159:web:48a53797f0c57f3a671c72",
+            measurementId: "G-4R4YVKSRSE"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        let currentUser = null;
+        let gameEngine = null;
+
+        // Auth state observer
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                showGame();
+                initializeGame();
+            } else {
+                currentUser = null;
+                showLogin();
+            }
+        });
+
+        function showLogin() {
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('gameContainer').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('registerForm').style.display = 'none';
+        }
+
+        function showRegister() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+        }
+
+        function showGame() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('gameContainer').style.display = 'flex';
+            if (currentUser) {
+                document.getElementById('playerNameDisplay').textContent = 
+                    currentUser.displayName || currentUser.email.split('@')[0];
+            }
+        }
+
+        function showAuthMessage(message, isError = false) {
+            const msgEl = document.getElementById('authMessage');
+            msgEl.textContent = message;
+            msgEl.style.color = isError ? '#e74c3c' : '#2ecc71';
+            msgEl.style.display = 'block';
+            setTimeout(() => {
+                msgEl.style.display = 'none';
+            }, 5000);
+        }
+
+        async function loginUser() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                showAuthMessage('Please enter email and password', true);
+                return;
+            }
+
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                showAuthMessage('Login successful!');
+            } catch (error) {
+                console.error('Login error:', error);
+                showAuthMessage(error.message, true);
+            }
+        }
+
+        async function registerUser() {
+            const username = document.getElementById('registerUsername').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
+            const password = document.getElementById('registerPassword').value;
+
+            if (!username || !email || !password) {
+                showAuthMessage('Please fill all fields', true);
+                return;
+            }
+
+            if (password.length < 6) {
+                showAuthMessage('Password must be at least 6 characters', true);
+                return;
+            }
+
+            try {
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                
+                // Update display name
+                await user.updateProfile({ displayName: username });
+                
+                // Save initial player data
+                await database.ref(`myscape-players/${user.uid}`).set({
+                    username: username,
+                    email: email,
+                    createdAt: Date.now(),
+                    totalLevel: 32,
+                    combatLevel: 3
+                });
+
+                showAuthMessage('Account created successfully!');
+            } catch (error) {
+                console.error('Registration error:', error);
+                showAuthMessage(error.message, true);
+            }
+        }
+
+        async function logoutUser() {
+            if (confirm('Are you sure you want to logout?')) {
+                try {
+                    // Save game state before logout
+                    if (gameEngine) {
+                        await saveGameState();
+                    }
+                    await auth.signOut();
+                    showAuthMessage('Logged out successfully');
+                } catch (error) {
+                    console.error('Logout error:', error);
+                }
+            }
+        }
+
+        async function initializeGame() {
+            try {
+                console.log('🎮 Initializing game...');
+                
+                // Hide loading overlay after a short delay
+                setTimeout(() => {
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                }, 1000);
+                
+                // Create game engine
+                gameEngine = new GameEngine();
+                window.gameEngine = gameEngine; // Make globally accessible
+                
+                // Initialize the engine
+                await gameEngine.init('gameCanvas');
+                
+                // Load player data from Firebase
+                await loadPlayerData();
+                
+                console.log('✅ Game initialized successfully!');
+                
+                addSystemMessage('Game loaded successfully!');
+                addSystemMessage('Welcome back, ' + (currentUser.displayName || 'Player') + '!');
+                
+            } catch (error) {
+                console.error('Failed to initialize game:', error);
+                alert('Failed to start game: ' + error.message);
+            }
+        }
+
+        async function loadPlayerData() {
+            if (!currentUser) return;
+            
+            try {
+                const snapshot = await database.ref(`myscape-players/${currentUser.uid}`).once('value');
+                const data = snapshot.val();
+                
+                if (data) {
+                    console.log('📦 Player data loaded:', data);
+                    // Player data will be used when systems are implemented
+                }
+            } catch (error) {
+                console.error('Error loading player data:', error);
+            }
+        }
+
+        async function saveGameState() {
+            if (!currentUser || !gameEngine) return;
+            
+            try {
+                // Save game state to Firebase
+                await database.ref(`myscape-players/${currentUser.uid}/lastSave`).set({
+                    timestamp: Date.now(),
+                    position: {
+                        x: gameEngine.player.x,
+                        y: gameEngine.player.y
+                    }
+                });
+                
+                console.log('💾 Game state saved');
+            } catch (error) {
+                console.error('Error saving game state:', error);
+            }
+        }
+
+        // Auto-save every 60 seconds
+        setInterval(() => {
+            if (currentUser && gameEngine) {
+                saveGameState();
+            }
+        }, 60000);
+
+        // Save on page unload
+        window.addEventListener('beforeunload', () => {
+            if (currentUser && gameEngine) {
+                saveGameState();
+            }
+        });
+
+        // Chat input handler
+        document.addEventListener('DOMContentLoaded', () => {
+            const chatInput = document.getElementById('chatInput');
+            if (chatInput) {
+                chatInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && chatInput.value.trim()) {
+                        addChatMessage(chatInput.value, 'player');
+                        chatInput.value = '';
+                    }
+                });
+            }
+        });
+
+        function addChatMessage(message, type = 'system') {
+            const chatMessages = document.getElementById('chatMessages');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `chat-msg ${type}`;
+            msgDiv.textContent = message;
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Limit messages
+            while (chatMessages.children.length > 100) {
+                chatMessages.removeChild(chatMessages.firstChild);
+            }
+        }
+
+        function addSystemMessage(message) {
+            const systemMessages = document.getElementById('systemMessages');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'system-msg';
+            msgDiv.textContent = message;
+            systemMessages.appendChild(msgDiv);
+            systemMessages.scrollTop = systemMessages.scrollHeight;
+            
+            // Limit messages
+            while (systemMessages.children.length > 50) {
+                systemMessages.removeChild(systemMessages.firstChild);
+            }
+        }
+
+        // Placeholder functions for Phase 6+
+        function openEquipment() {
+            addSystemMessage('Equipment panel coming in Phase 5!');
+        }
+
+        function openBank() {
+            addSystemMessage('Banking system coming in Phase 6!');
+        }
+
+        function openQuests() {
+            addSystemMessage('Quest system coming in Phase 7!');
+        }
+
+        function openShop() {
+            addSystemMessage('Shop system coming in Phase 6!');
+        }
+
+        function toggleSettings() {
+            addSystemMessage('Settings panel coming soon!');
+        }
+    </script>
+</body>
+</html>
