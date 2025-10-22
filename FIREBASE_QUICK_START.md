@@ -8,7 +8,7 @@
 
 1. Open: **https://console.firebase.google.com/**
 2. Click: **"Add project"** (or "Create a project")
-3. Name: `FantasyQuest-MMORPG` (or anything you want)
+3. Name: `FantasyQuest-MORPG` (or anything you want)
 4. Click: **Continue**
 5. **Disable** Google Analytics (not needed)
 6. Click: **Create project**
@@ -234,7 +234,7 @@ Your game now has:
 6. ✅ Progress saves to the cloud!
 7. ✅ Works across devices!
 
-**Your MMORPG is now PRODUCTION-READY!** 🚀
+**Your MORPG is now PRODUCTION-READY!** 🚀
 
 ---
 

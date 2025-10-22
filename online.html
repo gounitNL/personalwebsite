@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>FantasyQuest 3D MMORPG - PlayZone v2.0</title>
+    <title>FantasyQuest 3D MORPG - PlayZone v2.0</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -15,6 +15,20 @@
             background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
             color: #ecf0f1;
             overflow: auto;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: pan-x pan-y;
+        }
+        
+        input, textarea {
+            -webkit-user-select: text;
+            user-select: text;
+        }
+        
+        #renderCanvas {
+            touch-action: none;
+            -webkit-touch-callout: none;
         }
 
         #loginScreen {
@@ -853,7 +867,7 @@
     <!-- Login Screen -->
     <div id="loginScreen">
         <div class="login-box">
-            <h1>⚔️ FantasyQuest 3D MMORPG</h1>
+            <h1>⚔️ FantasyQuest 3D MORPG</h1>
             
             <!-- Home Button -->
             <a href="index.html" class="home-btn">
@@ -2664,6 +2678,7 @@
             });
 
             canvas.addEventListener('click', handleCanvasClick);
+            canvas.addEventListener('touchend', handleCanvasTouchEnd);
             canvas.addEventListener('mousedown', handleMouseDown);
             canvas.addEventListener('mousemove', handleMouseMove);
             canvas.addEventListener('mouseup', handleMouseUp);
@@ -2673,6 +2688,7 @@
             const miniMapCanvas = document.getElementById('miniMapCanvas');
             if (miniMapCanvas) {
                 miniMapCanvas.addEventListener('click', handleMinimapClick);
+                miniMapCanvas.addEventListener('touchend', handleMinimapTouchEnd);
                 miniMapCanvas.style.cursor = 'pointer';
             }
             
@@ -2861,6 +2877,20 @@
             }
         }
         
+        function handleMinimapTouchEnd(e) {
+            e.preventDefault();
+            if (e.changedTouches && e.changedTouches.length > 0) {
+                const touch = e.changedTouches[0];
+                const rect = e.target.getBoundingClientRect();
+                const fakeEvent = {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY,
+                    target: e.target
+                };
+                handleMinimapClick(fakeEvent);
+            }
+        }
+
         function handleMinimapClick(e) {
             const rect = e.target.getBoundingClientRect();
             const x = e.clientX - rect.left;
@@ -4294,6 +4324,19 @@
             e.preventDefault();
             cameraDistance += e.deltaY * 0.01;
             cameraDistance = Math.max(10, Math.min(40, cameraDistance));
+        }
+
+        function handleCanvasTouchEnd(e) {
+            e.preventDefault();
+            if (e.changedTouches && e.changedTouches.length > 0) {
+                const touch = e.changedTouches[0];
+                const rect = canvas.getBoundingClientRect();
+                const fakeEvent = {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                };
+                handleCanvasClick(fakeEvent);
+            }
         }
 
         function handleCanvasClick(e) {

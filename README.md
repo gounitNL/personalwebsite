@@ -1,6 +1,6 @@
 # 🎮 PlayZone - Free Browser Games
 
-A collection of 26 fun, free browser games across 6 categories, including an online multiplayer MMORPG!
+A collection of 26 fun, free browser games across 6 categories, including an online multiplayer MORPG!
 
 ## 🌟 Features
 
@@ -49,7 +49,7 @@ A collection of 26 fun, free browser games across 6 categories, including an onl
 - Simple Platformer
 
 ### 🌐 Online Games (NEW!)
-- **FantasyQuest MMORPG** - Multiplayer online RPG
+- **FantasyQuest MORPG** - Multiplayer online RPG
   - Real-time multiplayer with Firebase
   - Character progression system
   - Combat, Mining, Woodcutting, Fishing, Crafting skills
@@ -86,7 +86,7 @@ All games are fully responsive and work great on:
 
 ## 🔥 Firebase Setup (for Online Games)
 
-The FantasyQuest MMORPG uses Firebase Realtime Database for multiplayer functionality.
+The FantasyQuest MORPG uses Firebase Realtime Database for multiplayer functionality.
 
 **Note:** The current Firebase configuration in `online.html` uses placeholder credentials. To fully enable multiplayer:
 
@@ -127,7 +127,7 @@ playzone/
 ├── word.html           # Word games (difficulty modes)
 ├── clicker.html        # Clicker/Idle games (progression systems)
 ├── arcade.html         # Arcade games (progressive difficulty)
-├── online.html         # Online MMORPG (Firebase multiplayer)
+├── online.html         # Online MORPG (Firebase multiplayer)
 └── README.md           # This file
 ```
 
@@ -142,7 +142,7 @@ playzone/
 ## 🔄 Recent Updates
 
 ### Latest (December 2024)
-- ✅ **NEW CATEGORY**: Online Games with MMORPG
+- ✅ **NEW CATEGORY**: Online Games with MORPG
 - ✅ Real-time multiplayer with Firebase
 - ✅ Complete skill progression system
 - ✅ Combat and resource gathering mechanics
@@ -156,7 +156,7 @@ playzone/
 - ✅ Mobile-responsive design
 
 ### Coming Soon
-- Crafting system for MMORPG
+- Crafting system for MORPG
 - Quest system with rewards
 - More monster types and bosses
 - Player trading system

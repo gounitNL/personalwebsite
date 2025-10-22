@@ -17,7 +17,7 @@ This guide will help you set up Firebase Authentication so players can:
 2. Click **"Add project"** or **"Create a project"**
 
 ### Step 2: Configure Project
-1. **Project Name**: `FantasyQuest-MMORPG` (or your preferred name)
+1. **Project Name**: `FantasyQuest-MORPG` (or your preferred name)
 2. Click **Continue**
 3. **Google Analytics**: Turn OFF (optional feature)
 4. Click **Create project**

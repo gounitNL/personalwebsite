@@ -14,7 +14,7 @@ GitHub detected your Firebase API key in the repository. This guide will help yo
 
 **Steps:**
 1. Go to Firebase Console: https://console.firebase.google.com/
-2. Select project: `fantasyquest-mmorpg`
+2. Select project: `fantasyquest-morpg`
 3. Navigate to: **Realtime Database** → **Rules** tab
 4. Replace with secure rules (see below)
 5. Click **"Publish"**
@@ -59,7 +59,7 @@ GitHub detected your Firebase API key in the repository. This guide will help yo
 
 **Steps:**
 1. Go to Google Cloud Console: https://console.cloud.google.com/
-2. Select project: `fantasyquest-mmorpg`
+2. Select project: `fantasyquest-morpg`
 3. Go to: **APIs & Services** → **Credentials**
 4. Find API key: `AIzaSyCqMqav_HFKid6XdmbnfhG5llgCMZoYQV0`
 5. Click **Edit** (pencil icon)
