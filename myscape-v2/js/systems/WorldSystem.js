@@ -283,16 +283,69 @@ class WorldSystem {
      * @param {object} spawnData - Resource spawn configuration
      */
     spawnResource(spawnData) {
-        // Resource spawning will be implemented with Resource.js in Task 3.2
+        // Get resource configuration from GameConfig
+        const resourceConfig = this.gameConfig.resources[spawnData.type];
+        
+        if (!resourceConfig) {
+            console.warn(`Resource type not found in config: ${spawnData.type}`);
+            return;
+        }
+        
+        // Determine skill required based on resource type
+        let skillRequired = 'mining'; // default
+        if (resourceConfig.type === 'tree') {
+            skillRequired = 'woodcutting';
+        } else if (resourceConfig.type === 'fishing_spot') {
+            skillRequired = 'fishing';
+        } else if (resourceConfig.type === 'rock') {
+            skillRequired = 'mining';
+        }
+        
+        // Get item data for rewards
+        const itemData = this.gameConfig.items[resourceConfig.resource];
+        
+        // Create Resource instance
+        const resource = new Resource({
+            id: `resource_${spawnData.type}_${spawnData.x}_${spawnData.y}`,
+            type: skillRequired,
+            resourceId: spawnData.type,
+            x: spawnData.x,
+            y: spawnData.y,
+            name: resourceConfig.name,
+            color: resourceConfig.color,
+            size: spawnData.size || 0.8,
+            skillRequired: skillRequired,
+            levelRequired: resourceConfig.levelReq || 1,
+            harvestTime: spawnData.harvestTime || 3,
+            xpReward: resourceConfig.xp,
+            itemRewards: [{
+                id: resourceConfig.resource,
+                name: itemData?.name || resourceConfig.resource,
+                minAmount: 1,
+                maxAmount: 1,
+                chance: 1.0
+            }],
+            respawnTime: (resourceConfig.respawnTime || 60000) / 1000, // Convert ms to seconds
+            maxHarvests: 1, // Deplete after one harvest
+            config: resourceConfig
+        });
+        
+        // Add to game entities
+        this.gameEngine.entities.push(resource);
+        
+        // Store reference
+        const resourceId = `res_${spawnData.type}_${Date.now()}_${Math.random()}`;
+        this.spawnedEntities.set(resourceId, resource);
+        
+        // Track spawn location
         this.resourceSpawns.push({
             type: spawnData.type,
             x: spawnData.x,
             y: spawnData.y,
-            respawnTime: spawnData.respawnTime || 60
+            resource: resource
         });
         
-        // Placeholder: Will create actual Resource entity later
-        console.log(`    [Resource] ${spawnData.type} at (${spawnData.x}, ${spawnData.y})`);
+        console.log(`    [Resource] ${resourceConfig.name} (Lv${resourceConfig.levelReq} ${skillRequired}) at (${spawnData.x}, ${spawnData.y})`);
     }
     
     /**
@@ -318,15 +371,72 @@ class WorldSystem {
      * @param {object} spawnData - Enemy spawn configuration
      */
     spawnEnemy(spawnData) {
-        // Phase 4: Spawn actual Enemy instance
+        // Get enemy configuration from GameConfig
+        const enemyConfig = this.gameConfig.enemies[spawnData.type];
+        
+        if (!enemyConfig) {
+            console.warn(`Enemy type not found in config: ${spawnData.type}`);
+            return;
+        }
+        
         const enemyId = `enemy_${spawnData.type}_${Date.now()}_${Math.random()}`;
         
-        // Create Enemy instance
+        // Parse loot table from config
+        const lootTable = [];
+        if (enemyConfig.loot && Array.isArray(enemyConfig.loot)) {
+            for (const lootEntry of enemyConfig.loot) {
+                lootTable.push({
+                    id: lootEntry.item,
+                    itemId: lootEntry.item,
+                    minQuantity: Array.isArray(lootEntry.amount) ? lootEntry.amount[0] : (lootEntry.quantity || 1),
+                    maxQuantity: Array.isArray(lootEntry.amount) ? lootEntry.amount[1] : (lootEntry.quantity || 1),
+                    quantity: lootEntry.quantity || 1,
+                    chance: lootEntry.chance || 0.5
+                });
+            }
+        }
+        
+        // Create Enemy instance with full configuration
         const enemy = new Enemy({
-            type: spawnData.type,
+            id: enemyId,
+            enemyType: spawnData.type,
             x: spawnData.x,
             y: spawnData.y,
-            level: spawnData.level || 1,
+            spawnX: spawnData.x,
+            spawnY: spawnData.y,
+            
+            // Base stats
+            name: enemyConfig.name,
+            level: enemyConfig.level,
+            combatLevel: enemyConfig.level,
+            hitpoints: enemyConfig.hp,
+            maxHitpoints: enemyConfig.hp,
+            
+            // Combat stats
+            attackLevel: enemyConfig.level,
+            strengthLevel: enemyConfig.level,
+            defenceLevel: enemyConfig.level,
+            maxHit: enemyConfig.maxHit,
+            attackSpeed: enemyConfig.attackSpeed || 4,
+            attackRange: 1,
+            attackStyle: 'melee',
+            
+            // Behavior
+            aggressive: enemyConfig.aggressive !== undefined ? enemyConfig.aggressive : true,
+            aggroRange: spawnData.aggroRange || 5,
+            wanderRadius: spawnData.wanderRadius || 3,
+            
+            // Visual
+            color: enemyConfig.color || '#ff4444',
+            size: spawnData.size || 0.9,
+            
+            // Loot
+            lootTable: lootTable,
+            alwaysDrops: [],
+            
+            // Other
+            respawnTime: spawnData.respawnTime || 30,
+            config: enemyConfig,
             gameEngine: this.gameEngine
         });
         
@@ -336,7 +446,7 @@ class WorldSystem {
         // Store reference
         this.spawnedEntities.set(enemyId, enemy);
         
-        console.log(`    [Enemy] ${spawnData.type} (Lv${spawnData.level || 1}) at (${spawnData.x}, ${spawnData.y})`);
+        console.log(`    [Enemy] ${enemyConfig.name} (Lv${enemyConfig.level}) at (${spawnData.x}, ${spawnData.y})`);
     }
     
     /**
@@ -436,10 +546,53 @@ class WorldSystem {
             this.handlePortalInteraction(nearbyPortal);
         }
         
-        // Update spawned entities (will be expanded in later phases)
-        // for (const [id, entity] of this.spawnedEntities) {
-        //     if (entity.update) entity.update(deltaTime);
-        // }
+        // Update enemy AI - check for nearby player
+        this.updateEnemyAI(deltaTime);
+    }
+    
+    /**
+     * Update enemy AI - make enemies aware of player
+     * @param {number} deltaTime - Time since last frame
+     */
+    updateEnemyAI(deltaTime) {
+        const player = this.gameEngine.player;
+        if (!player || !player.alive) return;
+        
+        for (const [id, entity] of this.spawnedEntities) {
+            // Only process enemy entities
+            if (entity.type !== 'enemy' || !entity.alive) continue;
+            
+            // Check if enemy is aggressive and should engage player
+            if (entity.aggressive && entity.aiState === 'idle' && !entity.inCombat) {
+                const distance = this.getDistance(entity, player);
+                
+                if (distance <= entity.aggroRange) {
+                    entity.engageTarget(player);
+                }
+            }
+            
+            // If enemy has player as target but lost them, check if player escaped
+            if (entity.target === player && entity.inCombat) {
+                const distance = this.getDistance(entity, player);
+                
+                // Disengage if player is too far
+                if (distance > entity.aggroRange * 2) {
+                    entity.disengage();
+                }
+            }
+        }
+    }
+    
+    /**
+     * Get distance between two entities
+     * @param {object} entity1 - First entity
+     * @param {object} entity2 - Second entity
+     * @returns {number} Distance in tiles
+     */
+    getDistance(entity1, entity2) {
+        const dx = entity1.x - entity2.x;
+        const dy = entity1.y - entity2.y;
+        return Math.sqrt(dx * dx + dy * dy);
     }
     
     /**
