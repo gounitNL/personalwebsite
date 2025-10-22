@@ -1398,6 +1398,7 @@
         let cameraHeight = 15;
         let isMouseDown = false;
         let mouseStartX = 0;
+        let frameCount = 0; // For chunk loading updates
 
         // Game State
         let currentPlayer = {
@@ -1558,7 +1559,13 @@
 
         // Constants
         const PLAYER_SPEED = 0.15;
-        const MAP_SIZE = 200;  // Increased from 50 for bigger world
+        const MAP_SIZE = 1000;  // Large world with chunk-based loading
+        const CHUNK_SIZE = 200;  // Size of each chunk
+        const RENDER_DISTANCE = 2;  // Load chunks within 2 chunks of player (covers 5x5 = 25 chunks)
+        
+        // Chunk management
+        let loadedChunks = new Map();  // Map of "x,z" -> chunk data
+        let activeChunks = new Set();  // Set of currently active chunk keys
         
         // NEW: Equipment Database with icons
         const EQUIPMENT = {
@@ -2514,6 +2521,380 @@
             }
         }
 
+        // ========== CHUNK-BASED LOADING SYSTEM ==========
+        
+        function getChunkKey(chunkX, chunkZ) {
+            return `${chunkX},${chunkZ}`;
+        }
+        
+        function worldToChunk(worldX, worldZ) {
+            return {
+                x: Math.floor(worldX / CHUNK_SIZE),
+                z: Math.floor(worldZ / CHUNK_SIZE)
+            };
+        }
+        
+        function createChunk(chunkX, chunkZ) {
+            const key = getChunkKey(chunkX, chunkZ);
+            if (loadedChunks.has(key)) {
+                return loadedChunks.get(key);
+            }
+            
+            const chunk = {
+                x: chunkX,
+                z: chunkZ,
+                decorations: [],
+                monsters: [],
+                resources: [],
+                loaded: false
+            };
+            
+            // Generate chunk content
+            generateChunkContent(chunk);
+            
+            loadedChunks.set(key, chunk);
+            return chunk;
+        }
+        
+        function generateChunkContent(chunk) {
+            const chunkWorldX = chunk.x * CHUNK_SIZE;
+            const chunkWorldZ = chunk.z * CHUNK_SIZE;
+            
+            // Seed random for consistent generation per chunk
+            const seed = chunk.x * 1000 + chunk.z;
+            
+            // Generate resources (trees, rocks, fish) in this chunk
+            const resourceCount = 8; // 8 resources per chunk
+            for (let i = 0; i < resourceCount; i++) {
+                const localX = Math.random() * CHUNK_SIZE - CHUNK_SIZE/2;
+                const localZ = Math.random() * CHUNK_SIZE - CHUNK_SIZE/2;
+                
+                chunk.resources.push({
+                    localX: localX,
+                    localZ: localZ,
+                    worldX: chunkWorldX + localX,
+                    worldZ: chunkWorldZ + localZ,
+                    type: Math.floor(Math.random() * 3) // 0=tree, 1=rock, 2=fish
+                });
+            }
+            
+            // Generate monsters in this chunk
+            const monsterCount = 3; // 3 monsters per chunk
+            for (let i = 0; i < monsterCount; i++) {
+                const localX = Math.random() * CHUNK_SIZE - CHUNK_SIZE/2;
+                const localZ = Math.random() * CHUNK_SIZE - CHUNK_SIZE/2;
+                
+                chunk.monsters.push({
+                    localX: localX,
+                    localZ: localZ,
+                    worldX: chunkWorldX + localX,
+                    worldZ: chunkWorldZ + localZ,
+                    type: Math.floor(Math.random() * 4) // 0-3 monster types
+                });
+            }
+            
+            // Generate decorations in this chunk (fewer to avoid performance issues)
+            const decorationCount = 5; // 5 decorations per chunk
+            for (let i = 0; i < decorationCount; i++) {
+                const localX = Math.random() * CHUNK_SIZE - CHUNK_SIZE/2;
+                const localZ = Math.random() * CHUNK_SIZE - CHUNK_SIZE/2;
+                
+                chunk.decorations.push({
+                    localX: localX,
+                    localZ: localZ,
+                    worldX: chunkWorldX + localX,
+                    worldZ: chunkWorldZ + localZ,
+                    type: Math.floor(Math.random() * 10) // Different decoration types
+                });
+            }
+        }
+        
+        function loadChunk(chunkX, chunkZ) {
+            const key = getChunkKey(chunkX, chunkZ);
+            
+            if (activeChunks.has(key)) {
+                return; // Already loaded
+            }
+            
+            let chunk = loadedChunks.get(key);
+            if (!chunk) {
+                chunk = createChunk(chunkX, chunkZ);
+            }
+            
+            // Actually spawn the content in the 3D scene
+            spawnChunkContent(chunk);
+            activeChunks.add(key);
+            
+            console.log(`Loaded chunk ${key}`);
+        }
+        
+        function unloadChunk(chunkX, chunkZ) {
+            const key = getChunkKey(chunkX, chunkZ);
+            
+            if (!activeChunks.has(key)) {
+                return; // Not loaded
+            }
+            
+            const chunk = loadedChunks.get(key);
+            if (chunk) {
+                // Remove all 3D objects from scene
+                despawnChunkContent(chunk);
+            }
+            
+            activeChunks.delete(key);
+            console.log(`Unloaded chunk ${key}`);
+        }
+        
+        function spawnChunkContent(chunk) {
+            if (!chunk || !scene) return;
+            
+            chunk.sceneObjects = [];
+            
+            // Spawn resources
+            chunk.resources.forEach((res, idx) => {
+                const resourceData = createResourceForChunk(res, chunk);
+                if (resourceData) {
+                    chunk.sceneObjects.push(resourceData);
+                }
+            });
+            
+            // Spawn monsters  
+            chunk.monsters.forEach((mon, idx) => {
+                const monsterData = createMonsterForChunk(mon, chunk);
+                if (monsterData) {
+                    chunk.sceneObjects.push(monsterData);
+                }
+            });
+            
+            // Spawn decorations
+            chunk.decorations.forEach((dec, idx) => {
+                const decoData = createDecorationForChunk(dec, chunk);
+                if (decoData) {
+                    chunk.sceneObjects.push(decoData);
+                }
+            });
+        }
+        
+        function despawnChunkContent(chunk) {
+            if (!chunk || !chunk.sceneObjects) return;
+            
+            chunk.sceneObjects.forEach(obj => {
+                if (obj.mesh && scene) {
+                    scene.remove(obj.mesh);
+                }
+            });
+            
+            chunk.sceneObjects = [];
+        }
+        
+        function updateChunkLoading() {
+            if (!currentPlayer) return;
+            
+            const playerChunk = worldToChunk(currentPlayer.x, currentPlayer.z);
+            const neededChunks = new Set();
+            
+            // Determine which chunks should be loaded
+            for (let x = playerChunk.x - RENDER_DISTANCE; x <= playerChunk.x + RENDER_DISTANCE; x++) {
+                for (let z = playerChunk.z - RENDER_DISTANCE; z <= playerChunk.z + RENDER_DISTANCE; z++) {
+                    neededChunks.add(getChunkKey(x, z));
+                }
+            }
+            
+            // Load new chunks
+            neededChunks.forEach(key => {
+                const [x, z] = key.split(',').map(Number);
+                if (!activeChunks.has(key)) {
+                    loadChunk(x, z);
+                }
+            });
+            
+            // Unload far chunks
+            const toUnload = [];
+            activeChunks.forEach(key => {
+                if (!neededChunks.has(key)) {
+                    toUnload.push(key);
+                }
+            });
+            
+            toUnload.forEach(key => {
+                const [x, z] = key.split(',').map(Number);
+                unloadChunk(x, z);
+            });
+        }
+        
+        function createResourceForChunk(resData, chunk) {
+            // Similar to existing resource creation but returns data structure
+            const resourceTypes = [
+                // Trees
+                [
+                    { name: 'Normal Tree', color: 0x228B22, skill: 'woodcutting', item: 'Logs', height: 3, levelRequired: 1, xp: 25 },
+                    { name: 'Oak Tree', color: 0x8B7355, skill: 'woodcutting', item: 'Oak Logs', height: 3, levelRequired: 15, xp: 37 },
+                    { name: 'Willow Tree', color: 0x9ACD32, skill: 'woodcutting', item: 'Willow Logs', height: 3, levelRequired: 30, xp: 67 }
+                ],
+                // Rocks
+                [
+                    { name: 'Copper Rock', color: 0xB87333, skill: 'mining', item: 'Copper Ore', height: 1.5, levelRequired: 1, xp: 17 },
+                    { name: 'Iron Rock', color: 0x696969, skill: 'mining', item: 'Iron Ore', height: 1.5, levelRequired: 15, xp: 35 },
+                    { name: 'Coal Rock', color: 0x1C1C1C, skill: 'mining', item: 'Coal', height: 1.5, levelRequired: 30, xp: 50 }
+                ],
+                // Fish
+                [
+                    { name: 'Shrimp Spot', color: 0xffa07a, skill: 'fishing', item: 'Raw Shrimp', height: 0.3, levelRequired: 1, xp: 10 },
+                    { name: 'Trout Spot', color: 0x4682b4, skill: 'fishing', item: 'Raw Trout', height: 0.3, levelRequired: 20, xp: 50 },
+                    { name: 'Salmon Spot', color: 0xff6347, skill: 'fishing', item: 'Raw Salmon', height: 0.3, levelRequired: 30, xp: 70 }
+                ]
+            ];
+            
+            const typeArray = resourceTypes[resData.type];
+            const type = typeArray[Math.floor(Math.random() * typeArray.length)];
+            
+            const resource = {
+                id: `resource_${chunk.x}_${chunk.z}_${resData.worldX}_${resData.worldZ}`,
+                ...type,
+                x: resData.worldX,
+                y: 0,
+                z: resData.worldZ,
+                available: true,
+                chunkKey: getChunkKey(chunk.x, chunk.z)
+            };
+            
+            resources.push(resource);
+            
+            // Create 3D mesh (simplified)
+            let resourceMesh;
+            if (type.skill === 'woodcutting') {
+                resourceMesh = createTreeMesh(type);
+            } else if (type.skill === 'mining') {
+                resourceMesh = createRockMesh(type);
+            } else {
+                resourceMesh = createFishSpotMesh(type);
+            }
+            
+            resourceMesh.position.set(resource.x, resource.y, resource.z);
+            resourceMesh.userData = resource;
+            scene.add(resourceMesh);
+            resourceMeshes.push(resourceMesh);
+            
+            return { resource, mesh: resourceMesh };
+        }
+        
+        function createMonsterForChunk(monData, chunk) {
+            const monsterTypes = [
+                { name: 'Goblin', color: 0x8B4513, hp: 30, xp: 20, level: 1, scale: 0.8 },
+                { name: 'Skeleton', color: 0xD3D3D3, hp: 50, xp: 35, level: 2, scale: 0.9 },
+                { name: 'Orc', color: 0x556B2F, hp: 80, xp: 50, level: 3, scale: 1.0 },
+                { name: 'Dragon', color: 0x8B0000, hp: 200, xp: 150, level: 5, scale: 1.5 }
+            ];
+            
+            const type = monsterTypes[monData.type % monsterTypes.length];
+            
+            const monster = {
+                id: `monster_${chunk.x}_${chunk.z}_${monData.worldX}_${monData.worldZ}`,
+                ...type,
+                x: monData.worldX,
+                y: 0,
+                z: monData.worldZ,
+                currentHp: type.hp,
+                maxHp: type.hp,
+                direction: Math.random() * Math.PI * 2,
+                speed: 0.02,
+                chunkKey: getChunkKey(chunk.x, chunk.z)
+            };
+            
+            monsters.push(monster);
+            
+            // Create simplified monster mesh
+            const monsterGroup = new THREE.Group();
+            const bodyGeometry = new THREE.BoxGeometry(0.6 * type.scale, 1.0 * type.scale, 0.6 * type.scale);
+            const bodyMaterial = new THREE.MeshStandardMaterial({ color: type.color });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            body.position.y = 0.5 * type.scale;
+            body.castShadow = true;
+            monsterGroup.add(body);
+            
+            monsterGroup.position.set(monster.x, monster.y, monster.z);
+            monsterGroup.userData = monster;
+            scene.add(monsterGroup);
+            monsterMeshes.push(monsterGroup);
+            
+            return { monster, mesh: monsterGroup };
+        }
+        
+        function createDecorationForChunk(decData, chunk) {
+            // Create simple decoration objects
+            const decorationTypes = [
+                { name: 'Rock', color: 0x808080, size: 0.5 },
+                { name: 'Bush', color: 0x228B22, size: 0.4 },
+                { name: 'Flower', color: 0xFF69B4, size: 0.2 },
+                { name: 'Mushroom', color: 0xFF6347, size: 0.3 },
+                { name: 'Log', color: 0x8B4513, size: 0.6 },
+                { name: 'Boulder', color: 0x696969, size: 0.8 },
+                { name: 'Stump', color: 0x654321, size: 0.5 },
+                { name: 'Grass Patch', color: 0x7CFC00, size: 0.3 },
+                { name: 'Pebbles', color: 0xD3D3D3, size: 0.2 },
+                { name: 'Fern', color: 0x2E8B57, size: 0.4 }
+            ];
+            
+            const type = decorationTypes[decData.type % decorationTypes.length];
+            
+            const geometry = new THREE.SphereGeometry(type.size, 8, 8);
+            const material = new THREE.MeshStandardMaterial({ color: type.color });
+            const mesh = new THREE.Mesh(geometry, material);
+            
+            mesh.position.set(decData.worldX, type.size / 2, decData.worldZ);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            
+            scene.add(mesh);
+            
+            return { mesh, type: type.name };
+        }
+        
+        function createTreeMesh(type) {
+            const treeGroup = new THREE.Group();
+            const trunkGeo = new THREE.CylinderGeometry(0.2, 0.25, type.height, 8);
+            const trunkMat = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+            const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+            trunk.position.y = type.height / 2;
+            trunk.castShadow = true;
+            treeGroup.add(trunk);
+            
+            const leavesGeo = new THREE.SphereGeometry(type.height * 0.4, 8, 8);
+            const leavesMat = new THREE.MeshStandardMaterial({ color: type.color });
+            const leaves = new THREE.Mesh(leavesGeo, leavesMat);
+            leaves.position.y = type.height;
+            leaves.castShadow = true;
+            treeGroup.add(leaves);
+            
+            return treeGroup;
+        }
+        
+        function createRockMesh(type) {
+            const rockGeo = new THREE.DodecahedronGeometry(type.height * 0.5, 0);
+            const rockMat = new THREE.MeshStandardMaterial({ color: type.color });
+            const rock = new THREE.Mesh(rockGeo, rockMat);
+            rock.position.y = type.height / 2;
+            rock.castShadow = true;
+            return rock;
+        }
+        
+        function createFishSpotMesh(type) {
+            const fishGroup = new THREE.Group();
+            const waterGeo = new THREE.CylinderGeometry(1, 1, 0.2, 16);
+            const waterMat = new THREE.MeshStandardMaterial({ 
+                color: 0x1E90FF, 
+                transparent: true, 
+                opacity: 0.6 
+            });
+            const water = new THREE.Mesh(waterGeo, waterMat);
+            water.position.y = 0.1;
+            fishGroup.add(water);
+            
+            return fishGroup;
+        }
+        
+        // ========== END CHUNK SYSTEM ==========
+
         // Initialize 3D Game
         function initGame() {
             canvas = document.getElementById('renderCanvas');
@@ -2521,10 +2902,10 @@
             // Scene setup
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x87CEEB); // Sky blue
-            scene.fog = new THREE.Fog(0x87CEEB, 150, 500);  // Reduced fog density for better visibility
+            scene.fog = new THREE.Fog(0x87CEEB, 200, 800);  // Extended for larger world with chunk loading
 
-            // Camera setup (isometric-like view)
-            camera = new THREE.PerspectiveCamera(60, canvas.offsetWidth / canvas.offsetHeight, 0.1, 1000);
+            // Camera setup (isometric-like view) - increased far plane for larger world
+            camera = new THREE.PerspectiveCamera(60, canvas.offsetWidth / canvas.offsetHeight, 0.1, 1500);
             updateCameraPosition();
 
             // Renderer setup
@@ -2647,8 +3028,10 @@
             // Initialize game entities
             createHouses();
             createNPCs();
-            initMonsters();
-            initResources();
+            
+            // Use chunk-based loading instead of spawning all at once
+            // Initial chunk load around player spawn point
+            updateChunkLoading();
 
             // Controls
             window.addEventListener('keydown', (e) => {
@@ -4125,6 +4508,12 @@
 
             currentPlayer.moving = moved;
             
+            // Update chunk loading based on player position (every 60 frames = ~1 second)
+            if (frameCount % 60 === 0) {
+                updateChunkLoading();
+            }
+            frameCount++;
+            
             // Check PVP area
             checkPVPArea();
 
@@ -4583,6 +4972,8 @@
         }
 
         function updateStats() {
+            if (!document.getElementById('combatLevel')) return; // Safety check
+            
             document.getElementById('combatLevel').textContent = currentPlayer.level;
             document.getElementById('goldCount').textContent = currentPlayer.gold;
             
@@ -5707,6 +6098,8 @@
         }
         
         function updateParticles() {
+            if (!scene) return; // Safety check
+            
             const now = Date.now();
             particles = particles.filter(particle => {
                 const age = now - particle.created;
@@ -5726,6 +6119,8 @@
         
         // Day/Night Cycle
         function updateDayNightCycle() {
+            if (!scene) return; // Safety check
+            
             timeOfDay += dayNightSpeed;
             if (timeOfDay >= 24) timeOfDay = 0;
             
@@ -5738,15 +6133,19 @@
                 intensity = 0.8;
                 color = 0xffffff;
                 scene.background = new THREE.Color(0x87CEEB);
-                document.getElementById('timeIcon').textContent = '☀️';
-                document.getElementById('timeText').textContent = 'Day';
+                const timeIcon = document.getElementById('timeIcon');
+                const timeText = document.getElementById('timeText');
+                if (timeIcon) timeIcon.textContent = '☀️';
+                if (timeText) timeText.textContent = 'Day';
             } else {
                 // Night
                 intensity = 0.3;
                 color = 0x6666ff;
                 scene.background = new THREE.Color(0x001a33);
-                document.getElementById('timeIcon').textContent = '🌙';
-                document.getElementById('timeText').textContent = 'Night';
+                const timeIcon = document.getElementById('timeIcon');
+                const timeText = document.getElementById('timeText');
+                if (timeIcon) timeIcon.textContent = '🌙';
+                if (timeText) timeText.textContent = 'Night';
             }
             
             scene.children.forEach(child => {
@@ -6616,6 +7015,8 @@
         }
         
         function setWeather(weatherType) {
+            if (!scene) return; // Safety check
+            
             currentWeather = weatherType;
             
             // Clear old weather particles
@@ -6623,8 +7024,10 @@
             weatherParticles = [];
             
             const weatherIcons = { clear: '☀️', rain: '🌧️', snow: '❄️', fog: '🌫️', storm: '⛈️' };
-            document.getElementById('weatherIcon').textContent = weatherIcons[weatherType];
-            document.getElementById('weatherText').textContent = weatherType.charAt(0).toUpperCase() + weatherType.slice(1);
+            const weatherIcon = document.getElementById('weatherIcon');
+            const weatherText = document.getElementById('weatherText');
+            if (weatherIcon) weatherIcon.textContent = weatherIcons[weatherType];
+            if (weatherText) weatherText.textContent = weatherType.charAt(0).toUpperCase() + weatherType.slice(1);
             
             // Create weather effects
             if (weatherType === 'rain' || weatherType === 'snow' || weatherType === 'storm') {
