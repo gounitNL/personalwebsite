@@ -1083,50 +1083,58 @@
             </div>
 
             <div class="skills-panel">
-                <h3 style="margin-bottom: 0.5rem; color: #f39c12;">📊 Stats</h3>
-                <div class="skill-item">
-                    <span class="skill-name">⚔️ Strength</span>
-                    <span class="skill-level" id="strengthStat">10</span>
-                </div>
-                <div class="skill-item">
-                    <span class="skill-name">🛡️ Defense</span>
-                    <span class="skill-level" id="defenseStat">10</span>
-                </div>
-                <div class="skill-item">
-                    <span class="skill-name">✨ Magic</span>
-                    <span class="skill-level" id="magicStat">10</span>
-                </div>
-                <div class="skill-item">
-                    <span class="skill-name">⚡ Speed</span>
-                    <span class="skill-level" id="speedStat">10</span>
+                <h3 onclick="toggleStatsPanel()" style="margin-bottom: 0.5rem; color: #f39c12; cursor: pointer; user-select: none;">
+                    <span id="statsToggle">▼</span> 📊 Stats
+                </h3>
+                <div id="statsContent">
+                    <div class="skill-item">
+                        <span class="skill-name">⚔️ Strength</span>
+                        <span class="skill-level" id="strengthStat">10</span>
+                    </div>
+                    <div class="skill-item">
+                        <span class="skill-name">🛡️ Defense</span>
+                        <span class="skill-level" id="defenseStat">10</span>
+                    </div>
+                    <div class="skill-item">
+                        <span class="skill-name">✨ Magic</span>
+                        <span class="skill-level" id="magicStat">10</span>
+                    </div>
+                    <div class="skill-item">
+                        <span class="skill-name">⚡ Speed</span>
+                        <span class="skill-level" id="speedStat">10</span>
+                    </div>
                 </div>
             </div>
 
             <div class="skills-panel">
-                <h3 style="margin-bottom: 0.5rem; color: #f39c12;">⚔️ Skills</h3>
-                <div class="skill-item">
-                    <span class="skill-name">Combat</span>
-                    <span class="skill-level" id="combatSkill">1</span>
-                </div>
-                <div class="skill-item">
-                    <span class="skill-name">Mining</span>
-                    <span class="skill-level" id="miningSkill">1</span>
-                </div>
-                <div class="skill-item">
-                    <span class="skill-name">Woodcutting</span>
-                    <span class="skill-level" id="woodcuttingSkill">1</span>
-                </div>
-                <div class="skill-item">
-                    <span class="skill-name">Fishing</span>
-                    <span class="skill-level" id="fishingSkill">1</span>
-                </div>
-                <div class="skill-item">
-                    <span class="skill-name">Crafting</span>
-                    <span class="skill-level" id="craftingSkill">1</span>
-                </div>
-                <div class="skill-item">
-                    <span class="skill-name">Magic</span>
-                    <span class="skill-level" id="magicSkill">1</span>
+                <h3 onclick="toggleSkillsPanel()" style="margin-bottom: 0.5rem; color: #f39c12; cursor: pointer; user-select: none;">
+                    <span id="skillsToggle">▼</span> ⚔️ Skills
+                </h3>
+                <div id="skillsContent">
+                    <div class="skill-item">
+                        <span class="skill-name">Combat</span>
+                        <span class="skill-level" id="combatSkill">1</span>
+                    </div>
+                    <div class="skill-item">
+                        <span class="skill-name">Mining</span>
+                        <span class="skill-level" id="miningSkill">1</span>
+                    </div>
+                    <div class="skill-item">
+                        <span class="skill-name">Woodcutting</span>
+                        <span class="skill-level" id="woodcuttingSkill">1</span>
+                    </div>
+                    <div class="skill-item">
+                        <span class="skill-name">Fishing</span>
+                        <span class="skill-level" id="fishingSkill">1</span>
+                    </div>
+                    <div class="skill-item">
+                        <span class="skill-name">Crafting</span>
+                        <span class="skill-level" id="craftingSkill">1</span>
+                    </div>
+                    <div class="skill-item">
+                        <span class="skill-name">Magic</span>
+                        <span class="skill-level" id="magicSkill">1</span>
+                    </div>
                 </div>
             </div>
 
@@ -1135,20 +1143,6 @@
                 <button onclick="openEquipment()" style="width: 100%; padding: 0.75rem; margin-bottom: 0.5rem; background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
                     ⚔️ Manage Equipment
                 </button>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem;">
-                    <div style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 5px; text-align: center; font-size: 0.8rem;">
-                        <div id="weaponSlot">🗡️ Weapon</div>
-                    </div>
-                    <div style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 5px; text-align: center; font-size: 0.8rem;">
-                        <div id="armorSlot">🛡️ Armor</div>
-                    </div>
-                    <div style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 5px; text-align: center; font-size: 0.8rem;">
-                        <div id="helmetSlot">⛑️ Helmet</div>
-                    </div>
-                    <div style="background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 5px; text-align: center; font-size: 0.8rem;">
-                        <div id="bootsSlot">👢 Boots</div>
-                    </div>
-                </div>
                 <h3 style="margin-bottom: 0.5rem; color: #f39c12;">🎒 Inventory</h3>
                 <div class="inventory-grid" id="inventoryGrid"></div>
             </div>
@@ -1163,7 +1157,7 @@
         <div id="gameArea">
             <div id="gameHeader">
                 <div>
-                    <div id="gameTitle">⚔️ FantasyQuest 3D Online</div>
+                    <div id="gameTitle">⚔️ FantasyQuest</div>
                     <a href="index.html" style="color: #95a5a6; text-decoration: none; font-size: 0.9rem;">← Back to Home</a>
                 </div>
             </div>
@@ -1177,8 +1171,8 @@
             </div>
             
             <canvas id="renderCanvas"></canvas>
-            <div class="controls-hint">Click to Move • ← → Rotate Camera • ↑ ↓ Tilt Camera<br>Mouse Drag: Look Around • Scroll: Zoom • 1/2/3: Abilities</div>
-            <div class="camera-controls">
+            <div class="controls-hint" style="display: none;">Click to Move • ← → Rotate Camera • ↑ ↓ Tilt Camera<br>Mouse Drag: Look Around • Scroll: Zoom • 1/2/3: Abilities</div>
+            <div class="camera-controls" style="display: none;">
                 Camera: ← → to rotate • ↑ ↓ to tilt • Mouse drag to look around
             </div>
             <div class="day-night-indicator">
@@ -1209,6 +1203,7 @@
                 <button class="action-btn" onclick="openShop()">🏪 Shop</button>
                 <button class="action-btn" onclick="openQuestsPanel()">📜 Quests</button>
                 <button class="action-btn" style="background: linear-gradient(135deg, #e74c3c, #c0392b);" onclick="openEmoteMenu()">😊 Emote</button>
+                <button class="action-btn" style="background: linear-gradient(135deg, #3498db, #2980b9);" onclick="openControlsPanel()">🎮 Controls</button>
             </div>
             
             <div style="padding: 1rem; border-top: 1px solid #34495e; border-bottom: 1px solid #34495e;">
@@ -1341,6 +1336,31 @@
     </div>
     
     <!-- Equipment Panel (RuneScape style) -->
+    <!-- Controls Panel -->
+    <div class="quest-panel" id="controlsPanel">
+        <button class="close-panel-btn" onclick="closeControlsPanel()">×</button>
+        <h2 style="color: #3498db; margin-bottom: 1rem;">🎮 Controls</h2>
+        <div style="background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 10px; line-height: 2;">
+            <h3 style="color: #f39c12; margin-bottom: 0.5rem;">🖱️ Mouse Controls:</h3>
+            <p>• <strong>Click on Ground:</strong> Move to location</p>
+            <p>• <strong>Click on NPC/Monster/Resource:</strong> Interact</p>
+            <p>• <strong>Mouse Drag:</strong> Rotate camera</p>
+            <p>• <strong>Mouse Scroll:</strong> Zoom in/out</p>
+            <br>
+            <h3 style="color: #f39c12; margin-bottom: 0.5rem;">⌨️ Keyboard Controls:</h3>
+            <p>• <strong>W/A/S/D or Arrow Keys:</strong> Move character</p>
+            <p>• <strong>← →:</strong> Rotate camera left/right</p>
+            <p>• <strong>↑:</strong> Tilt camera down (show more ground)</p>
+            <p>• <strong>↓:</strong> Tilt camera up (show more sky)</p>
+            <p>• <strong>1/2/3:</strong> Use abilities</p>
+            <br>
+            <h3 style="color: #f39c12; margin-bottom: 0.5rem;">📱 Mobile Controls:</h3>
+            <p>• <strong>Joystick (Bottom Left):</strong> Move character</p>
+            <p>• <strong>Tap on Ground:</strong> Move to location</p>
+            <p>• <strong>Action Buttons (Bottom Right):</strong> Attack/Gather</p>
+        </div>
+    </div>
+
     <div class="quest-panel" id="equipmentPanel">
         <button class="close-panel-btn" onclick="closeEquipment()">×</button>
         <h2 style="color: #f39c12; margin-bottom: 1rem;">⚔️ Equipment</h2>
@@ -3865,31 +3885,98 @@
                 // Create 3D resource
                 let resourceMesh;
                 
-                if (type.name === 'Tree') {
+                if (type.skill === 'woodcutting') {  // Trees
                     const treeGroup = new THREE.Group();
                     
+                    // Different trunk colors and sizes for tree types
+                    let trunkColor = 0x8B4513;  // Default brown
+                    let trunkRadius = 0.2;
+                    let trunkHeight = 1.5;
+                    let leavesShape = 'sphere';  // Default shape
+                    let leavesSize = 1;
+                    
+                    if (type.name.includes('Oak')) {
+                        trunkColor = 0x654321;
+                        trunkRadius = 0.25;
+                        trunkHeight = 2;
+                        leavesSize = 1.2;
+                        leavesShape = 'sphere';
+                    } else if (type.name.includes('Willow')) {
+                        trunkColor = 0x8B7355;
+                        trunkRadius = 0.18;
+                        trunkHeight = 2.5;
+                        leavesSize = 1.3;
+                        leavesShape = 'cone';
+                    } else if (type.name.includes('Maple')) {
+                        trunkColor = 0x5C4033;
+                        trunkRadius = 0.22;
+                        trunkHeight = 2.2;
+                        leavesSize = 1.4;
+                        leavesShape = 'sphere';
+                    } else if (type.name.includes('Yew')) {
+                        trunkColor = 0x3D2817;
+                        trunkRadius = 0.28;
+                        trunkHeight = 2.5;
+                        leavesSize = 1.5;
+                        leavesShape = 'cone';
+                    } else if (type.name.includes('Magic')) {
+                        trunkColor = 0x6A0DAD;
+                        trunkRadius = 0.3;
+                        trunkHeight = 3;
+                        leavesSize = 1.6;
+                        leavesShape = 'octahedron';
+                    }
+                    
                     // Trunk
-                    const trunkGeometry = new THREE.CylinderGeometry(0.2, 0.25, 1.5, 8);
-                    const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+                    const trunkGeometry = new THREE.CylinderGeometry(trunkRadius, trunkRadius + 0.05, trunkHeight, 8);
+                    const trunkMaterial = new THREE.MeshStandardMaterial({ color: trunkColor, roughness: 0.9 });
                     const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
-                    trunk.position.y = 0.75;
+                    trunk.position.y = trunkHeight / 2;
                     trunk.castShadow = true;
                     treeGroup.add(trunk);
 
-                    // Leaves
-                    const leavesGeometry = new THREE.SphereGeometry(1, 8, 8);
+                    // Leaves with different shapes
+                    let leavesGeometry;
+                    if (leavesShape === 'cone') {
+                        leavesGeometry = new THREE.ConeGeometry(leavesSize, leavesSize * 2, 8);
+                    } else if (leavesShape === 'octahedron') {
+                        leavesGeometry = new THREE.OctahedronGeometry(leavesSize, 0);
+                    } else {
+                        leavesGeometry = new THREE.SphereGeometry(leavesSize, 8, 8);
+                    }
                     const leavesMaterial = new THREE.MeshStandardMaterial({ color: type.color });
                     const leaves = new THREE.Mesh(leavesGeometry, leavesMaterial);
-                    leaves.position.y = 2.5;
+                    leaves.position.y = trunkHeight + leavesSize;
                     leaves.castShadow = true;
                     treeGroup.add(leaves);
 
                     resourceMesh = treeGroup;
-                } else if (type.name === 'Rock') {
-                    const rockGeometry = new THREE.DodecahedronGeometry(0.8, 0);
+                } else if (type.skill === 'mining') {  // Rocks
+                    // Different shapes for rock types
+                    let rockGeometry;
+                    let rockSize = 0.8;
+                    
+                    if (type.name.includes('Copper') || type.name.includes('Tin')) {
+                        rockGeometry = new THREE.DodecahedronGeometry(rockSize, 0);
+                    } else if (type.name.includes('Iron') || type.name.includes('Coal')) {
+                        rockGeometry = new THREE.IcosahedronGeometry(rockSize, 0);
+                        rockSize = 0.9;
+                    } else if (type.name.includes('Mithril')) {
+                        rockGeometry = new THREE.OctahedronGeometry(rockSize, 0);
+                        rockSize = 1.0;
+                    } else if (type.name.includes('Adamant')) {
+                        rockGeometry = new THREE.TetrahedronGeometry(rockSize, 0);
+                        rockSize = 1.1;
+                    } else if (type.name.includes('Runite')) {
+                        rockGeometry = new THREE.DodecahedronGeometry(rockSize, 1);
+                        rockSize = 1.2;
+                    } else {
+                        rockGeometry = new THREE.DodecahedronGeometry(rockSize, 0);
+                    }
+                    
                     const rockMaterial = new THREE.MeshStandardMaterial({ color: type.color, roughness: 0.9 });
                     resourceMesh = new THREE.Mesh(rockGeometry, rockMaterial);
-                    resourceMesh.position.y = 0.5;
+                    resourceMesh.position.y = rockSize * 0.5;
                     resourceMesh.castShadow = true;
                 } else { // Fish Spot
                     const waterGeometry = new THREE.CylinderGeometry(0.8, 0.8, 0.2, 16);
@@ -4078,12 +4165,12 @@
             if (keys['arrowright']) {
                 cameraAngle += 0.02; // Rotate camera right (horizontal)
             }
-            if (keys['arrowup']) {
-                cameraPitch -= 0.02; // Tilt camera up (show more sky)
+            if (keys['arrowdown']) {
+                cameraPitch -= 0.02; // Down arrow: Tilt camera up (show more sky)
                 cameraPitch = Math.max(MIN_PITCH, cameraPitch); // Clamp
             }
-            if (keys['arrowdown']) {
-                cameraPitch += 0.02; // Tilt camera down (show more ground)
+            if (keys['arrowup']) {
+                cameraPitch += 0.02; // Up arrow: Tilt camera down (show more ground)
                 cameraPitch = Math.max(MIN_PITCH, Math.min(MAX_PITCH, cameraPitch)); // Clamp
             }
 
@@ -5571,6 +5658,38 @@
         }
         
         // Equipment System (RuneScape style)
+        function toggleStatsPanel() {
+            const content = document.getElementById('statsContent');
+            const toggle = document.getElementById('statsToggle');
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                toggle.textContent = '▼';
+            } else {
+                content.style.display = 'none';
+                toggle.textContent = '▶';
+            }
+        }
+        
+        function toggleSkillsPanel() {
+            const content = document.getElementById('skillsContent');
+            const toggle = document.getElementById('skillsToggle');
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                toggle.textContent = '▼';
+            } else {
+                content.style.display = 'none';
+                toggle.textContent = '▶';
+            }
+        }
+        
+        function openControlsPanel() {
+            document.getElementById('controlsPanel').classList.add('active');
+        }
+        
+        function closeControlsPanel() {
+            document.getElementById('controlsPanel').classList.remove('active');
+        }
+        
         function openEquipment() {
             document.getElementById('equipmentPanel').classList.add('active');
             renderEquipmentPanel();
@@ -5927,19 +6046,20 @@
                 ctx.arc(x, y, 8, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // Draw icon based on NPC type
+                // Draw icon based on NPC type with dedicated symbols
+                ctx.font = 'bold 14px Arial';
                 if (npc.type === 'bank') {
                     ctx.fillStyle = '#FFD700'; // Gold for bank
-                    ctx.fillText('$', x, y);
+                    ctx.fillText('🏦', x, y);  // Bank symbol
                 } else if (npc.type === 'shop') {
                     ctx.fillStyle = '#FF8C00'; // Orange for shop
-                    ctx.fillText('🛒', x, y);
+                    ctx.fillText('🏪', x, y);  // Shop symbol
                 } else if (npc.type === 'quest') {
                     ctx.fillStyle = '#FFA500'; // Orange for quest
-                    ctx.fillText('!', x, y);
+                    ctx.fillText('❗', x, y);  // Quest symbol
                 } else if (npc.type === 'pet') {
                     ctx.fillStyle = '#9370DB'; // Purple for pets
-                    ctx.fillText('🐾', x, y);
+                    ctx.fillText('🐾', x, y);  // Pet symbol
                 }
             });
             
@@ -5963,15 +6083,7 @@
                 ctx.strokeRect(x - 4, y - 4, 8, 8);
             });
             
-            // Draw bank icon
-            const bankerNPC = NPCS.find(npc => npc.type === 'bank');
-            if (bankerNPC) {
-                const x = centerX + (bankerNPC.x - currentPlayer.x) * scale;
-                const y = centerY + (bankerNPC.z - currentPlayer.z) * scale;
-                ctx.fillStyle = '#FFD700';
-                ctx.font = 'bold 12px Arial';
-                ctx.fillText('$', x - 4, y + 4);
-            }
+            // Bank icon already drawn in NPC loop above
             
             // Draw other players
             Object.values(players).forEach(player => {
