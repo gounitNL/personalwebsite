@@ -211,10 +211,9 @@ class CombatSystem {
      * @returns {number} Attack bonus
      */
     getAttackBonus(entity) {
-        // Stub: Will integrate with EquipmentSystem
-        if (entity.type === 'player' && entity.equipment) {
-            // Calculate from equipped items
-            return 0; // Placeholder
+        // Integrated with EquipmentSystem (Phase 5)
+        if (entity.type === 'player' && this.gameEngine.equipmentSystem) {
+            return this.gameEngine.equipmentSystem.getAttackBonus('slash'); // Default to slash
         }
         return 0;
     }
@@ -225,10 +224,9 @@ class CombatSystem {
      * @returns {number} Defence bonus
      */
     getDefenceBonus(entity) {
-        // Stub: Will integrate with EquipmentSystem
-        if (entity.type === 'player' && entity.equipment) {
-            // Calculate from equipped items
-            return 0; // Placeholder
+        // Integrated with EquipmentSystem (Phase 5)
+        if (entity.type === 'player' && this.gameEngine.equipmentSystem) {
+            return this.gameEngine.equipmentSystem.getDefenceBonus('slash'); // Default to slash
         }
         return 0;
     }
@@ -239,10 +237,9 @@ class CombatSystem {
      * @returns {number} Strength bonus
      */
     getStrengthBonus(entity) {
-        // Stub: Will integrate with EquipmentSystem
-        if (entity.type === 'player' && entity.equipment) {
-            // Calculate from equipped items
-            return 0; // Placeholder
+        // Integrated with EquipmentSystem (Phase 5)
+        if (entity.type === 'player' && this.gameEngine.equipmentSystem) {
+            return this.gameEngine.equipmentSystem.getStrengthBonus();
         }
         return 0;
     }
