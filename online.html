@@ -1651,7 +1651,7 @@
 
         // Constants
         const PLAYER_SPEED = 0.15;
-        const MAP_SIZE = 1000;  // Large explorable world (reduced from 5000 for stability)
+        const MAP_SIZE = 200;  // Increased from 50 for bigger world
         
         // NEW: Equipment Database with icons
         const EQUIPMENT = {
@@ -2614,13 +2614,13 @@
             // Scene setup
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x87CEEB); // Sky blue
-            scene.fog = new THREE.Fog(0x87CEEB, 500, 2000);  // Adjusted for massive world
+            scene.fog = new THREE.Fog(0x87CEEB, 150, 500);  // Reduced fog density for better visibility
 
             // Camera setup (isometric-like view)
             // Use window size if canvas dimensions are not available yet
             const canvasWidth = canvas.offsetWidth || window.innerWidth;
             const canvasHeight = canvas.offsetHeight || window.innerHeight;
-            camera = new THREE.PerspectiveCamera(60, canvasWidth / canvasHeight, 0.1, 10000);
+            camera = new THREE.PerspectiveCamera(60, canvasWidth / canvasHeight, 0.1, 1000);
             updateCameraPosition();
 
             // Renderer setup
@@ -2788,12 +2788,7 @@
             initMobileControls();
             
             // Create world decorations
-            // Temporarily simplified for stability
-            // createWorldDecorations();
-            
-            // Create massive world content (themed areas and props)
-            // Temporarily disabled to test base game
-            // createMassiveWorldContent();
+            createWorldDecorations();
 
             // Handle window resize
             window.addEventListener('resize', onWindowResize);
@@ -2814,7 +2809,7 @@
 
         function createTerrain() {
             // Create ground plane with texture-like appearance
-            const groundGeometry = new THREE.PlaneGeometry(MAP_SIZE * 2, MAP_SIZE * 2, 100, 100);
+            const groundGeometry = new THREE.PlaneGeometry(MAP_SIZE * 2, MAP_SIZE * 2, MAP_SIZE, MAP_SIZE);
             
             // Add variation to terrain height
             const vertices = groundGeometry.attributes.position.array;
@@ -4898,7 +4893,7 @@
                 { name: 'Dragon', color: 0x8B0000, hp: 200, xp: 150, level: 5, scale: 1.5 }
             ];
 
-            for (let i = 0; i < 75; i++) {  // Increased from 15 for 5x bigger map
+            for (let i = 0; i < 15; i++) {
                 const type = monsterTypes[Math.floor(Math.random() * monsterTypes.length)];
                 const monster = {
                     id: 'monster_' + i,
@@ -4983,7 +4978,7 @@
                 { name: 'Shark Spot', color: 0x2F4F4F, skill: 'fishing', item: 'Raw Shark', height: 0.3, levelRequired: 76, xp: 110 }
             ];
 
-            for (let i = 0; i < 300; i++) {  // Increased resource count for larger map
+            for (let i = 0; i < 40; i++) {
                 const type = resourceTypes[Math.floor(Math.random() * resourceTypes.length)];
                 const resource = {
                     id: 'resource_' + i,
@@ -5263,15 +5258,8 @@
             return [{ x: endX, z: endZ }];
         }
 
-        let animateFrameCount = 0;
         function animate() {
             requestAnimationFrame(animate);
-            
-            // Debug: Log first few frames
-            if (animateFrameCount < 3) {
-                console.log('Animate frame:', animateFrameCount, 'Scene:', scene, 'Camera:', camera, 'Renderer:', renderer);
-                animateFrameCount++;
-            }
 
             // Handle movement
             let moved = false;
