@@ -1109,10 +1109,7 @@
                 </div>
             </div>
             <canvas id="renderCanvas"></canvas>
-            <div class="controls-hint">Click to Move • Arrow Keys: Rotate Camera • Click: Interact<br>Mouse Drag: Look Around • Scroll: Zoom • 1/2/3: Abilities</div>
-            <div class="camera-controls">
-                Camera: Arrow Keys to rotate • Mouse drag to look around
-            </div>
+
             <div class="day-night-indicator">
                 <span id="timeIcon">☀️</span>
                 <span id="timeText">Day</span>
@@ -1141,6 +1138,7 @@
                 <button class="action-btn" onclick="openShop()">🏪 Shop</button>
                 <button class="action-btn" onclick="openQuestsPanel()">📜 Quests</button>
                 <button class="action-btn" style="background: linear-gradient(135deg, #e74c3c, #c0392b);" onclick="openEmoteMenu()">😊 Emote</button>
+                <button class="action-btn" style="background: linear-gradient(135deg, #3498db, #2980b9);" onclick="toggleControlsPanel()">📜 Controls</button>
             </div>
             
             <div style="padding: 1rem; border-top: 1px solid #34495e; border-bottom: 1px solid #34495e;">
@@ -1254,6 +1252,52 @@
         <button class="close-panel-btn" onclick="closeEmoteMenu()">×</button>
         <h2 style="color: #f39c12; margin-bottom: 1rem;">😊 Emotes</h2>
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;" id="emoteGrid"></div>
+    </div>
+    
+    <!-- Controls Panel -->
+    <div class="quest-panel" id="controlsPanel" style="max-width: 600px;">
+        <button class="close-panel-btn" onclick="toggleControlsPanel()">×</button>
+        <h2 style="color: #f39c12; margin-bottom: 1rem;">🎮 Game Controls</h2>
+        
+        <div style="display: grid; gap: 1rem;">
+            <div style="padding: 1rem; background: rgba(0,0,0,0.3); border-radius: 10px;">
+                <h3 style="color: #3498db; margin-bottom: 0.5rem;">🖱️ Mouse Controls</h3>
+                <ul style="margin: 0; padding-left: 1.5rem; line-height: 1.8;">
+                    <li><strong>Left Click:</strong> Move to location / Interact with objects</li>
+                    <li><strong>Click Minimap:</strong> Quick travel to location</li>
+                    <li><strong>Mouse Drag:</strong> Rotate camera view</li>
+                    <li><strong>Scroll Wheel:</strong> Zoom in/out</li>
+                </ul>
+            </div>
+            
+            <div style="padding: 1rem; background: rgba(0,0,0,0.3); border-radius: 10px;">
+                <h3 style="color: #2ecc71; margin-bottom: 0.5rem;">⌨️ Keyboard Controls</h3>
+                <ul style="margin: 0; padding-left: 1.5rem; line-height: 1.8;">
+                    <li><strong>Arrow Keys:</strong> Rotate camera around character</li>
+                    <li><strong>1/2/3:</strong> Use abilities (Fireball/Heal/Lightning)</li>
+                    <li><strong>Enter:</strong> Focus chat input</li>
+                </ul>
+            </div>
+            
+            <div style="padding: 1rem; background: rgba(0,0,0,0.3); border-radius: 10px;">
+                <h3 style="color: #e74c3c; margin-bottom: 0.5rem;">⚔️ Combat & Gathering</h3>
+                <ul style="margin: 0; padding-left: 1.5rem; line-height: 1.8;">
+                    <li><strong>Click Monster:</strong> Auto-attack until defeated</li>
+                    <li><strong>Click Resource:</strong> Gather (trees/rocks/fish)</li>
+                    <li><strong>Click NPC:</strong> Talk and interact</li>
+                    <li>Character automatically walks to targets</li>
+                </ul>
+            </div>
+            
+            <div style="padding: 1rem; background: rgba(0,0,0,0.3); border-radius: 10px;">
+                <h3 style="color: #9b59b6; margin-bottom: 0.5rem;">📱 Mobile Controls</h3>
+                <ul style="margin: 0; padding-left: 1.5rem; line-height: 1.8;">
+                    <li><strong>Tap:</strong> Move and interact</li>
+                    <li><strong>Virtual Joystick:</strong> Available on mobile</li>
+                    <li><strong>Pinch:</strong> Zoom in/out</li>
+                </ul>
+            </div>
+        </div>
     </div>
     
     <!-- Bank Panel -->
@@ -2812,6 +2856,7 @@
             const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
             body.position.y = 0.5 * type.scale;
             body.castShadow = true;
+            body.userData = monster; // Set userData for raycasting
             monsterGroup.add(body);
             
             // Head
@@ -2820,6 +2865,7 @@
             const head = new THREE.Mesh(headGeometry, headMaterial);
             head.position.y = 1.2 * type.scale;
             head.castShadow = true;
+            head.userData = monster; // Set userData for raycasting
             monsterGroup.add(head);
             
             // Eyes (red, glowing)
@@ -2828,10 +2874,12 @@
             
             const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
             leftEye.position.set(-0.1 * type.scale, 1.25 * type.scale, 0.2 * type.scale);
+            leftEye.userData = monster; // Set userData for raycasting
             monsterGroup.add(leftEye);
             
             const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
             rightEye.position.set(0.1 * type.scale, 1.25 * type.scale, 0.2 * type.scale);
+            rightEye.userData = monster; // Set userData for raycasting
             monsterGroup.add(rightEye);
             
             monsterGroup.position.set(monster.x, monster.y, monster.z);
@@ -3276,7 +3324,8 @@
             
             // Convert minimap click to world position
             const miniMapSize = 200;
-            const scale = (MAP_SIZE * 2) / miniMapSize;
+            // Match the zoom level from updateMiniMap
+            const scale = (MAP_SIZE * 0.5) / miniMapSize;
             
             // Calculate relative position from center
             const relativeX = (x - miniMapSize / 2) * scale;
@@ -4801,6 +4850,27 @@
                     pathToTarget = []; // Clear old path
                     targetMonster = null;
                     targetResource = null;
+                } else {
+                    // Fallback: Use mouse position to calculate ground point
+                    // Calculate a point on the ground plane at y=0
+                    const raycasterOrigin = camera.position;
+                    const raycasterDirection = raycaster.ray.direction;
+                    
+                    // Ray-plane intersection at y=0
+                    const t = -raycasterOrigin.y / raycasterDirection.y;
+                    if (t > 0) {
+                        const intersectX = raycasterOrigin.x + raycasterDirection.x * t;
+                        const intersectZ = raycasterOrigin.z + raycasterDirection.z * t;
+                        
+                        // Keep within map bounds
+                        const clampedX = Math.max(-MAP_SIZE/2, Math.min(MAP_SIZE/2, intersectX));
+                        const clampedZ = Math.max(-MAP_SIZE/2, Math.min(MAP_SIZE/2, intersectZ));
+                        
+                        targetPosition = { x: clampedX, z: clampedZ };
+                        pathToTarget = [];
+                        targetMonster = null;
+                        targetResource = null;
+                    }
                 }
             }
         }
@@ -6207,7 +6277,8 @@
             ctx.fillStyle = '#2d5016';
             ctx.fillRect(0, 0, size, size);
             
-            const scale = size / (MAP_SIZE * 2);
+            // Zoom in the minimap - show 1/4 of the world instead of full world
+            const scale = size / (MAP_SIZE * 0.5);
             
             // Draw monsters
             monsters.forEach(monster => {
@@ -7238,6 +7309,15 @@
         
         function closeEmoteMenu() {
             document.getElementById('emotePanel').style.display = 'none';
+        }
+        
+        function toggleControlsPanel() {
+            const panel = document.getElementById('controlsPanel');
+            if (panel.style.display === 'none' || !panel.style.display) {
+                panel.style.display = 'block';
+            } else {
+                panel.style.display = 'none';
+            }
         }
         
         // ACHIEVEMENT TRACKING
