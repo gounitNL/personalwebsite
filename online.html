@@ -1651,7 +1651,7 @@
 
         // Constants
         const PLAYER_SPEED = 0.15;
-        const MAP_SIZE = 5000;  // Massive explorable world
+        const MAP_SIZE = 1000;  // Large explorable world (reduced from 5000 for stability)
         
         // NEW: Equipment Database with icons
         const EQUIPMENT = {
@@ -1900,7 +1900,7 @@
         }
         
         function showSignupTab() {
-            document.getElementById('signupTab').classList.add('active');
+            document.getElementById('signupTab').classList.aentById('signupTab').classList.add('active');
             document.getElementById('signupTab').style.background = '#667eea';
             document.getElementById('signupTab').style.color = 'white';
             document.getElementById('loginTab').classList.remove('active');
@@ -2782,7 +2782,8 @@
             createWorldDecorations();
             
             // Create massive world content (themed areas and props)
-            createMassiveWorldContent();
+            // Temporarily disabled to test base game
+            // createMassiveWorldContent();
 
             // Handle window resize
             window.addEventListener('resize', onWindowResize);
@@ -4080,8 +4081,7 @@
                 // Bucket
                 const bucketGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.4, 8);
                 const bucketMat = new THREE.MeshStandardMaterial({ color: 0x8B7355 });
-                const bucket = new THREE.Mesh(bucketGeo, bucketMat);
-                bucket.position.set(0, 1, 0.8);
+                const bucket = new THREE.Mesh(bucketGbucket.position.set(0, 1, 0.8);
                 
                 well.add(wall, post1, post2, roof, bucket);
                 well.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.75;
@@ -4445,7 +4445,7 @@
                         roughness: 0.9
                     });
                     const chimney = new THREE.Mesh(chimneyGeo, chimneyMat);
-                    chimney.position.set(houseData.width * 0.3, houseData.height + houseData.height * 0.3 + 0.3, -houseData.depth * 0.3);
+                    chimney.position.set(houseData.width * 0.3, houseData.height + houseData.height * 0.3 + 0.3, -housseData.height * 0.3 + 0.3, -houseData.depth * 0.3);
                     chimney.castShadow = true;
                     houseGroup.add(chimney);
                 }
@@ -4966,7 +4966,7 @@
                 { name: 'Shark Spot', color: 0x2F4F4F, skill: 'fishing', item: 'Raw Shark', height: 0.3, levelRequired: 76, xp: 110 }
             ];
 
-            for (let i = 0; i < 1000; i++) {  // Massive resource count for 5x bigger map
+            for (let i = 0; i < 300; i++) {  // Increased resource count for larger map
                 const type = resourceTypes[Math.floor(Math.random() * resourceTypes.length)];
                 const resource = {
                     id: 'resource_' + i,
