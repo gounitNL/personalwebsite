@@ -131,6 +131,109 @@
     <!-- Modal Panels (Equipment, Bank, etc.) -->
     <div id="modalOverlay" class="modal-overlay hidden"></div>
 
+    <!-- Equipment Panel Modal -->
+    <div id="equipmentModal" class="modal-panel hidden">
+        <div class="modal-content equipment-modal">
+            <div class="modal-header">
+                <h2>⚔️ Equipment</h2>
+                <button class="modal-close" onclick="closeEquipment()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="equipment-layout">
+                    <!-- Equipment Slots -->
+                    <div class="equipment-slots">
+                        <div class="equipment-row">
+                            <div class="equipment-slot" id="slot-cape" data-slot="cape">
+                                <div class="slot-icon">🧥</div>
+                                <div class="slot-label">Cape</div>
+                            </div>
+                            <div class="equipment-slot" id="slot-head" data-slot="head">
+                                <div class="slot-icon">⛑️</div>
+                                <div class="slot-label">Head</div>
+                            </div>
+                            <div class="equipment-slot" id="slot-amulet" data-slot="amulet">
+                                <div class="slot-icon">📿</div>
+                                <div class="slot-label">Neck</div>
+                            </div>
+                        </div>
+                        <div class="equipment-row">
+                            <div class="equipment-slot" id="slot-weapon" data-slot="weapon">
+                                <div class="slot-icon">🗡️</div>
+                                <div class="slot-label">Weapon</div>
+                            </div>
+                            <div class="equipment-slot" id="slot-body" data-slot="body">
+                                <div class="slot-icon">🦺</div>
+                                <div class="slot-label">Body</div>
+                            </div>
+                            <div class="equipment-slot" id="slot-shield" data-slot="shield">
+                                <div class="slot-icon">🛡️</div>
+                                <div class="slot-label">Shield</div>
+                            </div>
+                        </div>
+                        <div class="equipment-row">
+                            <div class="equipment-slot" id="slot-gloves" data-slot="gloves">
+                                <div class="slot-icon">🧤</div>
+                                <div class="slot-label">Gloves</div>
+                            </div>
+                            <div class="equipment-slot" id="slot-legs" data-slot="legs">
+                                <div class="slot-icon">👖</div>
+                                <div class="slot-label">Legs</div>
+                            </div>
+                            <div class="equipment-slot" id="slot-ring" data-slot="ring">
+                                <div class="slot-icon">💍</div>
+                                <div class="slot-label">Ring</div>
+                            </div>
+                        </div>
+                        <div class="equipment-row">
+                            <div class="equipment-slot" id="slot-boots" data-slot="boots">
+                                <div class="slot-icon">👢</div>
+                                <div class="slot-label">Boots</div>
+                            </div>
+                            <div class="equipment-slot" id="slot-ammo" data-slot="ammo">
+                                <div class="slot-icon">🏹</div>
+                                <div class="slot-label">Ammo</div>
+                            </div>
+                            <div class="equipment-slot empty-slot"></div>
+                        </div>
+                    </div>
+
+                    <!-- Equipment Stats -->
+                    <div class="equipment-stats">
+                        <h3>⚔️ Combat Stats</h3>
+                        <div class="stat-row">
+                            <span class="stat-label">Attack (Slash):</span>
+                            <span class="stat-value" id="stat-attackSlash">+0</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Strength:</span>
+                            <span class="stat-value" id="stat-meleeStrength">+0</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Defence:</span>
+                            <span class="stat-value" id="stat-defenceSlash">+0</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Ranged:</span>
+                            <span class="stat-value" id="stat-attackRanged">+0</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Magic:</span>
+                            <span class="stat-value" id="stat-attackMagic">+0</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">Prayer:</span>
+                            <span class="stat-value" id="stat-prayer">+0</span>
+                        </div>
+                        <div class="equipment-hint">
+                            💡 Click inventory items to equip<br>
+                            Click equipped items to unequip
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -390,6 +493,17 @@
                     }
                 });
             }
+            
+            // Setup equipment panel listeners
+            setupEquipmentListeners();
+            
+            // Close modals when clicking overlay
+            const modalOverlay = document.getElementById('modalOverlay');
+            if (modalOverlay) {
+                modalOverlay.addEventListener('click', () => {
+                    closeEquipment();
+                });
+            }
         });
 
         function addChatMessage(message, type = 'system') {
@@ -422,7 +536,120 @@
 
         // Placeholder functions for Phase 6+
         function openEquipment() {
-            addSystemMessage('Equipment panel coming in Phase 5!');
+            const modal = document.getElementById('equipmentModal');
+            const overlay = document.getElementById('modalOverlay');
+            
+            modal.classList.remove('hidden');
+            overlay.classList.remove('hidden');
+            
+            // Update equipment display
+            updateEquipmentDisplay();
+            
+            addSystemMessage('Equipment panel opened');
+        }
+
+        function closeEquipment() {
+            const modal = document.getElementById('equipmentModal');
+            const overlay = document.getElementById('modalOverlay');
+            
+            modal.classList.add('hidden');
+            overlay.classList.add('hidden');
+        }
+
+        function updateEquipmentDisplay() {
+            if (!window.game || !window.game.equipmentSystem) return;
+            
+            const equipmentSystem = window.game.equipmentSystem;
+            const equipped = equipmentSystem.getAllEquipped();
+            const bonuses = equipmentSystem.bonuses;
+            
+            // Update equipment slots
+            for (const [slotName, item] of Object.entries(equipped)) {
+                const slotElement = document.getElementById(`slot-${slotName}`);
+                if (!slotElement) continue;
+                
+                if (item && item.data) {
+                    // Show equipped item
+                    slotElement.classList.add('equipped');
+                    slotElement.innerHTML = `
+                        <div class="equipped-item">
+                            <span class="item-icon">${item.data.icon || '?'}</span>
+                            <div class="item-name">${item.data.name}</div>
+                        </div>
+                    `;
+                    slotElement.title = item.data.name;
+                } else {
+                    // Show empty slot
+                    slotElement.classList.remove('equipped');
+                    const icon = getSlotIcon(slotName);
+                    const label = getSlotLabel(slotName);
+                    slotElement.innerHTML = `
+                        <div class="slot-icon">${icon}</div>
+                        <div class="slot-label">${label}</div>
+                    `;
+                }
+            }
+            
+            // Update stats
+            updateStat('attackSlash', bonuses.attackSlash);
+            updateStat('meleeStrength', bonuses.meleeStrength);
+            updateStat('defenceSlash', bonuses.defenceSlash);
+            updateStat('attackRanged', bonuses.attackRanged);
+            updateStat('attackMagic', bonuses.attackMagic);
+            updateStat('prayer', bonuses.prayer);
+        }
+
+        function updateStat(statName, value) {
+            const element = document.getElementById(`stat-${statName}`);
+            if (!element) return;
+            
+            element.textContent = value > 0 ? `+${value}` : `${value}`;
+            element.className = 'stat-value';
+            if (value > 0) element.classList.add('positive');
+            else if (value < 0) element.classList.add('negative');
+        }
+
+        function getSlotIcon(slotName) {
+            const icons = {
+                head: '⛑️', cape: '🧥', amulet: '📿', weapon: '🗡️',
+                body: '🦺', shield: '🛡️', legs: '👖', gloves: '🧤',
+                boots: '👢', ring: '💍', ammo: '🏹'
+            };
+            return icons[slotName] || '?';
+        }
+
+        function getSlotLabel(slotName) {
+            const labels = {
+                head: 'Head', cape: 'Cape', amulet: 'Neck', weapon: 'Weapon',
+                body: 'Body', shield: 'Shield', legs: 'Legs', gloves: 'Gloves',
+                boots: 'Boots', ring: 'Ring', ammo: 'Ammo'
+            };
+            return labels[slotName] || slotName;
+        }
+
+        // Add click listeners to equipment slots
+        function setupEquipmentListeners() {
+            const slots = document.querySelectorAll('.equipment-slot[data-slot]');
+            slots.forEach(slot => {
+                slot.addEventListener('click', function() {
+                    const slotName = this.getAttribute('data-slot');
+                    unequipItem(slotName);
+                });
+            });
+        }
+
+        function unequipItem(slotName) {
+            if (!window.game || !window.game.equipmentSystem || !window.game.player) return;
+            
+            const result = window.game.equipmentSystem.unequipItem(window.game.player, slotName);
+            
+            if (result.success) {
+                addSystemMessage(result.message);
+                updateEquipmentDisplay();
+                updateInventoryDisplay();
+            } else {
+                addSystemMessage(result.message, 'error');
+            }
         }
 
         function openBank() {

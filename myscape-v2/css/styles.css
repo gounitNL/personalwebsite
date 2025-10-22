@@ -863,3 +863,225 @@ input {
         grid-template-columns: 1fr;
     }
 }
+
+/* ==================== EQUIPMENT PANEL (PHASE 5) ==================== */
+
+.modal-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1001;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-panel.hidden {
+    display: none;
+}
+
+.equipment-modal {
+    background: var(--rs-panel-bg);
+    border: 3px solid var(--rs-panel-border);
+    border-radius: var(--border-radius);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+    width: 600px;
+    max-width: 95vw;
+}
+
+.modal-header {
+    background: var(--rs-panel-header);
+    padding: var(--spacing-lg);
+    border-bottom: 2px solid var(--rs-panel-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: var(--rs-gold);
+    font-size: 24px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.modal-close {
+    background: #8b0000;
+    border: 2px solid #600000;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.modal-close:hover {
+    background: #a00000;
+    transform: scale(1.1);
+}
+
+.modal-body {
+    padding: var(--spacing-xl);
+}
+
+.equipment-layout {
+    display: flex;
+    gap: var(--spacing-xl);
+    justify-content: space-between;
+}
+
+.equipment-slots {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.equipment-row {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: center;
+}
+
+.equipment-slot {
+    width: 80px;
+    height: 80px;
+    background: #2a1f1a;
+    border: 2px solid var(--rs-panel-border);
+    border-radius: var(--border-radius);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.equipment-slot:hover {
+    border-color: var(--rs-gold);
+    background: #3a2f2a;
+    transform: translateY(-2px);
+}
+
+.equipment-slot.equipped {
+    background: #4a3829;
+    border-color: var(--rs-gold-dark);
+}
+
+.equipment-slot.empty-slot {
+    visibility: hidden;
+}
+
+.slot-icon {
+    font-size: 32px;
+    margin-bottom: 4px;
+}
+
+.slot-label {
+    font-size: 10px;
+    color: #999;
+    text-align: center;
+}
+
+.equipped-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.item-icon {
+    font-size: 36px;
+    margin-bottom: 4px;
+}
+
+.item-name {
+    font-size: 9px;
+    color: var(--rs-gold);
+    text-align: center;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.equipment-stats {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.3);
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--rs-border-dark);
+}
+
+.equipment-stats h3 {
+    color: var(--rs-gold);
+    margin: 0 0 var(--spacing-lg) 0;
+    font-size: 18px;
+    text-align: center;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--spacing-sm) 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-label {
+    color: #ccc;
+    font-size: 14px;
+}
+
+.stat-value {
+    color: #888;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.stat-value.positive {
+    color: #4caf50;
+}
+
+.stat-value.negative {
+    color: #f44336;
+}
+
+.equipment-hint {
+    margin-top: var(--spacing-lg);
+    padding: var(--spacing-md);
+    background: rgba(255, 215, 0, 0.1);
+    border: 1px solid var(--rs-gold-dark);
+    border-radius: var(--border-radius);
+    color: var(--rs-text-light);
+    font-size: 12px;
+    text-align: center;
+    line-height: 1.6;
+}
+
+/* Responsive Equipment Panel */
+@media (max-width: 768px) {
+    .equipment-modal {
+        width: 95vw;
+    }
+    
+    .equipment-layout {
+        flex-direction: column;
+    }
+    
+    .equipment-slot {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .slot-icon {
+        font-size: 24px;
+    }
+    
+    .item-icon {
+        font-size: 28px;
+    }
+}
