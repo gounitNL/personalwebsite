@@ -12,6 +12,7 @@ class Player {
         // Identity
         this.id = data.id || 'player';
         this.username = data.username || 'Player';
+        this.name = data.name || data.username || 'Player'; // For rendering
         this.type = 'player';
         
         // Position
@@ -20,6 +21,7 @@ class Player {
         this.targetX = this.x;
         this.targetY = this.y;
         this.moving = false;
+        this.isMoving = false; // Alias for consistency with GameEngine
         
         // Movement
         this.speed = data.speed || 5; // tiles per second
@@ -29,6 +31,8 @@ class Player {
         // Appearance
         this.color = data.color || '#4080ff';
         this.size = data.size || 0.8;
+        this.width = data.width || 16; // For rendering
+        this.height = data.height || 24; // For rendering
         this.nameColor = data.nameColor || '#ffff00';
         
         // Animation state
@@ -53,6 +57,10 @@ class Player {
             
             combatLevel: data.combatStats?.combatLevel || 3
         };
+        
+        // Expose HP for rendering
+        this.hp = this.combatStats.hitpoints;
+        this.maxHp = this.combatStats.maxHitpoints;
         
         // Skills (initialized with level 1, 0 XP)
         this.skills = data.skills || this.initializeSkills();
@@ -176,6 +184,11 @@ class Player {
         
         // Update status effects
         this.updateStatusEffects(deltaTime);
+        
+        // Sync properties for rendering
+        this.hp = this.combatStats.hitpoints;
+        this.maxHp = this.combatStats.maxHitpoints;
+        this.isMoving = this.moving; // Keep both properties in sync
     }
     
     /**

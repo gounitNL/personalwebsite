@@ -34,6 +34,15 @@
                 <div id="authMessage" class="auth-message"></div>
             </div>
             
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #5d4037;">
+                <button onclick="startDemoMode()" class="auth-btn" style="background: #2196F3; border-color: #1976D2;">
+                    🎮 Play Demo Mode
+                </button>
+                <p style="text-align: center; font-size: 12px; color: #888; margin-top: 8px;">
+                    No account needed - start playing immediately!
+                </p>
+            </div>
+            
             <p class="auth-footer">Play a complete RuneScape-style adventure with 15 skills, quests, and more!</p>
         </div>
     </div>
@@ -378,7 +387,26 @@
             if (currentUser) {
                 document.getElementById('playerNameDisplay').textContent = 
                     currentUser.displayName || currentUser.email.split('@')[0];
+            } else {
+                document.getElementById('playerNameDisplay').textContent = 'Demo Player';
             }
+        }
+        
+        // Demo Mode - Bypass authentication for testing
+        function startDemoMode() {
+            console.log('🎮 Starting Demo Mode...');
+            
+            // Create a fake demo user object
+            currentUser = {
+                uid: 'demo-user',
+                email: 'demo@myscape.game',
+                displayName: 'Demo Player',
+                isDemo: true
+            };
+            
+            // Show game and initialize
+            showGame();
+            initializeGame();
         }
 
         function showAuthMessage(message, isError = false) {
@@ -454,6 +482,16 @@
                     if (gameEngine) {
                         await saveGameState();
                     }
+                    
+                    // Handle demo mode logout
+                    if (currentUser && currentUser.isDemo) {
+                        currentUser = null;
+                        gameEngine = null;
+                        showLogin();
+                        location.reload(); // Reload to reset game state
+                        return;
+                    }
+                    
                     await auth.signOut();
                     showAuthMessage('Logged out successfully');
                 } catch (error) {
@@ -495,6 +533,12 @@
         async function loadPlayerData() {
             if (!currentUser) return;
             
+            // Skip Firebase for demo mode
+            if (currentUser.isDemo) {
+                console.log('📦 Demo mode - skipping player data load');
+                return;
+            }
+            
             try {
                 const snapshot = await database.ref(`myscape-players/${currentUser.uid}`).once('value');
                 const data = snapshot.val();
@@ -510,6 +554,12 @@
 
         async function saveGameState() {
             if (!currentUser || !gameEngine) return;
+            
+            // Skip Firebase for demo mode
+            if (currentUser.isDemo) {
+                console.log('💾 Demo mode - game state not saved to cloud');
+                return;
+            }
             
             try {
                 // Save game state to Firebase

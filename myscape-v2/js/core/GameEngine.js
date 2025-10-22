@@ -91,6 +91,14 @@ class GameEngine {
             console.log('🧙 Creating player...');
             this.createPlayer();
             
+            // Initialize UI components now that player exists
+            if (this.uiManager) {
+                console.log('🖥️ Initializing UI components with player data...');
+                this.uiManager.initializeComponents();
+                this.uiManager.updateSkillsUI();
+                this.uiManager.updateInventory();
+            }
+            
             // Load initial area
             console.log('🗺️ Loading initial area...');
             await this.loadInitialArea();
@@ -581,39 +589,49 @@ class GameEngine {
      * Render the game
      */
     render() {
-        // Clear canvas
-        this.ctx.fillStyle = '#000';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        
-        // Combine entities with NPCs for rendering
-        const allEntities = [...this.entities];
-        
-        // Add NPCs to render queue (Phase 6)
-        if (this.npcSystem && this.worldSystem) {
-            const npcs = this.npcSystem.getNPCsInArea(this.worldSystem.currentAreaId);
-            allEntities.push(...npcs);
+        try {
+            // Clear canvas
+            this.ctx.fillStyle = '#000';
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            
+            // Combine entities with NPCs for rendering
+            const allEntities = [...this.entities];
+            
+            // Add NPCs to render queue (Phase 6)
+            if (this.npcSystem && this.worldSystem) {
+                const npcs = this.npcSystem.getNPCsInArea(this.worldSystem.currentAreaId);
+                allEntities.push(...npcs);
+            }
+            
+            // Render world
+            if (this.currentArea) {
+                this.renderer.renderWorld(this.currentArea, this.camera, allEntities);
+            }
+            
+            // Render player
+            if (this.player) {
+                this.renderer.renderEntity(this.player, this.camera);
+            }
+            
+            // Render UI overlays (Phase 2)
+            if (this.uiManager) {
+                this.uiManager.render(this.ctx);
+            }
+            
+            // Render damage numbers (Phase 4.5)
+            if (this.damageNumbersSystem) {
+                this.damageNumbersSystem.render(this.ctx, this.camera, this.renderer);
+            }
+            
+            // Render debug info
+            this.renderDebugInfo();
+        } catch (error) {
+            console.error('Render error:', error);
+            // Draw error message on canvas
+            this.ctx.fillStyle = '#f00';
+            this.ctx.font = '20px Arial';
+            this.ctx.fillText('Render Error: ' + error.message, 50, 50);
         }
-        
-        // Render world
-        if (this.currentArea) {
-            this.renderer.renderWorld(this.currentArea, this.camera, allEntities);
-        }
-        
-        // Render player
-        this.renderer.renderEntity(this.player, this.camera);
-        
-        // Render UI overlays (Phase 2)
-        if (this.uiManager) {
-            this.uiManager.render(this.ctx);
-        }
-        
-        // Render damage numbers (Phase 4.5)
-        if (this.damageNumbersSystem) {
-            this.damageNumbersSystem.render(this.ctx, this.camera, this.renderer);
-        }
-        
-        // Render debug info
-        this.renderDebugInfo();
     }
 
     /**
