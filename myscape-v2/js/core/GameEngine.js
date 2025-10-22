@@ -158,9 +158,17 @@ class GameEngine {
         this.equipmentSystem = new EquipmentSystem(this);
         this.equipmentSystem.init(this.gameConfig);
         
-        // Phase 6: Banking & Shopping (TODO)
-        // Systems will be initialized as they're implemented
-        // For now, just placeholder for future systems
+        // Phase 6: Banking & Shopping (IN PROGRESS - Tasks 6.1, 6.2, 6.3)
+        console.log('  🏦 Initializing Banking System...');
+        this.bankingSystem = new BankingSystem(this);
+        this.bankingSystem.init(this.gameConfig);
+        
+        console.log('  🧑 Initializing NPC System...');
+        this.npcSystem = new NPCSystem(this);
+        this.npcSystem.init(this.gameConfig);
+        
+        // Shop system will be added later
+        // this.shopSystem = new ShopSystem(this);
         
         // Phase 2: Skills and Inventory
         // this.skillsSystem = new SkillsSystem(this.player);
@@ -255,11 +263,21 @@ class GameEngine {
             this.movePlayerTo(worldPos.x, worldPos.y);
         });
         
-        // Right click - context menu (placeholder)
+        // Right click - context menu
         this.inputHandler.onContextMenu((x, y) => {
             const worldPos = this.renderer.screenToWorld(x, y, this.camera);
             console.log('Right clicked at world position:', worldPos);
-            // Context menu will be implemented in Phase 8
+            
+            // Check for NPC at clicked position (Phase 6)
+            if (this.npcSystem && this.worldSystem) {
+                const npc = this.npcSystem.getNPCAt(worldPos.x, worldPos.y, this.worldSystem.currentAreaId);
+                if (npc) {
+                    this.showNPCContextMenu(npc, x, y);
+                    return;
+                }
+            }
+            
+            // Context menu for other entities will be implemented in Phase 8
         });
         
         // Keyboard input
@@ -304,6 +322,68 @@ class GameEngine {
                 break;
             
             // Add more keyboard shortcuts as needed
+        }
+    }
+
+    /**
+     * Show context menu for NPC (Phase 6)
+     */
+    showNPCContextMenu(npc, screenX, screenY) {
+        console.log(`Showing context menu for ${npc.name}`);
+        
+        // Get context menu element (from index.html)
+        const contextMenu = document.getElementById('contextMenu');
+        if (!contextMenu) {
+            // Fallback: directly trigger first action if no context menu
+            if (npc.actions && npc.actions.length > 0) {
+                npc.interact(npc.actions[0]);
+            }
+            return;
+        }
+        
+        // Clear existing menu items
+        contextMenu.innerHTML = '';
+        
+        // Add NPC name header
+        const header = document.createElement('div');
+        header.className = 'context-menu-header';
+        header.textContent = npc.name;
+        contextMenu.appendChild(header);
+        
+        // Add action items
+        npc.actions.forEach(action => {
+            const item = document.createElement('div');
+            item.className = 'context-menu-item';
+            item.textContent = action;
+            item.onclick = () => {
+                npc.interact(action);
+                this.hideContextMenu();
+            };
+            contextMenu.appendChild(item);
+        });
+        
+        // Position and show menu
+        contextMenu.style.left = `${screenX}px`;
+        contextMenu.style.top = `${screenY}px`;
+        contextMenu.classList.remove('hidden');
+        
+        // Hide menu when clicking elsewhere
+        const hideOnClick = (e) => {
+            if (!contextMenu.contains(e.target)) {
+                this.hideContextMenu();
+                document.removeEventListener('click', hideOnClick);
+            }
+        };
+        setTimeout(() => document.addEventListener('click', hideOnClick), 10);
+    }
+    
+    /**
+     * Hide context menu
+     */
+    hideContextMenu() {
+        const contextMenu = document.getElementById('contextMenu');
+        if (contextMenu) {
+            contextMenu.classList.add('hidden');
         }
     }
 
@@ -444,8 +524,9 @@ class GameEngine {
         // Update Phase 5 systems
         if (this.equipmentSystem) this.equipmentSystem.update(deltaTime);
         
-        // Update future game systems (Phase 5+)
-        // if (this.npcSystem) this.npcSystem.update(deltaTime);
+        // Update Phase 6 systems
+        if (this.bankingSystem) this.bankingSystem.update(deltaTime);
+        if (this.npcSystem) this.npcSystem.update(deltaTime);
         
         // Update entities
         this.updateEntities(deltaTime);
@@ -504,9 +585,18 @@ class GameEngine {
         this.ctx.fillStyle = '#000';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         
+        // Combine entities with NPCs for rendering
+        const allEntities = [...this.entities];
+        
+        // Add NPCs to render queue (Phase 6)
+        if (this.npcSystem && this.worldSystem) {
+            const npcs = this.npcSystem.getNPCsInArea(this.worldSystem.currentAreaId);
+            allEntities.push(...npcs);
+        }
+        
         // Render world
         if (this.currentArea) {
-            this.renderer.renderWorld(this.currentArea, this.camera, this.entities);
+            this.renderer.renderWorld(this.currentArea, this.camera, allEntities);
         }
         
         // Render player

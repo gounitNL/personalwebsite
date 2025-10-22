@@ -721,6 +721,15 @@ input {
     min-width: 150px;
 }
 
+.context-menu-header {
+    padding: var(--spacing-md);
+    background: var(--rs-panel-header);
+    color: var(--rs-gold);
+    font-weight: bold;
+    text-align: center;
+    border-bottom: 2px solid var(--rs-panel-border);
+}
+
 .context-menu-item {
     padding: var(--spacing-md);
     color: var(--rs-text-light);

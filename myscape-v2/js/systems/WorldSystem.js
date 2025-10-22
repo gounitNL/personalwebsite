@@ -261,11 +261,9 @@ class WorldSystem {
             }
         }
         
-        // Spawn NPCs
-        if (areaConfig.npcs) {
-            for (const npcSpawn of areaConfig.npcs) {
-                this.spawnNPC(npcSpawn);
-            }
+        // Spawn NPCs using NPCSystem (Phase 6 - Task 6.3)
+        if (areaConfig.npcs && this.gameEngine.npcSystem) {
+            this.gameEngine.npcSystem.spawnNPCsInArea(areaId, areaConfig);
         }
         
         // Spawn enemies
@@ -350,20 +348,18 @@ class WorldSystem {
     
     /**
      * Spawn an NPC
-     * @param {object} spawnData - NPC spawn configuration
+     * @param {string} npcType - NPC type from config (e.g., 'banker', 'shop_keeper')
      */
-    spawnNPC(spawnData) {
-        // NPC spawning will be implemented with NPCSystem in Phase 6
-        const npcId = `npc_${spawnData.npcId}_${Date.now()}`;
+    spawnNPC(npcType) {
+        // Use NPCSystem to spawn NPCs (Phase 6 - Task 6.3)
+        if (!this.gameEngine.npcSystem) {
+            console.warn('NPCSystem not initialized, cannot spawn NPC');
+            return;
+        }
         
-        this.spawnedEntities.set(npcId, {
-            type: 'npc',
-            npcId: spawnData.npcId,
-            x: spawnData.x,
-            y: spawnData.y
-        });
-        
-        console.log(`    [NPC] ${spawnData.npcId} at (${spawnData.x}, ${spawnData.y})`);
+        // NPCSystem will handle actual spawning with proper positions
+        // This is called from spawnEntities which passes the NPC type from area config
+        console.log(`    [NPC] ${npcType} will be spawned by NPCSystem`);
     }
     
     /**
@@ -463,6 +459,11 @@ class WorldSystem {
                     this.gameEngine.entities.splice(index, 1);
                 }
             }
+        }
+        
+        // Clear NPCs from NPCSystem
+        if (this.gameEngine.npcSystem && this.currentAreaId) {
+            this.gameEngine.npcSystem.clearNPCsInArea(this.currentAreaId);
         }
         
         this.spawnedEntities.clear();
