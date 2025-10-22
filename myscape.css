@@ -1,0 +1,452 @@
+/* RuneScape-Style CSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: #000;
+    overflow: hidden;
+}
+
+/* Login Screen Styles */
+.login-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.login-box {
+    background: white;
+    padding: 3rem;
+    border-radius: 15px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+}
+
+.game-title-login {
+    font-size: 2.5rem;
+    color: #667eea;
+    margin-bottom: 0.5rem;
+}
+
+.game-subtitle {
+    color: #666;
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+}
+
+#authContainer h2 {
+    color: #333;
+    margin-bottom: 1.5rem;
+}
+
+.auth-input {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+.auth-input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.auth-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.auth-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.auth-btn:active {
+    transform: translateY(0);
+}
+
+.auth-switch {
+    margin-top: 1rem;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.auth-switch a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.auth-switch a:hover {
+    text-decoration: underline;
+}
+
+.auth-message {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    border-radius: 5px;
+    font-weight: bold;
+    display: none;
+}
+
+/* Classic RuneScape Brown/Gold Color Scheme */
+:root {
+    --rs-brown: #3e2723;
+    --rs-light-brown: #6d4c41;
+    --rs-gold: #ffd700;
+    --rs-border: #8b6914;
+    --rs-panel-bg: rgba(62, 39, 35, 0.95);
+    --rs-green: #00ff00;
+    --rs-red: #ff0000;
+}
+
+.game-container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+}
+
+.top-bar {
+    height: 40px;
+    background: var(--rs-brown);
+    border-bottom: 3px solid var(--rs-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+
+.game-title {
+    color: var(--rs-gold);
+    font-size: 18px;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px #000;
+}
+
+.top-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: var(--rs-gold);
+}
+
+.logout-btn {
+    background: var(--rs-light-brown);
+    color: #fff;
+    padding: 5px 15px;
+    border: 2px solid var(--rs-border);
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.logout-btn:hover {
+    background: var(--rs-border);
+    transform: scale(1.05);
+}
+
+.main-content {
+    flex: 1;
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    overflow: hidden;
+}
+
+.sidebar-left, .sidebar-right {
+    width: 250px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.stats-panel, .inventory-panel, .actions-panel, .chat-panel {
+    background: var(--rs-panel-bg);
+    border: 3px solid var(--rs-border);
+    border-radius: 5px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+}
+
+.panel-header {
+    background: var(--rs-light-brown);
+    color: var(--rs-gold);
+    padding: 8px;
+    font-weight: bold;
+    text-align: center;
+    border-bottom: 2px solid var(--rs-border);
+    text-shadow: 1px 1px 2px #000;
+}
+
+.stats-panel {
+    padding: 10px;
+}
+
+.stat-item {
+    display: grid;
+    grid-template-columns: 25px 1fr auto;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    margin-bottom: 8px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--rs-border);
+    border-radius: 3px;
+    color: #fff;
+}
+
+.stat-value {
+    color: var(--rs-gold);
+    font-weight: bold;
+}
+
+.xp-bar {
+    grid-column: 2 / 4;
+    height: 8px;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid #333;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.xp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00ff00 0%, #00aa00 100%);
+    transition: width 0.5s ease;
+}
+
+.inventory-panel {
+    flex: 1;
+}
+
+.inventory-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    padding: 8px;
+}
+
+.inventory-slot {
+    aspect-ratio: 1;
+    background: rgba(0,0,0,0.4);
+    border: 2px solid #555;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.inventory-slot:hover {
+    background: rgba(255,215,0,0.2);
+    border-color: var(--rs-gold);
+}
+
+.inventory-slot.has-item {
+    border-color: var(--rs-border);
+}
+
+.item-icon {
+    width: 80%;
+    height: 80%;
+    object-fit: contain;
+}
+
+.item-quantity {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    color: var(--rs-gold);
+    font-size: 10px;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px #000;
+}
+
+.game-canvas-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+#gameCanvas {
+    width: 100%;
+    height: 100%;
+    background: #2d5016;
+    border: 3px solid var(--rs-border);
+    border-radius: 5px;
+    cursor: crosshair;
+    image-rendering: pixelated;
+}
+
+.game-info {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0,0,0,0.7);
+    color: var(--rs-gold);
+    padding: 8px 12px;
+    border: 2px solid var(--rs-border);
+    border-radius: 3px;
+    font-size: 14px;
+}
+
+.action-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    padding: 10px;
+}
+
+.action-btn {
+    padding: 12px;
+    background: var(--rs-light-brown);
+    color: #fff;
+    border: 2px solid var(--rs-border);
+    border-radius: 3px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s;
+    text-shadow: 1px 1px 2px #000;
+}
+
+.action-btn:hover {
+    background: var(--rs-border);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+}
+
+.action-btn:active {
+    transform: translateY(0);
+}
+
+.chat-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    background: rgba(0,0,0,0.5);
+}
+
+.chat-msg {
+    padding: 4px 0;
+    color: #fff;
+    font-size: 12px;
+    word-wrap: break-word;
+}
+
+.chat-msg.system {
+    color: var(--rs-gold);
+}
+
+.chat-msg.player {
+    color: #00ffff;
+}
+
+.chat-msg.npc {
+    color: #ff00ff;
+}
+
+.chat-input {
+    width: 100%;
+    padding: 8px;
+    background: rgba(0,0,0,0.6);
+    border: none;
+    border-top: 2px solid var(--rs-border);
+    color: #fff;
+    font-size: 12px;
+    outline: none;
+}
+
+.context-menu {
+    position: fixed;
+    background: var(--rs-panel-bg);
+    border: 2px solid var(--rs-border);
+    border-radius: 3px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+    z-index: 1000;
+    min-width: 150px;
+}
+
+.context-menu.hidden {
+    display: none;
+}
+
+.context-item {
+    padding: 10px 15px;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-bottom: 1px solid rgba(139,105,20,0.3);
+}
+
+.context-item:last-child {
+    border-bottom: none;
+}
+
+.context-item:hover {
+    background: var(--rs-light-brown);
+    color: var(--rs-gold);
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.3);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--rs-border);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--rs-gold);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .sidebar-left, .sidebar-right {
+        width: 200px;
+    }
+    
+    .game-title {
+        font-size: 14px;
+    }
+}
