@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RuneScape-Style Game Example</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="game-container">
+        <!-- Top Menu Bar (Classic RuneScape Style) -->
+        <div class="top-bar">
+            <div class="game-title">MyScape - A RuneScape-Style Game</div>
+            <div class="logout-btn">Logout</div>
+        </div>
+
+        <!-- Main Game Area -->
+        <div class="main-content">
+            <!-- Left Sidebar - Character Stats -->
+            <div class="sidebar-left">
+                <div class="stats-panel">
+                    <div class="panel-header">Character Stats</div>
+                    <div class="stat-item">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Ccircle cx='10' cy='10' r='8' fill='%23c00'/%3E%3C/svg%3E" alt="HP">
+                        <span>Hitpoints:</span>
+                        <span id="hp-level" class="stat-value">10</span>
+                        <div class="xp-bar"><div id="hp-bar" class="xp-fill" style="width: 0%"></div></div>
+                    </div>
+                    <div class="stat-item">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Crect width='16' height='16' x='2' y='2' fill='%23808080'/%3E%3C/svg%3E" alt="Mining">
+                        <span>Mining:</span>
+                        <span id="mining-level" class="stat-value">1</span>
+                        <div class="xp-bar"><div id="mining-bar" class="xp-fill" style="width: 0%"></div></div>
+                    </div>
+                    <div class="stat-item">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cpath d='M10 2 L18 10 L10 18 L2 10 Z' fill='%234169e1'/%3E%3C/svg%3E" alt="Magic">
+                        <span>Magic:</span>
+                        <span id="magic-level" class="stat-value">1</span>
+                        <div class="xp-bar"><div id="magic-bar" class="xp-fill" style="width: 0%"></div></div>
+                    </div>
+                </div>
+
+                <!-- Inventory Panel -->
+                <div class="inventory-panel">
+                    <div class="panel-header">Inventory</div>
+                    <div id="inventory" class="inventory-grid">
+                        <!-- 28 inventory slots (classic RuneScape) -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center - Game Canvas -->
+            <div class="game-canvas-container">
+                <canvas id="gameCanvas" width="800" height="600"></canvas>
+                <div class="game-info">
+                    <div id="hover-text">Right-click objects to interact</div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar - Chat & Actions -->
+            <div class="sidebar-right">
+                <!-- Action Buttons -->
+                <div class="actions-panel">
+                    <div class="panel-header">Actions</div>
+                    <div class="action-buttons">
+                        <button class="action-btn" data-action="attack">Attack</button>
+                        <button class="action-btn" data-action="mine">Mine</button>
+                        <button class="action-btn" data-action="chop">Chop Tree</button>
+                        <button class="action-btn" data-action="fish">Fish</button>
+                    </div>
+                </div>
+
+                <!-- Chat Box -->
+                <div class="chat-panel">
+                    <div class="panel-header">Chat</div>
+                    <div id="chat-messages" class="chat-messages">
+                        <div class="chat-msg system">Welcome to MyScape!</div>
+                        <div class="chat-msg system">Right-click to interact with objects.</div>
+                    </div>
+                    <input type="text" id="chat-input" class="chat-input" placeholder="Type message...">
+                </div>
+            </div>
+        </div>
+
+        <!-- Context Menu (Right-click menu) -->
+        <div id="context-menu" class="context-menu hidden">
+            <div class="context-item" data-action="examine">Examine</div>
+            <div class="context-item" data-action="interact">Interact</div>
+            <div class="context-item" data-action="walk">Walk here</div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
