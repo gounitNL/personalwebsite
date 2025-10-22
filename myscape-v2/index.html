@@ -631,9 +631,9 @@
         }
 
         function updateEquipmentDisplay() {
-            if (!window.game || !window.game.equipmentSystem) return;
+            if (!window.gameEngine || !window.gameEngine.equipmentSystem) return;
             
-            const equipmentSystem = window.game.equipmentSystem;
+            const equipmentSystem = window.gameEngine.equipmentSystem;
             const equipped = equipmentSystem.getAllEquipped();
             const bonuses = equipmentSystem.bonuses;
             
@@ -713,9 +713,9 @@
         }
 
         function unequipItem(slotName) {
-            if (!window.game || !window.game.equipmentSystem || !window.game.player) return;
+            if (!window.gameEngine || !window.gameEngine.equipmentSystem || !window.gameEngine.player) return;
             
-            const result = window.game.equipmentSystem.unequipItem(window.game.player, slotName);
+            const result = window.gameEngine.equipmentSystem.unequipItem(window.gameEngine.player, slotName);
             
             if (result.success) {
                 addSystemMessage(result.message);
@@ -723,6 +723,79 @@
                 updateInventoryDisplay();
             } else {
                 addSystemMessage(result.message, 'error');
+            }
+        }
+
+        // ========== INVENTORY DISPLAY FUNCTIONS ==========
+        
+        function updateInventoryDisplay() {
+            if (!window.gameEngine || !window.gameEngine.inventorySystem) return;
+            
+            const inventorySystem = window.gameEngine.inventorySystem;
+            const inventoryGrid = document.getElementById('inventoryGrid');
+            
+            if (!inventoryGrid) return;
+            
+            // Clear existing slots
+            inventoryGrid.innerHTML = '';
+            
+            // Create 28 inventory slots
+            for (let i = 0; i < inventorySystem.maxSlots; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'inventory-slot';
+                slot.dataset.slot = i;
+                
+                const item = inventorySystem.getItemInSlot(i);
+                
+                if (item && item.itemId) {
+                    const itemData = window.gameConfig.items[item.itemId];
+                    if (itemData) {
+                        slot.classList.add('has-item');
+                        slot.innerHTML = `
+                            <div class="inventory-item-icon">${itemData.icon || '📦'}</div>
+                            ${item.quantity > 1 ? `<div class="inventory-item-quantity">${item.quantity}</div>` : ''}
+                        `;
+                        slot.title = `${itemData.name} ${item.quantity > 1 ? '(' + item.quantity + ')' : ''}`;
+                        
+                        // Add click listener to equip or use item
+                        slot.onclick = () => useInventoryItem(i);
+                    }
+                }
+                
+                inventoryGrid.appendChild(slot);
+            }
+        }
+        
+        function useInventoryItem(slotIndex) {
+            if (!window.gameEngine) return;
+            
+            const inventorySystem = window.gameEngine.inventorySystem;
+            const equipmentSystem = window.gameEngine.equipmentSystem;
+            const player = window.gameEngine.player;
+            
+            const item = inventorySystem.getItemInSlot(slotIndex);
+            if (!item) return;
+            
+            const itemData = window.gameConfig.items[item.itemId];
+            if (!itemData) return;
+            
+            // Check if item is equippable
+            if (itemData.slot && equipmentSystem) {
+                const result = equipmentSystem.equipItem(player, slotIndex);
+                
+                if (result.success) {
+                    addSystemMessage(result.message);
+                    updateEquipmentDisplay();
+                    updateInventoryDisplay();
+                } else {
+                    addSystemMessage(result.message, 'error');
+                }
+            } else if (itemData.heals) {
+                // Food item - consume it
+                // TODO: Implement food consumption
+                addSystemMessage(`You eat the ${itemData.name}.`);
+            } else {
+                addSystemMessage(`You can't use ${itemData.name}.`);
             }
         }
 
