@@ -1651,7 +1651,7 @@
 
         // Constants
         const PLAYER_SPEED = 0.15;
-        const MAP_SIZE = 200;  // Increased from 50 for bigger world
+        const MAP_SIZE = 1000;  // 5x bigger world (was 200)
         
         // NEW: Equipment Database with icons
         const EQUIPMENT = {
@@ -2940,19 +2940,676 @@
                 scene.add(pathMesh);
             });
             
-            // Add decorative rocks
-            for (let i = 0; i < 15; i++) {
-                const rockGeometry = new THREE.DodecahedronGeometry(0.5 + Math.random() * 0.5);
-                const rockMaterial = new THREE.MeshStandardMaterial({ 
-                    color: 0x696969,
-                    roughness: 1.0
+            // Environment assets and props moved to createEnvironmentAssets()
+            createEnvironmentAssets();
+        }
+        
+        function createEnvironmentAssets() {
+            // === BIOME DEFINITIONS ===
+            const biomes = [
+                { name: 'forest', centerX: -400, centerZ: -400, radius: 200, color: 0x2d5016 },
+                { name: 'desert', centerX: 400, centerZ: -400, radius: 180, color: 0xc2b280 },
+                { name: 'snow', centerX: -400, centerZ: 400, radius: 150, color: 0xf0f8ff },
+                { name: 'swamp', centerX: 0, centerZ: -400, radius: 120, color: 0x4a5d23 },
+                { name: 'volcanic', centerX: 400, centerZ: 400, radius: 140, color: 0x3d0c02 }
+            ];
+            
+            // Draw biome ground patches
+            biomes.forEach(biome => {
+                const biomeGeo = new THREE.CircleGeometry(biome.radius, 32);
+                const biomeMat = new THREE.MeshStandardMaterial({ 
+                    color: biome.color, 
+                    roughness: 0.9 
                 });
-                const rock = new THREE.Mesh(rockGeometry, rockMaterial);
-                rock.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.7;
-                rock.position.y = 0.3;
-                rock.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.7;
+                const biomeMesh = new THREE.Mesh(biomeGeo, biomeMat);
+                biomeMesh.rotation.x = -Math.PI / 2;
+                biomeMesh.position.set(biome.centerX, 0.01, biome.centerZ);
+                scene.add(biomeMesh);
+            });
+            
+            // === DECORATIVE BOULDERS (100 varied rocks) ===
+            for (let i = 0; i < 100; i++) {
+                const size = 0.4 + Math.random() * 1.2;
+                const rockTypes = [
+                    new THREE.DodecahedronGeometry(size),
+                    new THREE.IcosahedronGeometry(size),
+                    new THREE.OctahedronGeometry(size * 1.2),
+                    new THREE.TetrahedronGeometry(size * 1.3)
+                ];
+                const rockGeo = rockTypes[Math.floor(Math.random() * rockTypes.length)];
+                const rockMat = new THREE.MeshStandardMaterial({ 
+                    color: [0x696969, 0x808080, 0x556B2F, 0x8B7355][Math.floor(Math.random() * 4)],
+                    roughness: 0.95
+                });
+                const rock = new THREE.Mesh(rockGeo, rockMat);
+                rock.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.9;
+                rock.position.y = size * 0.5;
+                rock.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.9;
+                rock.rotation.y = Math.random() * Math.PI * 2;
                 rock.castShadow = true;
                 scene.add(rock);
+            }
+            
+            // === MUSHROOM CIRCLES (20 clusters) ===
+            for (let i = 0; i < 20; i++) {
+                const centerX = (Math.random() - 0.5) * MAP_SIZE * 0.8;
+                const centerZ = (Math.random() - 0.5) * MAP_SIZE * 0.8;
+                const numMushrooms = 5 + Math.floor(Math.random() * 8);
+                
+                for (let j = 0; j < numMushrooms; j++) {
+                    const angle = (j / numMushrooms) * Math.PI * 2;
+                    const radius = 2 + Math.random();
+                    
+                    // Mushroom stem
+                    const stemGeo = new THREE.CylinderGeometry(0.1, 0.12, 0.3, 8);
+                    const stemMat = new THREE.MeshStandardMaterial({ color: 0xFFF8DC });
+                    const stem = new THREE.Mesh(stemGeo, stemMat);
+                    
+                    // Mushroom cap
+                    const capGeo = new THREE.ConeGeometry(0.25, 0.2, 8);
+                    const capMat = new THREE.MeshStandardMaterial({ 
+                        color: [0xFF4500, 0xFF6347, 0x8B0000][Math.floor(Math.random() * 3)]
+                    });
+                    const cap = new THREE.Mesh(capGeo, capMat);
+                    cap.position.y = 0.25;
+                    
+                    const mushroom = new THREE.Group();
+                    mushroom.add(stem);
+                    mushroom.add(cap);
+                    mushroom.position.set(
+                        centerX + Math.cos(angle) * radius,
+                        0.15,
+                        centerZ + Math.sin(angle) * radius
+                    );
+                    mushroom.castShadow = true;
+                    scene.add(mushroom);
+                }
+            }
+            
+            // === WOODEN BENCHES (30) ===
+            for (let i = 0; i < 30; i++) {
+                const bench = new THREE.Group();
+                
+                // Seat
+                const seatGeo = new THREE.BoxGeometry(1.5, 0.1, 0.5);
+                const seatMat = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+                const seat = new THREE.Mesh(seatGeo, seatMat);
+                seat.position.y = 0.4;
+                
+                // Back
+                const backGeo = new THREE.BoxGeometry(1.5, 0.6, 0.1);
+                const back = new THREE.Mesh(backGeo, seatMat);
+                back.position.set(0, 0.7, -0.2);
+                
+                // Legs
+                const legGeo = new THREE.BoxGeometry(0.1, 0.4, 0.1);
+                for (let x of [-0.6, 0.6]) {
+                    for (let z of [-0.2, 0.2]) {
+                        const leg = new THREE.Mesh(legGeo, seatMat);
+                        leg.position.set(x, 0.2, z);
+                        bench.add(leg);
+                    }
+                }
+                
+                bench.add(seat);
+                bench.add(back);
+                bench.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.7;
+                bench.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.7;
+                bench.rotation.y = Math.random() * Math.PI * 2;
+                bench.castShadow = true;
+                scene.add(bench);
+            }
+            
+            // === STONE FOUNTAINS (15) ===
+            for (let i = 0; i < 15; i++) {
+                const fountain = new THREE.Group();
+                
+                // Base
+                const baseGeo = new THREE.CylinderGeometry(1.5, 1.8, 0.3, 8);
+                const baseMat = new THREE.MeshStandardMaterial({ color: 0x808080 });
+                const base = new THREE.Mesh(baseGeo, baseMat);
+                
+                // Pool
+                const poolGeo = new THREE.CylinderGeometry(1.2, 1.2, 0.5, 8);
+                const poolMat = new THREE.MeshStandardMaterial({ 
+                    color: 0x4682B4, 
+                    transparent: true, 
+                    opacity: 0.7 
+                });
+                const pool = new THREE.Mesh(poolGeo, poolMat);
+                pool.position.y = 0.4;
+                
+                // Central pillar
+                const pillarGeo = new THREE.CylinderGeometry(0.2, 0.2, 1.5, 8);
+                const pillar = new THREE.Mesh(pillarGeo, baseMat);
+                pillar.position.y = 1.1;
+                
+                // Top sphere
+                const topGeo = new THREE.SphereGeometry(0.3, 8, 8);
+                const top = new THREE.Mesh(topGeo, baseMat);
+                top.position.y = 1.9;
+                
+                fountain.add(base, pool, pillar, top);
+                fountain.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.6;
+                fountain.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.6;
+                fountain.castShadow = true;
+                scene.add(fountain);
+            }
+            
+            // === ANCIENT STATUES (25) ===
+            for (let i = 0; i < 25; i++) {
+                const statue = new THREE.Group();
+                const stoneMat = new THREE.MeshStandardMaterial({ color: 0x696969, roughness: 0.9 });
+                
+                // Pedestal
+                const pedestalGeo = new THREE.CylinderGeometry(0.6, 0.7, 0.8, 8);
+                const pedestal = new THREE.Mesh(pedestalGeo, stoneMat);
+                
+                // Body
+                const bodyGeo = new THREE.CylinderGeometry(0.4, 0.5, 1.5, 8);
+                const body = new THREE.Mesh(bodyGeo, stoneMat);
+                body.position.y = 1.55;
+                
+                // Head
+                const headGeo = new THREE.SphereGeometry(0.35, 8, 8);
+                const head = new THREE.Mesh(headGeo, stoneMat);
+                head.position.y = 2.5;
+                
+                // Arms
+                const armGeo = new THREE.BoxGeometry(0.2, 0.8, 0.2);
+                const leftArm = new THREE.Mesh(armGeo, stoneMat);
+                leftArm.position.set(-0.5, 1.8, 0);
+                leftArm.rotation.z = 0.3;
+                const rightArm = new THREE.Mesh(armGeo, stoneMat);
+                rightArm.position.set(0.5, 1.8, 0);
+                rightArm.rotation.z = -0.3;
+                
+                statue.add(pedestal, body, head, leftArm, rightArm);
+                statue.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.8;
+                statue.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.8;
+                statue.rotation.y = Math.random() * Math.PI * 2;
+                statue.castShadow = true;
+                scene.add(statue);
+            }
+            
+            // === TRAINING DUMMIES (20) ===
+            for (let i = 0; i < 20; i++) {
+                const dummy = new THREE.Group();
+                const dummyMat = new THREE.MeshStandardMaterial({ color: 0x8B7355 });
+                
+                // Post
+                const postGeo = new THREE.CylinderGeometry(0.15, 0.15, 2, 8);
+                const post = new THREE.Mesh(postGeo, dummyMat);
+                post.position.y = 1;
+                
+                // Body (barrel shape)
+                const bodyGeo = new THREE.CylinderGeometry(0.5, 0.45, 1, 8);
+                const body = new THREE.Mesh(bodyGeo, dummyMat);
+                body.position.y = 1.5;
+                
+                // Head (sphere)
+                const headGeo = new THREE.SphereGeometry(0.3, 8, 8);
+                const head = new THREE.Mesh(headGeo, dummyMat);
+                head.position.y = 2.3;
+                
+                // Crossbar for arms
+                const crossGeo = new THREE.CylinderGeometry(0.1, 0.1, 1.2, 8);
+                const cross = new THREE.Mesh(crossGeo, dummyMat);
+                cross.rotation.z = Math.PI / 2;
+                cross.position.y = 1.8;
+                
+                dummy.add(post, body, head, cross);
+                dummy.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.7;
+                dummy.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.7;
+                dummy.castShadow = true;
+                scene.add(dummy);
+            }
+            
+            // === STONE WELLS (12) ===
+            for (let i = 0; i < 12; i++) {
+                const well = new THREE.Group();
+                const stoneMat = new THREE.MeshStandardMaterial({ color: 0x696969 });
+                
+                // Well base
+                const baseGeo = new THREE.CylinderGeometry(1, 1.1, 1.5, 16);
+                const base = new THREE.Mesh(baseGeo, stoneMat);
+                base.position.y = 0.75;
+                
+                // Roof supports
+                const supportGeo = new THREE.CylinderGeometry(0.1, 0.1, 2, 8);
+                const support1 = new THREE.Mesh(supportGeo, new THREE.MeshStandardMaterial({ color: 0x8B4513 }));
+                support1.position.set(-0.8, 2, 0);
+                const support2 = support1.clone();
+                support2.position.set(0.8, 2, 0);
+                
+                // Roof
+                const roofGeo = new THREE.ConeGeometry(1.2, 1, 4);
+                const roofMat = new THREE.MeshStandardMaterial({ color: 0xDC143C });
+                const roof = new THREE.Mesh(roofGeo, roofMat);
+                roof.position.y = 3.5;
+                roof.rotation.y = Math.PI / 4;
+                
+                well.add(base, support1, support2, roof);
+                well.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.6;
+                well.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.6;
+                well.castShadow = true;
+                scene.add(well);
+            }
+            
+            // === CAMPFIRES (40) ===
+            for (let i = 0; i < 40; i++) {
+                const campfire = new THREE.Group();
+                
+                // Stone circle
+                const stoneGeo = new THREE.BoxGeometry(0.3, 0.2, 0.3);
+                const stoneMat = new THREE.MeshStandardMaterial({ color: 0x696969 });
+                for (let j = 0; j < 8; j++) {
+                    const angle = (j / 8) * Math.PI * 2;
+                    const stone = new THREE.Mesh(stoneGeo, stoneMat);
+                    stone.position.set(Math.cos(angle) * 0.6, 0.1, Math.sin(angle) * 0.6);
+                    campfire.add(stone);
+                }
+                
+                // Logs
+                const logGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.8, 6);
+                const logMat = new THREE.MeshStandardMaterial({ color: 0x654321 });
+                for (let j = 0; j < 4; j++) {
+                    const log = new THREE.Mesh(logGeo, logMat);
+                    log.rotation.z = (j * Math.PI / 2) + 0.3;
+                    log.position.y = 0.2;
+                    campfire.add(log);
+                }
+                
+                // Fire (glowing cone)
+                const fireGeo = new THREE.ConeGeometry(0.3, 0.8, 4);
+                const fireMat = new THREE.MeshStandardMaterial({ 
+                    color: 0xFF4500, 
+                    emissive: 0xFF4500,
+                    emissiveIntensity: 0.8
+                });
+                const fire = new THREE.Mesh(fireGeo, fireMat);
+                fire.position.y = 0.5;
+                campfire.add(fire);
+                
+                campfire.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.85;
+                campfire.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.85;
+                scene.add(campfire);
+            }
+            
+            // === STONE MONUMENTS/OBELISKS (15) ===
+            for (let i = 0; i < 15; i++) {
+                const obelisk = new THREE.Group();
+                const stoneMat = new THREE.MeshStandardMaterial({ color: 0x556B2F, roughness: 0.95 });
+                
+                // Base platform
+                const platformGeo = new THREE.CylinderGeometry(2, 2.2, 0.5, 8);
+                const platform = new THREE.Mesh(platformGeo, stoneMat);
+                
+                // Main obelisk
+                const obeliskGeo = new THREE.CylinderGeometry(0.4, 0.6, 6, 4);
+                const obeliskMesh = new THREE.Mesh(obeliskGeo, stoneMat);
+                obeliskMesh.position.y = 3.25;
+                
+                // Pyramid top
+                const topGeo = new THREE.ConeGeometry(0.5, 1, 4);
+                const top = new THREE.Mesh(topGeo, stoneMat);
+                top.position.y = 6.5;
+                
+                obelisk.add(platform, obeliskMesh, top);
+                obelisk.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.8;
+                obelisk.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.8;
+                obelisk.castShadow = true;
+                scene.add(obelisk);
+            }
+            
+            // === ANCIENT SHRINES (10) ===
+            for (let i = 0; i < 10; i++) {
+                const shrine = new THREE.Group();
+                
+                // Platform with steps
+                for (let step = 0; step < 3; step++) {
+                    const stepGeo = new THREE.BoxGeometry(3 - step * 0.4, 0.3, 3 - step * 0.4);
+                    const stepMat = new THREE.MeshStandardMaterial({ color: 0x8B8878 });
+                    const stepMesh = new THREE.Mesh(stepGeo, stepMat);
+                    stepMesh.position.y = step * 0.3;
+                    shrine.add(stepMesh);
+                }
+                
+                // Pillars
+                const pillarGeo = new THREE.CylinderGeometry(0.2, 0.25, 2.5, 8);
+                const pillarMat = new THREE.MeshStandardMaterial({ color: 0xF5F5DC });
+                const positions = [[-0.8, 0, -0.8], [0.8, 0, -0.8], [-0.8, 0, 0.8], [0.8, 0, 0.8]];
+                positions.forEach(pos => {
+                    const pillar = new THREE.Mesh(pillarGeo, pillarMat);
+                    pillar.position.set(pos[0], 2.15, pos[2]);
+                    shrine.add(pillar);
+                });
+                
+                // Roof
+                const roofGeo = new THREE.BoxGeometry(2.5, 0.3, 2.5);
+                const roofMat = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+                const roof = new THREE.Mesh(roofGeo, roofMat);
+                roof.position.y = 3.5;
+                shrine.add(roof);
+                
+                // Crystal orb on top
+                const orbGeo = new THREE.SphereGeometry(0.3, 16, 16);
+                const orbMat = new THREE.MeshStandardMaterial({ 
+                    color: 0x9370DB,
+                    emissive: 0x9370DB,
+                    emissiveIntensity: 0.5,
+                    transparent: true,
+                    opacity: 0.8
+                });
+                const orb = new THREE.Mesh(orbGeo, orbMat);
+                orb.position.y = 4;
+                shrine.add(orb);
+                
+                shrine.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.7;
+                shrine.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.7;
+                shrine.castShadow = true;
+                scene.add(shrine);
+            }
+            
+            // === RUINED WALLS (30) ===
+            for (let i = 0; i < 30; i++) {
+                const wallGeo = new THREE.BoxGeometry(
+                    3 + Math.random() * 4,
+                    1.5 + Math.random() * 2,
+                    0.5
+                );
+                const wallMat = new THREE.MeshStandardMaterial({ 
+                    color: 0x8B8878,
+                    roughness: 1.0
+                });
+                const wall = new THREE.Mesh(wallGeo, wallMat);
+                wall.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.85;
+                wall.position.y = wallGeo.parameters.height / 2;
+                wall.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.85;
+                wall.rotation.y = Math.random() * Math.PI * 2;
+                wall.castShadow = true;
+                scene.add(wall);
+            }
+            
+            // === WOODEN BRIDGES (8) ===
+            for (let i = 0; i < 8; i++) {
+                const bridge = new THREE.Group();
+                const woodMat = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+                
+                // Deck
+                const deckGeo = new THREE.BoxGeometry(12, 0.3, 3);
+                const deck = new THREE.Mesh(deckGeo, woodMat);
+                deck.position.y = 0.5;
+                
+                // Support beams
+                for (let x = -5; x <= 5; x += 2.5) {
+                    const beamGeo = new THREE.BoxGeometry(0.3, 1, 0.3);
+                    const beam = new THREE.Mesh(beamGeo, woodMat);
+                    beam.position.set(x, 0, 1.2);
+                    bridge.add(beam);
+                    const beam2 = beam.clone();
+                    beam2.position.z = -1.2;
+                    bridge.add(beam2);
+                }
+                
+                // Railings
+                const railGeo = new THREE.BoxGeometry(12, 0.2, 0.2);
+                const rail1 = new THREE.Mesh(railGeo, woodMat);
+                rail1.position.set(0, 1, 1.5);
+                const rail2 = rail1.clone();
+                rail2.position.z = -1.5;
+                
+                bridge.add(deck, rail1, rail2);
+                bridge.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.7;
+                bridge.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.7;
+                bridge.rotation.y = Math.random() * Math.PI * 2;
+                bridge.castShadow = true;
+                scene.add(bridge);
+            }
+            
+            // === DECORATIVE TREES (not harvestable, just scenery) (200) ===
+            const treeTypes = [
+                { color: 0x228B22, height: 4, foliageType: 'sphere' },
+                { color: 0x006400, height: 5, foliageType: 'cone' },
+                { color: 0x8FBC8F, height: 3, foliageType: 'sphere' },
+                { color: 0x2F4F4F, height: 6, foliageType: 'cone' }
+            ];
+            
+            for (let i = 0; i < 200; i++) {
+                const treeType = treeTypes[Math.floor(Math.random() * treeTypes.length)];
+                const tree = new THREE.Group();
+                
+                // Trunk
+                const trunkGeo = new THREE.CylinderGeometry(0.3, 0.4, treeType.height, 8);
+                const trunkMat = new THREE.MeshStandardMaterial({ color: 0x654321 });
+                const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+                trunk.position.y = treeType.height / 2;
+                
+                // Foliage
+                let foliageGeo;
+                if (treeType.foliageType === 'cone') {
+                    foliageGeo = new THREE.ConeGeometry(1.5, 2.5, 8);
+                } else {
+                    foliageGeo = new THREE.SphereGeometry(1.8, 8, 8);
+                }
+                const foliageMat = new THREE.MeshStandardMaterial({ color: treeType.color });
+                const foliage = new THREE.Mesh(foliageGeo, foliageMat);
+                foliage.position.y = treeType.height + 1.5;
+                
+                tree.add(trunk, foliage);
+                tree.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.95;
+                tree.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.95;
+                tree.castShadow = true;
+                scene.add(tree);
+            }
+            
+            // === CAVE ENTRANCES (8) ===
+            for (let i = 0; i < 8; i++) {
+                const cave = new THREE.Group();
+                
+                // Cave mouth (dark archway)
+                const archGeo = new THREE.TorusGeometry(2, 0.5, 8, 16, Math.PI);
+                const archMat = new THREE.MeshStandardMaterial({ color: 0x4A4A4A });
+                const arch = new THREE.Mesh(archGeo, archMat);
+                arch.rotation.x = Math.PI / 2;
+                arch.position.y = 2;
+                
+                // Dark interior
+                const interiorGeo = new THREE.PlaneGeometry(4, 4);
+                const interiorMat = new THREE.MeshStandardMaterial({ color: 0x0A0A0A });
+                const interior = new THREE.Mesh(interiorGeo, interiorMat);
+                interior.position.set(0, 2, -0.1);
+                
+                // Rocks around entrance
+                for (let j = 0; j < 6; j++) {
+                    const rockGeo = new THREE.DodecahedronGeometry(0.5 + Math.random() * 0.8);
+                    const rockMat = new THREE.MeshStandardMaterial({ color: 0x696969 });
+                    const rock = new THREE.Mesh(rockGeo, rockMat);
+                    const angle = (j / 6) * Math.PI;
+                    rock.position.set(
+                        Math.cos(angle) * 3,
+                        0.5,
+                        Math.sin(angle) * 1.5
+                    );
+                    cave.add(rock);
+                }
+                
+                cave.add(arch, interior);
+                cave.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.8;
+                cave.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.8;
+                cave.rotation.y = Math.random() * Math.PI * 2;
+                cave.castShadow = true;
+                scene.add(cave);
+            }
+            
+            // === FLOWER GARDENS (25 patches) ===
+            for (let i = 0; i < 25; i++) {
+                const gardenX = (Math.random() - 0.5) * MAP_SIZE * 0.7;
+                const gardenZ = (Math.random() - 0.5) * MAP_SIZE * 0.7;
+                
+                // Create 10-20 flowers per garden
+                const flowerCount = 10 + Math.floor(Math.random() * 10);
+                for (let j = 0; j < flowerCount; j++) {
+                    const flower = new THREE.Group();
+                    
+                    // Stem
+                    const stemGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.4, 4);
+                    const stemMat = new THREE.MeshStandardMaterial({ color: 0x228B22 });
+                    const stem = new THREE.Mesh(stemGeo, stemMat);
+                    stem.position.y = 0.2;
+                    
+                    // Flower petals (simple sphere)
+                    const petalGeo = new THREE.SphereGeometry(0.1, 6, 6);
+                    const colors = [0xFF1493, 0xFFFF00, 0xFF4500, 0x9370DB, 0xFFFFFF];
+                    const petalMat = new THREE.MeshStandardMaterial({ 
+                        color: colors[Math.floor(Math.random() * colors.length)]
+                    });
+                    const petals = new THREE.Mesh(petalGeo, petalMat);
+                    petals.position.y = 0.42;
+                    
+                    flower.add(stem, petals);
+                    flower.position.set(
+                        gardenX + (Math.random() - 0.5) * 3,
+                        0,
+                        gardenZ + (Math.random() - 0.5) * 3
+                    );
+                    scene.add(flower);
+                }
+            }
+            
+            // === LANTERN POSTS (35) ===
+            for (let i = 0; i < 35; i++) {
+                const lanternPost = new THREE.Group();
+                
+                // Post
+                const postGeo = new THREE.CylinderGeometry(0.1, 0.12, 3, 8);
+                const postMat = new THREE.MeshStandardMaterial({ color: 0x2F4F4F });
+                const post = new THREE.Mesh(postGeo, postMat);
+                post.position.y = 1.5;
+                
+                // Lantern box
+                const lanternGeo = new THREE.BoxGeometry(0.4, 0.6, 0.4);
+                const lanternMat = new THREE.MeshStandardMaterial({ 
+                    color: 0xFFD700,
+                    emissive: 0xFFA500,
+                    emissiveIntensity: 0.6
+                });
+                const lantern = new THREE.Mesh(lanternGeo, lanternMat);
+                lantern.position.y = 3.3;
+                
+                // Small roof
+                const roofGeo = new THREE.ConeGeometry(0.3, 0.3, 4);
+                const roofMat = new THREE.MeshStandardMaterial({ color: 0x2F4F4F });
+                const roof = new THREE.Mesh(roofGeo, roofMat);
+                roof.position.y = 3.75;
+                
+                lanternPost.add(post, lantern, roof);
+                lanternPost.position.x = (Math.random() - 0.5) * MAP_SIZE * 0.7;
+                lanternPost.position.z = (Math.random() - 0.5) * MAP_SIZE * 0.7;
+                lanternPost.castShadow = true;
+                scene.add(lanternPost);
+            }
+            
+            // === FALLEN LOGS (50) ===
+            for (let i = 0; i < 50; i++) {
+                const logGeo = new THREE.CylinderGeometry(0.4, 0.5, 4 + Math.random() * 3, 8);
+                const logMat = new THREE.MeshStandardMaterial({ color: 0x654321, roughness: 0.95 });
+                const log = new THREE.Mesh(logGeo, logMat);
+                log.rotation.z = Math.PI / 2;
+                log.rotation.y = Math.random() * Math.PI * 2;
+                log.position.set(
+                    (Math.random() - 0.5) * MAP_SIZE * 0.9,
+                    0.4,
+                    (Math.random() - 0.5) * MAP_SIZE * 0.9
+                );
+                log.castShadow = true;
+                scene.add(log);
+            }
+            
+            // === DESERT CACTI (in desert biome) (30) ===
+            for (let i = 0; i < 30; i++) {
+                const cactus = new THREE.Group();
+                const cactusMat = new THREE.MeshStandardMaterial({ color: 0x3CB371 });
+                
+                // Main trunk
+                const trunkGeo = new THREE.CylinderGeometry(0.3, 0.35, 2.5, 8);
+                const trunk = new THREE.Mesh(trunkGeo, cactusMat);
+                trunk.position.y = 1.25;
+                
+                // Arms
+                if (Math.random() > 0.5) {
+                    const armGeo = new THREE.CylinderGeometry(0.2, 0.22, 1.2, 8);
+                    const arm = new THREE.Mesh(armGeo, cactusMat);
+                    arm.position.set(0.4, 1.5, 0);
+                    arm.rotation.z = Math.PI / 3;
+                    cactus.add(arm);
+                }
+                
+                cactus.add(trunk);
+                const desertBiome = biomes.find(b => b.name === 'desert');
+                const angle = Math.random() * Math.PI * 2;
+                const dist = Math.random() * desertBiome.radius * 0.8;
+                cactus.position.set(
+                    desertBiome.centerX + Math.cos(angle) * dist,
+                    0,
+                    desertBiome.centerZ + Math.sin(angle) * dist
+                );
+                cactus.castShadow = true;
+                scene.add(cactus);
+            }
+            
+            // === SNOW-COVERED PINES (in snow biome) (25) ===
+            const snowBiome = biomes.find(b => b.name === 'snow');
+            for (let i = 0; i < 25; i++) {
+                const pine = new THREE.Group();
+                
+                // Trunk
+                const trunkGeo = new THREE.CylinderGeometry(0.2, 0.25, 4, 8);
+                const trunkMat = new THREE.MeshStandardMaterial({ color: 0x3D2817 });
+                const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+                trunk.position.y = 2;
+                
+                // Three layers of snow-covered branches
+                for (let layer = 0; layer < 3; layer++) {
+                    const branchGeo = new THREE.ConeGeometry(1.5 - layer * 0.3, 1.5, 8);
+                    const branchMat = new THREE.MeshStandardMaterial({ color: 0xF0F8FF });
+                    const branch = new THREE.Mesh(branchGeo, branchMat);
+                    branch.position.y = 3 + layer * 1.2;
+                    pine.add(branch);
+                }
+                
+                pine.add(trunk);
+                const angle = Math.random() * Math.PI * 2;
+                const dist = Math.random() * snowBiome.radius * 0.8;
+                pine.position.set(
+                    snowBiome.centerX + Math.cos(angle) * dist,
+                    0,
+                    snowBiome.centerZ + Math.sin(angle) * dist
+                );
+                pine.castShadow = true;
+                scene.add(pine);
+            }
+            
+            // === LAVA ROCKS (in volcanic biome) (20) ===
+            const volcanicBiome = biomes.find(b => b.name === 'volcanic');
+            for (let i = 0; i < 20; i++) {
+                const lavaRockGeo = new THREE.DodecahedronGeometry(0.8 + Math.random() * 0.6);
+                const lavaRockMat = new THREE.MeshStandardMaterial({ 
+                    color: 0x8B0000,
+                    emissive: 0xFF4500,
+                    emissiveIntensity: 0.3,
+                    roughness: 0.9
+                });
+                const lavaRock = new THREE.Mesh(lavaRockGeo, lavaRockMat);
+                const angle = Math.random() * Math.PI * 2;
+                const dist = Math.random() * volcanicBiome.radius * 0.9;
+                lavaRock.position.set(
+                    volcanicBiome.centerX + Math.cos(angle) * dist,
+                    0.5,
+                    volcanicBiome.centerZ + Math.sin(angle) * dist
+                );
+                lavaRock.castShadow = true;
+                scene.add(lavaRock);
             }
         }
         
@@ -3785,7 +4442,7 @@
                 { name: 'Dragon', color: 0x8B0000, hp: 200, xp: 150, level: 5, scale: 1.5 }
             ];
 
-            for (let i = 0; i < 15; i++) {
+            for (let i = 0; i < 75; i++) {  // Increased from 15 for 5x bigger map
                 const type = monsterTypes[Math.floor(Math.random() * monsterTypes.length)];
                 const monster = {
                     id: 'monster_' + i,
@@ -3870,7 +4527,7 @@
                 { name: 'Shark Spot', color: 0x2F4F4F, skill: 'fishing', item: 'Raw Shark', height: 0.3, levelRequired: 76, xp: 110 }
             ];
 
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 200; i++) {  // Increased from 40 for 5x bigger map
                 const type = resourceTypes[Math.floor(Math.random() * resourceTypes.length)];
                 const resource = {
                     id: 'resource_' + i,
