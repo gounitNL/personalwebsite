@@ -86,6 +86,20 @@ class Enemy {
     }
     
     /**
+     * Getter for hp (alias for hitpoints) - for Renderer compatibility
+     */
+    get hp() {
+        return this.hitpoints;
+    }
+    
+    /**
+     * Getter for maxHp (alias for maxHitpoints) - for Renderer compatibility
+     */
+    get maxHp() {
+        return this.maxHitpoints;
+    }
+    
+    /**
      * Update enemy state
      * @param {number} deltaTime - Time since last frame in seconds
      */

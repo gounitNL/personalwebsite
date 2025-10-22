@@ -194,7 +194,7 @@ class SkillsSystem {
             });
         }
         
-        // Emit XP gain event
+        // Emit XP gain events
         this.gameEngine.emit('skillXPGain', {
             player,
             skillName,
@@ -202,6 +202,15 @@ class SkillsSystem {
             totalXP: skill.xp,
             level: skill.level
         });
+        
+        // Emit for damage numbers system (don't show every tiny XP gain)
+        if (finalXP >= 10) {
+            this.gameEngine.emit('xp_gained', {
+                entity: player,
+                xp: finalXP,
+                skill: this.getSkillConfig(skillName)?.name || skillName
+            });
+        }
         
         return {
             success: true,

@@ -20,6 +20,7 @@ class GameEngine {
         this.inventorySystem = null;
         this.equipmentSystem = null;
         this.combatSystem = null;
+        this.damageNumbersSystem = null;
         this.worldSystem = null;
         this.questSystem = null;
         this.npcSystem = null;
@@ -146,6 +147,11 @@ class GameEngine {
         console.log('  ⚔️ Initializing Combat System...');
         this.combatSystem = new CombatSystem(this);
         this.combatSystem.init(this.gameConfig);
+        
+        // Phase 4.5: Damage Numbers System (COMPLETED)
+        console.log('  💥 Initializing Damage Numbers System...');
+        this.damageNumbersSystem = new DamageNumbersSystem(this);
+        this.damageNumbersSystem.init();
         
         // Phase 5: Equipment (TODO)
         // this.equipmentSystem = new EquipmentSystem(this);
@@ -431,6 +437,7 @@ class GameEngine {
         
         // Update Phase 4 systems
         if (this.combatSystem) this.combatSystem.update(deltaTime);
+        if (this.damageNumbersSystem) this.damageNumbersSystem.update(deltaTime);
         
         // Update future game systems (Phase 5+)
         // if (this.npcSystem) this.npcSystem.update(deltaTime);
@@ -503,6 +510,11 @@ class GameEngine {
         // Render UI overlays (Phase 2)
         if (this.uiManager) {
             this.uiManager.render(this.ctx);
+        }
+        
+        // Render damage numbers (Phase 4.5)
+        if (this.damageNumbersSystem) {
+            this.damageNumbersSystem.render(this.ctx, this.camera, this.renderer);
         }
         
         // Render debug info
