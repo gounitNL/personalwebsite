@@ -7079,15 +7079,19 @@
                 intensity = 0.8;
                 color = 0xffffff;
                 scene.background = new THREE.Color(0x87CEEB);
-                document.getElementById('timeIcon').textContent = '☀️';
-                document.getElementById('timeText').textContent = 'Day';
+                const timeIcon = document.getElementById('timeIcon');
+                const timeText = document.getElementById('timeText');
+                if (timeIcon) timeIcon.textContent = '☀️';
+                if (timeText) timeText.textContent = 'Day';
             } else {
                 // Night
                 intensity = 0.3;
                 color = 0x6666ff;
                 scene.background = new THREE.Color(0x001a33);
-                document.getElementById('timeIcon').textContent = '🌙';
-                document.getElementById('timeText').textContent = 'Night';
+                const timeIcon = document.getElementById('timeIcon');
+                const timeText = document.getElementById('timeText');
+                if (timeIcon) timeIcon.textContent = '🌙';
+                if (timeText) timeText.textContent = 'Night';
             }
             
             scene.children.forEach(child => {
@@ -7959,8 +7963,10 @@
             weatherParticles = [];
             
             const weatherIcons = { clear: '☀️', rain: '🌧️', snow: '❄️', fog: '🌫️', storm: '⛈️' };
-            document.getElementById('weatherIcon').textContent = weatherIcons[weatherType];
-            document.getElementById('weatherText').textContent = weatherType.charAt(0).toUpperCase() + weatherType.slice(1);
+            const weatherIcon = document.getElementById('weatherIcon');
+            const weatherText = document.getElementById('weatherText');
+            if (weatherIcon) weatherIcon.textContent = weatherIcons[weatherType];
+            if (weatherText) weatherText.textContent = weatherType.charAt(0).toUpperCase() + weatherType.slice(1);
             
             // Create weather effects
             if (weatherType === 'rain' || weatherType === 'snow' || weatherType === 'storm') {
