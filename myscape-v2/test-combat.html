@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Combat System Test - MyScape</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #0f0;
+            padding: 20px;
+        }
+        .test-section {
+            background: #2a2a2a;
+            border: 2px solid #0f0;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        h1, h2 {
+            color: #ffcc00;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            border-radius: 3px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .log {
+            background: #000;
+            border: 1px solid #0f0;
+            padding: 10px;
+            margin-top: 10px;
+            height: 400px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        .error { color: #f00; }
+        .success { color: #0f0; }
+        .info { color: #00f; }
+        .warning { color: #ff0; }
+    </style>
+</head>
+<body>
+    <h1>⚔️ MyScape Combat System Test Suite</h1>
+    
+    <div class="test-section">
+        <h2>Game Status</h2>
+        <div id="gameStatus">Initializing...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>Combat Tests</h2>
+        <button onclick="testSpawnEnemy()">🐺 Spawn Goblin (Lv5)</button>
+        <button onclick="testSpawnEnemy('rat', 3)">🐀 Spawn Rat (Lv3)</button>
+        <button onclick="testSpawnEnemy('skeleton', 10)">💀 Spawn Skeleton (Lv10)</button>
+        <button onclick="testPlayerAttack()">⚔️ Attack Nearest Enemy</button>
+        <button onclick="testMultipleAttacks()">💥 Attack 5 Times</button>
+        <button onclick="clearEntities()">🧹 Clear All Enemies</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Player Info</h2>
+        <div id="playerInfo">Waiting for game...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>Entities</h2>
+        <div id="entitiesInfo">Waiting for game...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Log</h2>
+        <button onclick="clearLog()">Clear Log</button>
+        <div class="log" id="testLog"></div>
+    </div>
+
+    <!-- Game Scripts -->
+    <script src="data/game-config.js"></script>
+    <script src="js/core/Camera.js"></script>
+    <script src="js/core/Renderer.js"></script>
+    <script src="js/core/InputHandler.js"></script>
+    <script src="js/entities/Player.js"></script>
+    <script src="js/entities/Resource.js"></script>
+    <script src="js/entities/Enemy.js"></script>
+    <script src="js/systems/SkillsSystem.js"></script>
+    <script src="js/systems/InventorySystem.js"></script>
+    <script src="js/systems/WorldSystem.js"></script>
+    <script src="js/systems/CombatSystem.js"></script>
+    <script src="js/ui/UIManager.js"></script>
+    <script src="js/ui/StatsPanel.js"></script>
+    <script src="js/core/GameEngine.js"></script>
+
+    <script>
+        let gameEngine = null;
+        let logCount = 0;
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('testLog');
+            const entry = document.createElement('div');
+            entry.className = type;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            logCount++;
+            
+            // Also log to console
+            console.log(message);
+        }
+
+        function clearLog() {
+            document.getElementById('testLog').innerHTML = '';
+            logCount = 0;
+        }
+
+        function updateGameStatus() {
+            if (!gameEngine) {
+                document.getElementById('gameStatus').innerHTML = '<span class="error">❌ Game not initialized</span>';
+                return;
+            }
+
+            const status = `
+                <span class="success">✅ Game Running</span><br>
+                FPS: ${gameEngine.currentFps}<br>
+                Area: ${gameEngine.currentArea ? gameEngine.currentArea.name : 'None'}<br>
+                Systems: SkillsSystem ✓, InventorySystem ✓, CombatSystem ✓, WorldSystem ✓
+            `;
+            document.getElementById('gameStatus').innerHTML = status;
+        }
+
+        function updatePlayerInfo() {
+            if (!gameEngine || !gameEngine.player) {
+                document.getElementById('playerInfo').innerHTML = '<span class="error">Player not found</span>';
+                return;
+            }
+
+            const player = gameEngine.player;
+            const info = `
+                <strong>Position:</strong> (${player.x.toFixed(1)}, ${player.y.toFixed(1)})<br>
+                <strong>HP:</strong> ${player.hitpoints}/${player.maxHitpoints}<br>
+                <strong>Attack:</strong> Lv${player.skills.attack.level} (${player.skills.attack.xp} XP)<br>
+                <strong>Strength:</strong> Lv${player.skills.strength.level} (${player.skills.strength.xp} XP)<br>
+                <strong>Defence:</strong> Lv${player.skills.defence.level} (${player.skills.defence.xp} XP)<br>
+                <strong>Hitpoints:</strong> Lv${player.skills.hitpoints.level} (${player.skills.hitpoints.xp} XP)<br>
+                <strong>In Combat:</strong> ${player.inCombat ? '⚔️ Yes' : '✓ No'}<br>
+                <strong>Attack Cooldown:</strong> ${player.attackCooldown.toFixed(2)}s
+            `;
+            document.getElementById('playerInfo').innerHTML = info;
+        }
+
+        function updateEntitiesInfo() {
+            if (!gameEngine) {
+                document.getElementById('entitiesInfo').innerHTML = '<span class="error">Game not running</span>';
+                return;
+            }
+
+            let info = `<strong>Total Entities:</strong> ${gameEngine.entities.length}<br><br>`;
+            
+            const enemies = gameEngine.entities.filter(e => e.type === 'enemy');
+            const resources = gameEngine.entities.filter(e => e.type === 'resource');
+
+            info += `<strong>Enemies (${enemies.length}):</strong><br>`;
+            enemies.forEach((enemy, i) => {
+                info += `${i+1}. ${enemy.type} Lv${enemy.level} - HP: ${enemy.hitpoints}/${enemy.maxHitpoints} - State: ${enemy.aiState} - Pos: (${enemy.x.toFixed(1)}, ${enemy.y.toFixed(1)})<br>`;
+            });
+
+            info += `<br><strong>Resources (${resources.length}):</strong><br>`;
+            resources.slice(0, 5).forEach((res, i) => {
+                info += `${i+1}. ${res.resourceType} - Available: ${res.available ? '✓' : '✗'}<br>`;
+            });
+            if (resources.length > 5) {
+                info += `... and ${resources.length - 5} more<br>`;
+            }
+
+            document.getElementById('entitiesInfo').innerHTML = info;
+        }
+
+        function testSpawnEnemy(type = 'goblin', level = 5) {
+            if (!gameEngine) {
+                log('ERROR: Game not initialized', 'error');
+                return;
+            }
+
+            log(`Spawning ${type} (Lv${level})...`, 'info');
+            const enemy = gameEngine.testSpawnEnemy(type, level);
+            
+            if (enemy) {
+                log(`SUCCESS: ${type} spawned at (${enemy.x}, ${enemy.y})`, 'success');
+                log(`  HP: ${enemy.hitpoints}/${enemy.maxHitpoints}`, 'info');
+                log(`  Max Hit: ${enemy.maxHit}`, 'info');
+                updateEntitiesInfo();
+            } else {
+                log('ERROR: Failed to spawn enemy', 'error');
+            }
+        }
+
+        function testPlayerAttack() {
+            if (!gameEngine) {
+                log('ERROR: Game not initialized', 'error');
+                return;
+            }
+
+            log('Testing player attack...', 'info');
+            const result = gameEngine.testPlayerAttack();
+            
+            if (!result) {
+                log('WARNING: No enemies to attack. Spawn one first!', 'warning');
+                return;
+            }
+
+            if (result.hit) {
+                log(`SUCCESS: Hit for ${result.damage} damage!`, 'success');
+            } else {
+                log(`MISS: Attack missed!`, 'warning');
+            }
+            
+            updatePlayerInfo();
+            updateEntitiesInfo();
+        }
+
+        function testMultipleAttacks() {
+            log('Executing 5 attacks...', 'info');
+            let hits = 0;
+            let totalDamage = 0;
+
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    const result = gameEngine.testPlayerAttack();
+                    if (result && result.hit) {
+                        hits++;
+                        totalDamage += result.damage;
+                    }
+                    
+                    if (i === 4) {
+                        log(`SUMMARY: ${hits}/5 hits, ${totalDamage} total damage`, 'success');
+                        updatePlayerInfo();
+                        updateEntitiesInfo();
+                    }
+                }, i * 200);
+            }
+        }
+
+        function clearEntities() {
+            if (!gameEngine) {
+                log('ERROR: Game not initialized', 'error');
+                return;
+            }
+
+            const count = gameEngine.entities.length;
+            gameEngine.entities = [];
+            log(`Cleared ${count} entities`, 'info');
+            updateEntitiesInfo();
+        }
+
+        // Initialize game without canvas
+        async function initGame() {
+            try {
+                log('Initializing game engine (headless mode)...', 'info');
+                
+                // Create a hidden canvas
+                const canvas = document.createElement('canvas');
+                canvas.id = 'gameCanvas';
+                canvas.width = 800;
+                canvas.height = 600;
+                canvas.style.display = 'none';
+                document.body.appendChild(canvas);
+
+                gameEngine = new GameEngine();
+                window.gameEngine = gameEngine;
+                
+                await gameEngine.init('gameCanvas');
+                
+                log('SUCCESS: Game engine initialized!', 'success');
+                log('Combat System: ' + (gameEngine.combatSystem ? '✓' : '✗'), gameEngine.combatSystem ? 'success' : 'error');
+                log('Skills System: ' + (gameEngine.skillsSystem ? '✓' : '✗'), gameEngine.skillsSystem ? 'success' : 'error');
+                log('World System: ' + (gameEngine.worldSystem ? '✓' : '✗'), gameEngine.worldSystem ? 'success' : 'error');
+                
+                // Start update loop for UI
+                setInterval(() => {
+                    updateGameStatus();
+                    updatePlayerInfo();
+                    updateEntitiesInfo();
+                }, 1000);
+
+                updateGameStatus();
+                updatePlayerInfo();
+                updateEntitiesInfo();
+                
+            } catch (error) {
+                log('ERROR: Failed to initialize game - ' + error.message, 'error');
+                console.error(error);
+            }
+        }
+
+        // Start on load
+        window.addEventListener('DOMContentLoaded', () => {
+            log('=== MyScape Combat System Test Suite ===', 'info');
+            log('Starting initialization...', 'info');
+            initGame();
+        });
+    </script>
+</body>
+</html>

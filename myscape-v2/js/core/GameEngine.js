@@ -142,8 +142,10 @@ class GameEngine {
         this.worldSystem = new WorldSystem(this);
         this.worldSystem.init(GameConfig);
         
-        // Phase 4: Combat (TODO)
-        // this.combatSystem = new CombatSystem(this);
+        // Phase 4: Combat (COMPLETED)
+        console.log('  ⚔️ Initializing Combat System...');
+        this.combatSystem = new CombatSystem(this);
+        this.combatSystem.init(this.gameConfig);
         
         // Phase 5: Equipment (TODO)
         // this.equipmentSystem = new EquipmentSystem(this);
@@ -194,25 +196,6 @@ class GameEngine {
             speed: 5,
             username: window.currentUser?.displayName || 'Player'
         });
-        // Basic player setup (will be enhanced when Player.js is created)
-        this.player = {
-            x: 25,
-            y: 25,
-            width: 16,
-            height: 24,
-            speed: 3,
-            color: '#4169E1',
-            name: 'Player',
-            targetX: null,
-            targetY: null,
-            isMoving: false,
-            direction: 'down',
-            
-            // Will be expanded with Player.js
-            hp: 100,
-            maxHp: 100,
-            level: 1
-        };
         
         // Set camera to follow player
         this.camera.follow(this.player);
@@ -304,6 +287,12 @@ class GameEngine {
                 break;
             case '5': // Test add item (bronze sword)
                 this.testAddItem('bronze_sword', 1);
+                break;
+            case '6': // Test spawn enemy (goblin)
+                this.testSpawnEnemy('goblin', 5);
+                break;
+            case '7': // Test player attack
+                this.testPlayerAttack();
                 break;
             
             // Add more keyboard shortcuts as needed
@@ -427,12 +416,7 @@ class GameEngine {
         // Update player (using Player.js update method)
         if (this.player && this.player.update) {
             this.player.update(deltaTime);
-        } else {
-            // Fallback to simple movement
-            this.updatePlayer(deltaTime);
         }
-        // Update player
-        this.updatePlayer(deltaTime);
         
         // Update camera
         this.camera.update(deltaTime);
@@ -445,8 +429,10 @@ class GameEngine {
         // Update Phase 3 systems
         if (this.worldSystem) this.worldSystem.update(deltaTime);
         
-        // Update future game systems (Phase 4+)
-        // if (this.combatSystem) this.combatSystem.update(deltaTime);
+        // Update Phase 4 systems
+        if (this.combatSystem) this.combatSystem.update(deltaTime);
+        
+        // Update future game systems (Phase 5+)
         // if (this.npcSystem) this.npcSystem.update(deltaTime);
         
         // Update entities
@@ -638,6 +624,80 @@ class GameEngine {
             console.log(`✅ Added ${amount}x ${itemId} to inventory`);
         } else {
             console.log(`⚠️ Could only add ${result.added}/${amount} ${itemId} (inventory full)`);
+        }
+        
+        return result;
+    }
+    
+    /**
+     * TEST METHOD: Spawn an enemy near player
+     * @param {string} enemyType - Enemy type from GameConfig
+     * @param {number} level - Enemy level (optional)
+     */
+    testSpawnEnemy(enemyType, level = 1) {
+        if (!this.combatSystem || !this.player) {
+            console.error('Combat system or player not available');
+            return;
+        }
+        
+        // Spawn enemy 5 tiles to the right of player
+        const spawnX = this.player.x + 5;
+        const spawnY = this.player.y;
+        
+        const enemy = new Enemy({
+            type: enemyType,
+            x: spawnX,
+            y: spawnY,
+            level: level,
+            gameEngine: this
+        });
+        
+        this.entities.push(enemy);
+        console.log(`🐺 Spawned ${enemyType} (Lv${level}) at (${spawnX}, ${spawnY})`);
+        
+        return enemy;
+    }
+    
+    /**
+     * TEST METHOD: Test player attack on nearest enemy
+     */
+    testPlayerAttack() {
+        if (!this.combatSystem || !this.player) {
+            console.error('Combat system or player not available');
+            return;
+        }
+        
+        // Find nearest enemy
+        let nearestEnemy = null;
+        let minDistance = Infinity;
+        
+        for (const entity of this.entities) {
+            if (entity.type === 'enemy') {
+                const dx = entity.x - this.player.x;
+                const dy = entity.y - this.player.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    nearestEnemy = entity;
+                }
+            }
+        }
+        
+        if (!nearestEnemy) {
+            console.log('⚠️ No enemies nearby. Press 6 to spawn a goblin.');
+            return;
+        }
+        
+        console.log(`⚔️ Attacking ${nearestEnemy.type} (${minDistance.toFixed(1)} tiles away)`);
+        
+        // Process the attack
+        const result = this.combatSystem.processAttack(this.player, nearestEnemy);
+        
+        if (result.hit) {
+            console.log(`💥 Hit for ${result.damage} damage!`);
+        } else {
+            console.log(`❌ Attack missed!`);
         }
         
         return result;
