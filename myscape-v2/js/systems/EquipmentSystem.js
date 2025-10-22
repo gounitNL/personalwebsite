@@ -74,8 +74,9 @@ class EquipmentSystem {
             };
         }
         
-        // Check if item is equippable
-        if (!itemData.equipable) {
+        // Check if item is equippable (has a slot property or is type weapon/armor)
+        const isEquippable = itemData.slot || itemData.type === 'weapon' || itemData.type === 'armor';
+        if (!isEquippable) {
             return {
                 success: false,
                 message: `${itemData.name} cannot be equipped`
@@ -88,12 +89,12 @@ class EquipmentSystem {
             return reqCheck;
         }
         
-        // Determine equipment slot
-        const slot = itemData.equipSlot;
-        if (!this.slots.hasOwnProperty(slot)) {
+        // Determine equipment slot (use 'slot' property from config)
+        const slot = itemData.slot || itemData.equipSlot;
+        if (!slot || !this.slots.hasOwnProperty(slot)) {
             return {
                 success: false,
-                message: `Invalid equipment slot: ${slot}`
+                message: `Invalid equipment slot: ${slot || 'none'}`
             };
         }
         
@@ -323,27 +324,53 @@ class EquipmentSystem {
             if (!equipped || !equipped.data) continue;
             
             const itemData = equipped.data;
+            
+            // Handle detailed bonuses object (if present)
             const bonuses = itemData.bonuses;
+            if (bonuses) {
+                if (bonuses.attackStab) this.bonuses.attackStab += bonuses.attackStab;
+                if (bonuses.attackSlash) this.bonuses.attackSlash += bonuses.attackSlash;
+                if (bonuses.attackCrush) this.bonuses.attackCrush += bonuses.attackCrush;
+                if (bonuses.attackMagic) this.bonuses.attackMagic += bonuses.attackMagic;
+                if (bonuses.attackRanged) this.bonuses.attackRanged += bonuses.attackRanged;
+                
+                if (bonuses.defenceStab) this.bonuses.defenceStab += bonuses.defenceStab;
+                if (bonuses.defenceSlash) this.bonuses.defenceSlash += bonuses.defenceSlash;
+                if (bonuses.defenceCrush) this.bonuses.defenceCrush += bonuses.defenceCrush;
+                if (bonuses.defenceMagic) this.bonuses.defenceMagic += bonuses.defenceMagic;
+                if (bonuses.defenceRanged) this.bonuses.defenceRanged += bonuses.defenceRanged;
+                
+                if (bonuses.meleeStrength) this.bonuses.meleeStrength += bonuses.meleeStrength;
+                if (bonuses.rangedStrength) this.bonuses.rangedStrength += bonuses.rangedStrength;
+                if (bonuses.magicDamage) this.bonuses.magicDamage += bonuses.magicDamage;
+                if (bonuses.prayer) this.bonuses.prayer += bonuses.prayer;
+            }
             
-            if (!bonuses) continue;
-            
-            // Add bonuses
-            if (bonuses.attackStab) this.bonuses.attackStab += bonuses.attackStab;
-            if (bonuses.attackSlash) this.bonuses.attackSlash += bonuses.attackSlash;
-            if (bonuses.attackCrush) this.bonuses.attackCrush += bonuses.attackCrush;
-            if (bonuses.attackMagic) this.bonuses.attackMagic += bonuses.attackMagic;
-            if (bonuses.attackRanged) this.bonuses.attackRanged += bonuses.attackRanged;
-            
-            if (bonuses.defenceStab) this.bonuses.defenceStab += bonuses.defenceStab;
-            if (bonuses.defenceSlash) this.bonuses.defenceSlash += bonuses.defenceSlash;
-            if (bonuses.defenceCrush) this.bonuses.defenceCrush += bonuses.defenceCrush;
-            if (bonuses.defenceMagic) this.bonuses.defenceMagic += bonuses.defenceMagic;
-            if (bonuses.defenceRanged) this.bonuses.defenceRanged += bonuses.defenceRanged;
-            
-            if (bonuses.meleeStrength) this.bonuses.meleeStrength += bonuses.meleeStrength;
-            if (bonuses.rangedStrength) this.bonuses.rangedStrength += bonuses.rangedStrength;
-            if (bonuses.magicDamage) this.bonuses.magicDamage += bonuses.magicDamage;
-            if (bonuses.prayer) this.bonuses.prayer += bonuses.prayer;
+            // Handle simplified config format (attackBonus, defenceBonus, etc.)
+            if (itemData.attackBonus) {
+                // Map to slash for melee weapons by default
+                this.bonuses.attackSlash += itemData.attackBonus;
+            }
+            if (itemData.strengthBonus) {
+                this.bonuses.meleeStrength += itemData.strengthBonus;
+            }
+            if (itemData.defenceBonus) {
+                // Add to all melee defence types
+                this.bonuses.defenceStab += itemData.defenceBonus;
+                this.bonuses.defenceSlash += itemData.defenceBonus;
+                this.bonuses.defenceCrush += itemData.defenceBonus;
+            }
+            if (itemData.magicBonus) {
+                this.bonuses.attackMagic += itemData.magicBonus;
+                this.bonuses.magicDamage += itemData.magicBonus;
+            }
+            if (itemData.rangedBonus) {
+                this.bonuses.attackRanged += itemData.rangedBonus;
+                this.bonuses.rangedStrength += itemData.rangedBonus;
+            }
+            if (itemData.prayerBonus) {
+                this.bonuses.prayer += itemData.prayerBonus;
+            }
         }
         
         console.log('Equipment bonuses recalculated:', this.bonuses);
@@ -463,6 +490,57 @@ class EquipmentSystem {
             failed,
             message: failed.length > 0 ? 'Some items could not be unequipped (inventory full)' : 'All items unequipped'
         };
+    }
+    
+    /**
+     * Serialize equipment data for saving
+     * @returns {object} Serialized equipment data
+     */
+    serialize() {
+        const data = {};
+        
+        for (const slot in this.slots) {
+            if (this.slots[slot]) {
+                data[slot] = {
+                    itemId: this.slots[slot].itemId,
+                    quantity: this.slots[slot].quantity
+                };
+            }
+        }
+        
+        return data;
+    }
+    
+    /**
+     * Deserialize and restore equipment data
+     * @param {object} data - Serialized equipment data
+     */
+    deserialize(data) {
+        // Clear current equipment
+        for (const slot in this.slots) {
+            this.slots[slot] = null;
+        }
+        
+        // Restore equipment
+        for (const slot in data) {
+            if (data[slot] && this.gameConfig) {
+                const itemId = data[slot].itemId;
+                const itemData = this.gameConfig.items[itemId];
+                
+                if (itemData) {
+                    this.slots[slot] = {
+                        itemId: itemId,
+                        data: itemData,
+                        quantity: data[slot].quantity || 1
+                    };
+                }
+            }
+        }
+        
+        // Recalculate bonuses
+        this.calculateBonuses();
+        
+        console.log('Equipment restored from save data');
     }
     
     /**
