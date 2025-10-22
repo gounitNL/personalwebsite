@@ -698,6 +698,15 @@ class UIManager {
     }
     
     /**
+     * Render UI canvas overlays (if needed)
+     * @param {CanvasRenderingContext2D} ctx - Canvas context
+     */
+    render(ctx) {
+        // Phase 4+: Canvas-based UI rendering (damage numbers, floating text, etc.)
+        // For now, all UI is HTML-based, so this is a placeholder
+    }
+    
+    /**
      * Update UI (called every frame)
      */
     update(deltaTime) {

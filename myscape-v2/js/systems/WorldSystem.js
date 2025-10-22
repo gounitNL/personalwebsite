@@ -318,16 +318,23 @@ class WorldSystem {
      * @param {object} spawnData - Enemy spawn configuration
      */
     spawnEnemy(spawnData) {
-        // Enemy spawning will be implemented with Enemy.js in Phase 4
+        // Phase 4: Spawn actual Enemy instance
         const enemyId = `enemy_${spawnData.type}_${Date.now()}_${Math.random()}`;
         
-        this.spawnedEntities.set(enemyId, {
-            type: 'enemy',
-            enemyType: spawnData.type,
+        // Create Enemy instance
+        const enemy = new Enemy({
+            type: spawnData.type,
             x: spawnData.x,
             y: spawnData.y,
-            level: spawnData.level || 1
+            level: spawnData.level || 1,
+            gameEngine: this.gameEngine
         });
+        
+        // Add to game entities
+        this.gameEngine.entities.push(enemy);
+        
+        // Store reference
+        this.spawnedEntities.set(enemyId, enemy);
         
         console.log(`    [Enemy] ${spawnData.type} (Lv${spawnData.level || 1}) at (${spawnData.x}, ${spawnData.y})`);
     }
@@ -337,6 +344,17 @@ class WorldSystem {
      */
     unloadAreaEntities() {
         console.log(`  Unloading ${this.spawnedEntities.size} entities`);
+        
+        // Remove entities from game engine
+        for (const [entityId, entity] of this.spawnedEntities.entries()) {
+            if (entity.type === 'enemy' || entity.type === 'resource') {
+                const index = this.gameEngine.entities.indexOf(entity);
+                if (index > -1) {
+                    this.gameEngine.entities.splice(index, 1);
+                }
+            }
+        }
+        
         this.spawnedEntities.clear();
         this.resourceSpawns = [];
     }
