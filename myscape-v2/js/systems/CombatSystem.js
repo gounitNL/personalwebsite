@@ -78,7 +78,7 @@ class CombatSystem {
             this.grantCombatXP(attacker, damage, 'controlled');
         }
         
-        // Emit combat event
+        // Emit combat events for UI
         this.gameEngine.emit('combat:attack', {
             attacker,
             target,
@@ -86,6 +86,20 @@ class CombatSystem {
             damage,
             position: { x: target.x, y: target.y }
         });
+        
+        // Emit specific events for damage numbers system
+        if (hit) {
+            this.gameEngine.emit('combat_hit', {
+                attacker,
+                target,
+                damage
+            });
+        } else {
+            this.gameEngine.emit('combat_miss', {
+                attacker,
+                target
+            });
+        }
         
         return { hit, damage, hitRoll: hitRoll.attackRoll, defenceRoll: hitRoll.defenceRoll };
     }
@@ -279,11 +293,16 @@ class CombatSystem {
             this.dropLoot(victim, killer);
         }
         
-        // Emit death event
+        // Emit death events
         this.gameEngine.emit('combat:death', {
             victim,
             killer,
             position: { x: victim.x, y: victim.y }
+        });
+        
+        this.gameEngine.emit('entity_death', {
+            entity: victim,
+            killer
         });
         
         // Handle player death
