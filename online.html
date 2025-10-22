@@ -4972,6 +4972,8 @@
         }
 
         function updateStats() {
+            if (!document.getElementById('combatLevel')) return; // Safety check
+            
             document.getElementById('combatLevel').textContent = currentPlayer.level;
             document.getElementById('goldCount').textContent = currentPlayer.gold;
             
@@ -6096,6 +6098,8 @@
         }
         
         function updateParticles() {
+            if (!scene) return; // Safety check
+            
             const now = Date.now();
             particles = particles.filter(particle => {
                 const age = now - particle.created;
@@ -6115,6 +6119,8 @@
         
         // Day/Night Cycle
         function updateDayNightCycle() {
+            if (!scene) return; // Safety check
+            
             timeOfDay += dayNightSpeed;
             if (timeOfDay >= 24) timeOfDay = 0;
             
@@ -6127,15 +6133,19 @@
                 intensity = 0.8;
                 color = 0xffffff;
                 scene.background = new THREE.Color(0x87CEEB);
-                document.getElementById('timeIcon').textContent = '☀️';
-                document.getElementById('timeText').textContent = 'Day';
+                const timeIcon = document.getElementById('timeIcon');
+                const timeText = document.getElementById('timeText');
+                if (timeIcon) timeIcon.textContent = '☀️';
+                if (timeText) timeText.textContent = 'Day';
             } else {
                 // Night
                 intensity = 0.3;
                 color = 0x6666ff;
                 scene.background = new THREE.Color(0x001a33);
-                document.getElementById('timeIcon').textContent = '🌙';
-                document.getElementById('timeText').textContent = 'Night';
+                const timeIcon = document.getElementById('timeIcon');
+                const timeText = document.getElementById('timeText');
+                if (timeIcon) timeIcon.textContent = '🌙';
+                if (timeText) timeText.textContent = 'Night';
             }
             
             scene.children.forEach(child => {
@@ -7005,6 +7015,8 @@
         }
         
         function setWeather(weatherType) {
+            if (!scene) return; // Safety check
+            
             currentWeather = weatherType;
             
             // Clear old weather particles
@@ -7012,8 +7024,10 @@
             weatherParticles = [];
             
             const weatherIcons = { clear: '☀️', rain: '🌧️', snow: '❄️', fog: '🌫️', storm: '⛈️' };
-            document.getElementById('weatherIcon').textContent = weatherIcons[weatherType];
-            document.getElementById('weatherText').textContent = weatherType.charAt(0).toUpperCase() + weatherType.slice(1);
+            const weatherIcon = document.getElementById('weatherIcon');
+            const weatherText = document.getElementById('weatherText');
+            if (weatherIcon) weatherIcon.textContent = weatherIcons[weatherType];
+            if (weatherText) weatherText.textContent = weatherType.charAt(0).toUpperCase() + weatherType.slice(1);
             
             // Create weather effects
             if (weatherType === 'rain' || weatherType === 'snow' || weatherType === 'storm') {
