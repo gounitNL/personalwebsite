@@ -153,8 +153,10 @@ class GameEngine {
         this.damageNumbersSystem = new DamageNumbersSystem(this);
         this.damageNumbersSystem.init();
         
-        // Phase 5: Equipment (TODO)
-        // this.equipmentSystem = new EquipmentSystem(this);
+        // Phase 5: Equipment (COMPLETED - Task 5.1)
+        console.log('  🎽 Initializing Equipment System...');
+        this.equipmentSystem = new EquipmentSystem(this);
+        this.equipmentSystem.init(this.gameConfig);
         
         // Phase 6: Banking & Shopping (TODO)
         // Systems will be initialized as they're implemented
@@ -438,6 +440,9 @@ class GameEngine {
         // Update Phase 4 systems
         if (this.combatSystem) this.combatSystem.update(deltaTime);
         if (this.damageNumbersSystem) this.damageNumbersSystem.update(deltaTime);
+        
+        // Update Phase 5 systems
+        if (this.equipmentSystem) this.equipmentSystem.update(deltaTime);
         
         // Update future game systems (Phase 5+)
         // if (this.npcSystem) this.npcSystem.update(deltaTime);
