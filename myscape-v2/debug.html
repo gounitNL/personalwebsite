@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyScape Debug</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #222;
+            color: #0f0;
+            padding: 20px;
+        }
+        .info {
+            margin: 10px 0;
+            padding: 10px;
+            background: #333;
+            border: 1px solid #0f0;
+        }
+        button {
+            background: #0f0;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        #output {
+            white-space: pre-wrap;
+            background: #111;
+            padding: 15px;
+            margin-top: 20px;
+            border: 1px solid #0f0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎮 MyScape Debug Console</h1>
+    
+    <div class="info">
+        <h2>Instructions:</h2>
+        <p>1. Open the main game: <a href="/" style="color: #0ff;">https://8000-ilpji22km3noret3vrv90-cbeee0f9.sandbox.novita.ai</a></p>
+        <p>2. Click "Play Demo Mode"</p>
+        <p>3. Open browser console (F12)</p>
+        <p>4. Run these commands:</p>
+    </div>
+    
+    <div class="info">
+        <h3>Debug Commands:</h3>
+        <button onclick="copyCommand('window.gameEngine')">Copy: Check GameEngine</button>
+        <button onclick="copyCommand('window.gameEngine.player')">Copy: Check Player</button>
+        <button onclick="copyCommand('window.gameEngine.camera')">Copy: Check Camera</button>
+        <button onclick="copyCommand('window.gameEngine.renderer')">Copy: Check Renderer</button>
+        <br>
+        <button onclick="copyCommand('console.log(\"Player:\", window.gameEngine.player.x, window.gameEngine.player.y, window.gameEngine.player.color)')">Copy: Player Info</button>
+        <button onclick="copyCommand('console.log(\"Camera:\", window.gameEngine.camera.x, window.gameEngine.camera.y)')">Copy: Camera Info</button>
+        <br>
+        <button onclick="copyCommand('window.gameEngine.render()')">Copy: Force Render</button>
+        <button onclick="copyCommand('window.gameEngine.player.x = 25; window.gameEngine.player.y = 25;')">Copy: Reset Player Pos</button>
+    </div>
+    
+    <div id="output">Waiting for commands...</div>
+    
+    <script>
+        function copyCommand(cmd) {
+            navigator.clipboard.writeText(cmd).then(() => {
+                document.getElementById('output').textContent = 
+                    'Copied to clipboard:\n\n' + cmd + 
+                    '\n\nPaste this in the browser console (F12) on the main game page.';
+            });
+        }
+        
+        // Auto-check if game is open in another tab
+        setInterval(() => {
+            if (window.opener && window.opener.gameEngine) {
+                const ge = window.opener.gameEngine;
+                document.getElementById('output').textContent = 
+                    'GAME DETECTED!\n\n' +
+                    'Player: (' + ge.player.x + ', ' + ge.player.y + ')\n' +
+                    'Camera: (' + ge.camera.x + ', ' + ge.camera.y + ')\n' +
+                    'Running: ' + ge.isRunning + '\n' +
+                    'FPS: ' + ge.currentFps + '\n' +
+                    'Area: ' + (ge.currentArea ? ge.currentArea.name : 'None');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
