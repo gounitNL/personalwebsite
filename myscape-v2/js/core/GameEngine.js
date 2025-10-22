@@ -137,8 +137,10 @@ class GameEngine {
         this.uiManager = new UIManager(this);
         this.uiManager.init();
         
-        // Phase 3: World (TODO)
-        // this.worldSystem = new WorldSystem(this);
+        // Phase 3: World (COMPLETED)
+        console.log('  🗺️ Initializing World System...');
+        this.worldSystem = new WorldSystem(this);
+        this.worldSystem.init(GameConfig);
         
         // Phase 4: Combat (TODO)
         // this.combatSystem = new CombatSystem(this);
@@ -224,26 +226,32 @@ class GameEngine {
      * Load the initial game area
      */
     async loadInitialArea() {
-        // Placeholder for world loading (will be implemented with WorldSystem)
-        this.currentArea = {
-            name: 'Lumbridge',
-            width: 50,
-            height: 50,
-            tiles: []
-        };
-        
-        // Generate simple tile grid for now
-        for (let y = 0; y < this.currentArea.height; y++) {
-            this.currentArea.tiles[y] = [];
-            for (let x = 0; x < this.currentArea.width; x++) {
-                this.currentArea.tiles[y][x] = {
-                    type: 'grass',
-                    walkable: true
-                };
+        // Use WorldSystem to load Lumbridge as starting area
+        if (this.worldSystem) {
+            this.currentArea = await this.worldSystem.loadArea('lumbridge');
+            console.log('🗺️ Initial area loaded:', this.currentArea.name);
+        } else {
+            // Fallback: Generate simple area
+            this.currentArea = {
+                name: 'Lumbridge',
+                width: 50,
+                height: 50,
+                tiles: []
+            };
+            
+            // Generate simple tile grid
+            for (let y = 0; y < this.currentArea.height; y++) {
+                this.currentArea.tiles[y] = [];
+                for (let x = 0; x < this.currentArea.width; x++) {
+                    this.currentArea.tiles[y][x] = {
+                        type: 'grass',
+                        walkable: true
+                    };
+                }
             }
+            
+            console.log('🗺️ Fallback area loaded:', this.currentArea.name);
         }
-        
-        console.log('🗺️ Initial area loaded:', this.currentArea.name);
     }
 
     /**
@@ -434,8 +442,10 @@ class GameEngine {
         if (this.inventorySystem) this.inventorySystem.update(deltaTime);
         if (this.uiManager) this.uiManager.update(deltaTime);
         
-        // Update future game systems (Phase 3+)
-        // if (this.worldSystem) this.worldSystem.update(deltaTime);
+        // Update Phase 3 systems
+        if (this.worldSystem) this.worldSystem.update(deltaTime);
+        
+        // Update future game systems (Phase 4+)
         // if (this.combatSystem) this.combatSystem.update(deltaTime);
         // if (this.npcSystem) this.npcSystem.update(deltaTime);
         
