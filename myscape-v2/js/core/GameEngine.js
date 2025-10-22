@@ -147,6 +147,23 @@ class GameEngine {
         // this.equipmentSystem = new EquipmentSystem(this);
         
         // Phase 6: Banking & Shopping (TODO)
+        // Systems will be initialized as they're implemented
+        // For now, just placeholder for future systems
+        
+        // Phase 2: Skills and Inventory
+        // this.skillsSystem = new SkillsSystem(this.player);
+        // this.inventorySystem = new InventorySystem(28);
+        
+        // Phase 3: World
+        // this.worldSystem = new WorldSystem(this);
+        
+        // Phase 4: Combat
+        // this.combatSystem = new CombatSystem(this);
+        
+        // Phase 5: Equipment
+        // this.equipmentSystem = new EquipmentSystem(this);
+        
+        // Phase 6: Banking & Shopping
         // this.bankingSystem = new BankingSystem(400);
         // this.npcSystem = new NPCSystem(this);
         // this.shopSystem = new ShopSystem(this);
@@ -155,6 +172,13 @@ class GameEngine {
         // this.questSystem = new QuestSystem(this);
         
         console.log('⚙️ Phase 2 systems initialized successfully');
+        // Phase 7: Quests
+        // this.questSystem = new QuestSystem(this);
+        
+        // Phase 8: UI
+        // this.uiManager = new UIManager(this);
+        
+        console.log('⚙️ Systems initialized (placeholders for now)');
     }
 
     /**
@@ -168,6 +192,25 @@ class GameEngine {
             speed: 5,
             username: window.currentUser?.displayName || 'Player'
         });
+        // Basic player setup (will be enhanced when Player.js is created)
+        this.player = {
+            x: 25,
+            y: 25,
+            width: 16,
+            height: 24,
+            speed: 3,
+            color: '#4169E1',
+            name: 'Player',
+            targetX: null,
+            targetY: null,
+            isMoving: false,
+            direction: 'down',
+            
+            // Will be expanded with Player.js
+            hp: 100,
+            maxHp: 100,
+            level: 1
+        };
         
         // Set camera to follow player
         this.camera.follow(this.player);
@@ -380,6 +423,8 @@ class GameEngine {
             // Fallback to simple movement
             this.updatePlayer(deltaTime);
         }
+        // Update player
+        this.updatePlayer(deltaTime);
         
         // Update camera
         this.camera.update(deltaTime);
