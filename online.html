@@ -7044,6 +7044,8 @@
         }
         
         function updateParticles() {
+            if (!scene) return; // Safety check - don't run before initGame
+            
             const now = Date.now();
             particles = particles.filter(particle => {
                 const age = now - particle.created;
@@ -7063,6 +7065,8 @@
         
         // Day/Night Cycle
         function updateDayNightCycle() {
+            if (!scene) return; // Safety check - don't run before initGame
+            
             timeOfDay += dayNightSpeed;
             if (timeOfDay >= 24) timeOfDay = 0;
             
@@ -7946,6 +7950,8 @@
         }
         
         function setWeather(weatherType) {
+            if (!scene) return; // Safety check - don't run before initGame
+            
             currentWeather = weatherType;
             
             // Clear old weather particles
