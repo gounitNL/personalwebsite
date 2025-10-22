@@ -1101,7 +1101,7 @@
                     <div id="gameTitle">⚔️ FantasyQuest 3D Online</div>
                     <a href="index.html" style="color: #95a5a6; text-decoration: none; font-size: 0.9rem;">← Back to Home</a>
                 </div>
-                <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-right: 220px;">
                     <div id="onlineCount">🟢 0 players online</div>
                     <button onclick="logoutUser()" style="padding: 0.5rem 1rem; background: #e74c3c; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
                         🚪 Logout
@@ -2803,8 +2803,10 @@
             
             monsters.push(monster);
             
-            // Create simplified monster mesh
+            // Create detailed monster mesh with head and eyes
             const monsterGroup = new THREE.Group();
+            
+            // Body
             const bodyGeometry = new THREE.BoxGeometry(0.6 * type.scale, 1.0 * type.scale, 0.6 * type.scale);
             const bodyMaterial = new THREE.MeshStandardMaterial({ color: type.color });
             const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
@@ -2812,10 +2814,33 @@
             body.castShadow = true;
             monsterGroup.add(body);
             
+            // Head
+            const headGeometry = new THREE.BoxGeometry(0.4 * type.scale, 0.4 * type.scale, 0.4 * type.scale);
+            const headMaterial = new THREE.MeshStandardMaterial({ color: type.color });
+            const head = new THREE.Mesh(headGeometry, headMaterial);
+            head.position.y = 1.2 * type.scale;
+            head.castShadow = true;
+            monsterGroup.add(head);
+            
+            // Eyes (red, glowing)
+            const eyeGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.05);
+            const eyeMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000 });
+            
+            const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            leftEye.position.set(-0.1 * type.scale, 1.25 * type.scale, 0.2 * type.scale);
+            monsterGroup.add(leftEye);
+            
+            const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            rightEye.position.set(0.1 * type.scale, 1.25 * type.scale, 0.2 * type.scale);
+            monsterGroup.add(rightEye);
+            
             monsterGroup.position.set(monster.x, monster.y, monster.z);
             monsterGroup.userData = monster;
             scene.add(monsterGroup);
             monsterMeshes.push(monsterGroup);
+            
+            // Add name label
+            createNameLabel(monsterGroup, `${type.name} Lv.${type.level}`, 0xff0000);
             
             return { monster, mesh: monsterGroup };
         }
@@ -3257,9 +3282,13 @@
             const relativeX = (x - miniMapSize / 2) * scale;
             const relativeZ = (y - miniMapSize / 2) * scale;
             
+            // Rotate based on camera angle to match camera orientation
+            const rotatedX = relativeX * Math.cos(-cameraAngle) - relativeZ * Math.sin(-cameraAngle);
+            const rotatedZ = relativeX * Math.sin(-cameraAngle) + relativeZ * Math.cos(-cameraAngle);
+            
             // Calculate world position
-            const worldX = currentPlayer.x + relativeX;
-            const worldZ = currentPlayer.z + relativeZ;
+            const worldX = currentPlayer.x + rotatedX;
+            const worldZ = currentPlayer.z + rotatedZ;
             
             // Set target position
             targetPosition = { x: worldX, z: worldZ };
