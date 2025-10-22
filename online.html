@@ -2617,14 +2617,23 @@
             scene.fog = new THREE.Fog(0x87CEEB, 500, 2000);  // Adjusted for massive world
 
             // Camera setup (isometric-like view)
-            camera = new THREE.PerspectiveCamera(60, canvas.offsetWidth / canvas.offsetHeight, 0.1, 10000);
+            // Use window size if canvas dimensions are not available yet
+            const canvasWidth = canvas.offsetWidth || window.innerWidth;
+            const canvasHeight = canvas.offsetHeight || window.innerHeight;
+            camera = new THREE.PerspectiveCamera(60, canvasWidth / canvasHeight, 0.1, 10000);
             updateCameraPosition();
 
             // Renderer setup
             renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
-            renderer.setSize(canvas.offsetWidth, canvas.offsetHeight);
+            renderer.setSize(canvasWidth, canvasHeight);
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            
+            // Force canvas to take full available space
+            canvas.style.width = '100%';
+            canvas.style.height = '100%';
+            
+            console.log('Renderer initialized with size:', canvasWidth, 'x', canvasHeight);
 
             // Lighting
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -2788,6 +2797,12 @@
 
             // Handle window resize
             window.addEventListener('resize', onWindowResize);
+
+            // Ensure proper sizing after layout
+            setTimeout(() => {
+                onWindowResize();
+                console.log('Canvas resized to:', canvas.offsetWidth, 'x', canvas.offsetHeight);
+            }, 100);
 
             // Game loop
             animate();
@@ -5248,8 +5263,15 @@
             return [{ x: endX, z: endZ }];
         }
 
+        let animateFrameCount = 0;
         function animate() {
             requestAnimationFrame(animate);
+            
+            // Debug: Log first few frames
+            if (animateFrameCount < 3) {
+                console.log('Animate frame:', animateFrameCount, 'Scene:', scene, 'Camera:', camera, 'Renderer:', renderer);
+                animateFrameCount++;
+            }
 
             // Handle movement
             let moved = false;
