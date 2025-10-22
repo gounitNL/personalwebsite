@@ -234,6 +234,63 @@
         </div>
     </div>
 
+    <!-- Bank Panel Modal -->
+    <div id="bankModal" class="modal-panel hidden">
+        <div class="modal-content bank-modal">
+            <div class="modal-header">
+                <h2>🏦 Bank of RuneScape</h2>
+                <button class="modal-close" onclick="closeBank()">✕</button>
+            </div>
+            <div class="modal-body bank-body">
+                <!-- Bank Tabs -->
+                <div class="bank-tabs" id="bankTabs">
+                    <!-- Tabs will be generated dynamically -->
+                </div>
+
+                <!-- Bank Search and Info -->
+                <div class="bank-controls">
+                    <input type="text" id="bankSearch" class="bank-search" placeholder="🔍 Search items..." />
+                    <div class="bank-info">
+                        <span id="bankItemCount">0/450</span>
+                        <span class="bank-separator">|</span>
+                        <span id="bankValue">Value: 0 gp</span>
+                    </div>
+                </div>
+
+                <!-- Bank Slots Grid -->
+                <div class="bank-slots-container">
+                    <div class="bank-slots-grid" id="bankSlotsGrid">
+                        <!-- 50 bank slots for current tab -->
+                    </div>
+                </div>
+
+                <!-- Bank Actions -->
+                <div class="bank-actions">
+                    <div class="bank-action-group">
+                        <button class="bank-btn" onclick="depositInventory()">📥 Deposit Inventory</button>
+                        <button class="bank-btn" onclick="depositEquipment()">📥 Deposit Equipment</button>
+                    </div>
+                    <div class="bank-action-group">
+                        <button class="bank-btn withdraw-btn" id="withdrawBtn" disabled>📤 Withdraw</button>
+                        <div class="withdraw-quantity">
+                            <button class="qty-btn" onclick="setWithdrawQuantity(1)">1</button>
+                            <button class="qty-btn" onclick="setWithdrawQuantity(5)">5</button>
+                            <button class="qty-btn" onclick="setWithdrawQuantity(10)">10</button>
+                            <button class="qty-btn" onclick="setWithdrawQuantity('all')">All</button>
+                            <button class="qty-btn" onclick="setWithdrawQuantity('x')">X</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bank Instructions -->
+                <div class="bank-hint">
+                    💡 Click inventory items to deposit | Click bank items to withdraw<br>
+                    Right-click for quantity options | Use tabs to organize items
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -259,6 +316,7 @@
     <script src="js/systems/CombatSystem.js"></script>
     <script src="js/systems/DamageNumbersSystem.js"></script>
     <script src="js/systems/EquipmentSystem.js"></script>
+    <script src="js/systems/BankingSystem.js"></script>
     
     <!-- UI Components -->
     <script src="js/ui/UIManager.js"></script>
@@ -497,11 +555,26 @@
             // Setup equipment panel listeners
             setupEquipmentListeners();
             
+            // Setup bank panel listeners
+            const bankSearch = document.getElementById('bankSearch');
+            if (bankSearch) {
+                bankSearch.addEventListener('input', (e) => {
+                    // TODO: Implement bank search filter
+                    console.log('Bank search:', e.target.value);
+                });
+            }
+            
+            const withdrawBtn = document.getElementById('withdrawBtn');
+            if (withdrawBtn) {
+                withdrawBtn.addEventListener('click', withdrawFromBank);
+            }
+            
             // Close modals when clicking overlay
             const modalOverlay = document.getElementById('modalOverlay');
             if (modalOverlay) {
                 modalOverlay.addEventListener('click', () => {
                     closeEquipment();
+                    closeBank();
                 });
             }
         });
@@ -652,8 +725,277 @@
             }
         }
 
+        // ========== BANK PANEL FUNCTIONS (PHASE 6) ==========
+        
+        let selectedBankSlot = null;
+        let withdrawQuantity = 1;
+        
         function openBank() {
-            addSystemMessage('Banking system coming in Phase 6!');
+            if (!window.gameEngine || !window.gameEngine.bankingSystem) {
+                addSystemMessage('Banking system not initialized!', 'error');
+                return;
+            }
+            
+            const modal = document.getElementById('bankModal');
+            const overlay = document.getElementById('modalOverlay');
+            
+            modal.classList.remove('hidden');
+            overlay.classList.remove('hidden');
+            
+            // Initialize bank UI
+            initializeBankTabs();
+            updateBankDisplay();
+            
+            addSystemMessage('Bank opened');
+        }
+        
+        function closeBank() {
+            const modal = document.getElementById('bankModal');
+            const overlay = document.getElementById('modalOverlay');
+            
+            modal.classList.add('hidden');
+            overlay.classList.add('hidden');
+            
+            selectedBankSlot = null;
+            
+            // Update inventory display in case items were moved
+            if (window.gameEngine && window.gameEngine.inventorySystem) {
+                updateInventoryDisplay();
+            }
+        }
+        
+        function initializeBankTabs() {
+            const bankingSystem = window.gameEngine.bankingSystem;
+            const tabsContainer = document.getElementById('bankTabs');
+            
+            tabsContainer.innerHTML = '';
+            
+            bankingSystem.tabs.forEach((tab, index) => {
+                const tabButton = document.createElement('div');
+                tabButton.className = 'bank-tab' + (index === bankingSystem.currentTab ? ' active' : '');
+                tabButton.innerHTML = `
+                    <span class="tab-icon">${tab.icon}</span>
+                    <span class="tab-number">${index + 1}</span>
+                `;
+                tabButton.title = tab.name;
+                tabButton.onclick = () => switchBankTab(index);
+                
+                tabsContainer.appendChild(tabButton);
+            });
+        }
+        
+        function switchBankTab(tabIndex) {
+            const bankingSystem = window.gameEngine.bankingSystem;
+            
+            bankingSystem.switchTab(tabIndex);
+            
+            // Update tab visuals
+            const tabs = document.querySelectorAll('.bank-tab');
+            tabs.forEach((tab, index) => {
+                if (index === tabIndex) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+            
+            updateBankDisplay();
+        }
+        
+        function updateBankDisplay() {
+            if (!window.gameEngine || !window.gameEngine.bankingSystem) return;
+            
+            const bankingSystem = window.gameEngine.bankingSystem;
+            const currentTab = bankingSystem.tabs[bankingSystem.currentTab];
+            const slotsGrid = document.getElementById('bankSlotsGrid');
+            
+            // Clear existing slots
+            slotsGrid.innerHTML = '';
+            
+            // Create 50 slots for current tab
+            for (let i = 0; i < bankingSystem.slotsPerTab; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'bank-slot';
+                slot.dataset.slot = i;
+                
+                // Find item in this slot
+                const item = currentTab.items.find(item => item.slot === i);
+                
+                if (item && item.itemId) {
+                    const itemData = window.gameConfig.items[item.itemId];
+                    if (itemData) {
+                        slot.classList.add('has-item');
+                        slot.innerHTML = `
+                            <div class="bank-item-icon">${itemData.icon || '📦'}</div>
+                            <div class="bank-item-quantity">${item.quantity}</div>
+                        `;
+                        slot.title = `${itemData.name} (${item.quantity})`;
+                        
+                        // Add click listener for withdrawal
+                        slot.onclick = () => selectBankSlot(bankingSystem.currentTab, i);
+                    }
+                }
+                
+                slotsGrid.appendChild(slot);
+            }
+            
+            // Update bank info
+            updateBankInfo();
+        }
+        
+        function updateBankInfo() {
+            const bankingSystem = window.gameEngine.bankingSystem;
+            
+            // Count total items across all tabs
+            let totalItems = 0;
+            let totalValue = 0;
+            
+            bankingSystem.tabs.forEach(tab => {
+                totalItems += tab.items.length;
+                tab.items.forEach(item => {
+                    const itemData = window.gameConfig.items[item.itemId];
+                    if (itemData && itemData.value) {
+                        totalValue += itemData.value * item.quantity;
+                    }
+                });
+            });
+            
+            document.getElementById('bankItemCount').textContent = `${totalItems}/${bankingSystem.totalSlots}`;
+            document.getElementById('bankValue').textContent = `Value: ${totalValue.toLocaleString()} gp`;
+        }
+        
+        function selectBankSlot(tabIndex, slot) {
+            selectedBankSlot = { tabIndex, slot };
+            
+            // Highlight selected slot
+            const slots = document.querySelectorAll('.bank-slot');
+            slots.forEach(s => s.classList.remove('selected'));
+            
+            const selectedElement = document.querySelector(`.bank-slot[data-slot="${slot}"]`);
+            if (selectedElement) {
+                selectedElement.classList.add('selected');
+            }
+            
+            // Enable withdraw button
+            document.getElementById('withdrawBtn').disabled = false;
+        }
+        
+        function setWithdrawQuantity(qty) {
+            if (qty === 'x') {
+                const input = prompt('Enter quantity to withdraw:', '1');
+                if (input) {
+                    withdrawQuantity = parseInt(input) || 1;
+                }
+            } else if (qty === 'all') {
+                withdrawQuantity = 'all';
+            } else {
+                withdrawQuantity = qty;
+            }
+            
+            // Update button text
+            const withdrawBtn = document.getElementById('withdrawBtn');
+            withdrawBtn.textContent = `📤 Withdraw ${withdrawQuantity === 'all' ? 'All' : withdrawQuantity}`;
+        }
+        
+        function withdrawFromBank() {
+            if (!selectedBankSlot) {
+                addSystemMessage('Select an item to withdraw', 'error');
+                return;
+            }
+            
+            const bankingSystem = window.gameEngine.bankingSystem;
+            const player = window.gameEngine.player;
+            
+            const result = bankingSystem.withdrawItem(
+                player, 
+                selectedBankSlot.tabIndex, 
+                selectedBankSlot.slot, 
+                withdrawQuantity
+            );
+            
+            if (result.success) {
+                addSystemMessage(result.message);
+                updateBankDisplay();
+                updateInventoryDisplay();
+                selectedBankSlot = null;
+                document.getElementById('withdrawBtn').disabled = true;
+            } else {
+                addSystemMessage(result.message, 'error');
+            }
+        }
+        
+        function depositInventory() {
+            if (!window.gameEngine || !window.gameEngine.bankingSystem) return;
+            
+            const bankingSystem = window.gameEngine.bankingSystem;
+            const inventorySystem = window.gameEngine.inventorySystem;
+            const player = window.gameEngine.player;
+            
+            let deposited = 0;
+            
+            // Deposit all inventory items (iterate backwards to avoid index issues)
+            for (let i = inventorySystem.maxSlots - 1; i >= 0; i--) {
+                const item = inventorySystem.getItemInSlot(i);
+                if (item) {
+                    const result = bankingSystem.depositItem(player, i, item.quantity);
+                    if (result.success) {
+                        deposited++;
+                    }
+                }
+            }
+            
+            if (deposited > 0) {
+                addSystemMessage(`Deposited ${deposited} item(s) to bank`);
+                updateBankDisplay();
+                updateInventoryDisplay();
+            } else {
+                addSystemMessage('No items to deposit', 'error');
+            }
+        }
+        
+        function depositEquipment() {
+            if (!window.gameEngine || !window.gameEngine.bankingSystem) return;
+            
+            const bankingSystem = window.gameEngine.bankingSystem;
+            const equipmentSystem = window.gameEngine.equipmentSystem;
+            const inventorySystem = window.gameEngine.inventorySystem;
+            const player = window.gameEngine.player;
+            
+            let deposited = 0;
+            
+            // Get all equipped items
+            const equipped = equipmentSystem.getAllEquipped();
+            
+            // First unequip all to inventory, then deposit
+            for (const [slotName, item] of Object.entries(equipped)) {
+                if (item && item.itemId) {
+                    // Unequip to inventory
+                    const unequipResult = equipmentSystem.unequipItem(player, slotName);
+                    if (unequipResult.success) {
+                        // Find the item in inventory (it was just added)
+                        for (let i = 0; i < inventorySystem.maxSlots; i++) {
+                            const invItem = inventorySystem.getItemInSlot(i);
+                            if (invItem && invItem.itemId === item.itemId) {
+                                // Deposit it to bank
+                                const depositResult = bankingSystem.depositItem(player, i, invItem.quantity);
+                                if (depositResult.success) {
+                                    deposited++;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if (deposited > 0) {
+                addSystemMessage(`Deposited ${deposited} equipped item(s) to bank`);
+                updateBankDisplay();
+                updateInventoryDisplay();
+                updateEquipmentDisplay();
+            } else {
+                addSystemMessage('No equipment to deposit', 'error');
+            }
         }
 
         function openQuests() {
