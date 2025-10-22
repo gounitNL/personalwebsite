@@ -12,6 +12,9 @@ class GameEngine {
         this.camera = null;
         this.inputHandler = null;
         
+        // Game configuration
+        this.gameConfig = null;
+        
         // Game systems
         this.skillsSystem = null;
         this.inventorySystem = null;
@@ -111,6 +114,39 @@ class GameEngine {
      * Initialize all game systems
      */
     async initializeSystems() {
+        // Load game configuration
+        if (typeof GameConfig === 'undefined') {
+            console.error('GameConfig not loaded!');
+            throw new Error('GameConfig is required');
+        }
+        
+        // Store game config reference
+        this.gameConfig = GameConfig;
+        
+        // Phase 2: Skills and Inventory (COMPLETED)
+        console.log('  📊 Initializing Skills System...');
+        this.skillsSystem = new SkillsSystem(this);
+        this.skillsSystem.init(this.gameConfig);
+        
+        console.log('  🎒 Initializing Inventory System...');
+        this.inventorySystem = new InventorySystem(this);
+        this.inventorySystem.init(this.gameConfig);
+        
+        // Phase 2: UI Manager (COMPLETED)
+        console.log('  🖥️ Initializing UI Manager...');
+        this.uiManager = new UIManager(this);
+        this.uiManager.init();
+        
+        // Phase 3: World (TODO)
+        // this.worldSystem = new WorldSystem(this);
+        
+        // Phase 4: Combat (TODO)
+        // this.combatSystem = new CombatSystem(this);
+        
+        // Phase 5: Equipment (TODO)
+        // this.equipmentSystem = new EquipmentSystem(this);
+        
+        // Phase 6: Banking & Shopping (TODO)
         // Systems will be initialized as they're implemented
         // For now, just placeholder for future systems
         
@@ -132,6 +168,10 @@ class GameEngine {
         // this.npcSystem = new NPCSystem(this);
         // this.shopSystem = new ShopSystem(this);
         
+        // Phase 7: Quests (TODO)
+        // this.questSystem = new QuestSystem(this);
+        
+        console.log('⚙️ Phase 2 systems initialized successfully');
         // Phase 7: Quests
         // this.questSystem = new QuestSystem(this);
         
@@ -145,6 +185,13 @@ class GameEngine {
      * Create the player entity
      */
     createPlayer() {
+        // Create player using Player.js class (Phase 2 implementation)
+        this.player = new Player({
+            x: 25,
+            y: 25,
+            speed: 5,
+            username: window.currentUser?.displayName || 'Player'
+        });
         // Basic player setup (will be enhanced when Player.js is created)
         this.player = {
             x: 25,
@@ -169,6 +216,8 @@ class GameEngine {
         this.camera.follow(this.player);
         
         console.log('🧙 Player created at position:', this.player.x, this.player.y);
+        console.log('  Skills:', Object.keys(this.player.skills).length, 'skills initialized');
+        console.log('  Inventory:', this.player.inventory.length, 'slots');
     }
 
     /**
@@ -231,6 +280,24 @@ class GameEngine {
             case ' ': // Spacebar
                 // Could be used for quick actions
                 break;
+            
+            // TEST SHORTCUTS (Phase 2 testing)
+            case '1': // Test add XP to Attack
+                this.testAddXP('attack', 100);
+                break;
+            case '2': // Test add XP to Woodcutting
+                this.testAddXP('woodcutting', 50);
+                break;
+            case '3': // Test add XP to Mining
+                this.testAddXP('mining', 75);
+                break;
+            case '4': // Test add item (logs)
+                this.testAddItem('logs', 1);
+                break;
+            case '5': // Test add item (bronze sword)
+                this.testAddItem('bronze_sword', 1);
+                break;
+            
             // Add more keyboard shortcuts as needed
         }
     }
@@ -349,13 +416,25 @@ class GameEngine {
      * Update all game systems
      */
     update(deltaTime) {
+        // Update player (using Player.js update method)
+        if (this.player && this.player.update) {
+            this.player.update(deltaTime);
+        } else {
+            // Fallback to simple movement
+            this.updatePlayer(deltaTime);
+        }
         // Update player
         this.updatePlayer(deltaTime);
         
         // Update camera
         this.camera.update(deltaTime);
         
-        // Update game systems (will be added as implemented)
+        // Update Phase 2 systems
+        if (this.skillsSystem) this.skillsSystem.update(deltaTime);
+        if (this.inventorySystem) this.inventorySystem.update(deltaTime);
+        if (this.uiManager) this.uiManager.update(deltaTime);
+        
+        // Update future game systems (Phase 3+)
         // if (this.worldSystem) this.worldSystem.update(deltaTime);
         // if (this.combatSystem) this.combatSystem.update(deltaTime);
         // if (this.npcSystem) this.npcSystem.update(deltaTime);
@@ -425,7 +504,12 @@ class GameEngine {
         // Render player
         this.renderer.renderEntity(this.player, this.camera);
         
-        // Render UI (will be added with UIManager)
+        // Render UI overlays (Phase 2)
+        if (this.uiManager) {
+            this.uiManager.render(this.ctx);
+        }
+        
+        // Render debug info
         this.renderDebugInfo();
     }
 
@@ -506,6 +590,49 @@ class GameEngine {
         alert('Error: ' + message);
     }
 
+    /**
+     * TEST METHOD: Add XP to player skill
+     * @param {string} skill - Skill name
+     * @param {number} amount - XP amount
+     */
+    testAddXP(skill, amount = 100) {
+        if (!this.player || !this.skillsSystem) {
+            console.error('Player or SkillsSystem not available');
+            return;
+        }
+        
+        const result = this.skillsSystem.addXP(this.player, skill, amount);
+        console.log(`💫 Added ${amount} XP to ${skill}`);
+        
+        if (result.levelUp) {
+            console.log(`🎉 Level up! ${skill} is now level ${result.newLevel}!`);
+        }
+        
+        return result;
+    }
+    
+    /**
+     * TEST METHOD: Add item to inventory
+     * @param {string} itemId - Item ID from GameConfig
+     * @param {number} amount - Item amount
+     */
+    testAddItem(itemId, amount = 1) {
+        if (!this.inventorySystem || !this.player) {
+            console.error('Inventory system or player not available');
+            return;
+        }
+        
+        const result = this.inventorySystem.addItem(this.player, itemId, amount);
+        
+        if (result.success) {
+            console.log(`✅ Added ${amount}x ${itemId} to inventory`);
+        } else {
+            console.log(`⚠️ Could only add ${result.added}/${amount} ${itemId} (inventory full)`);
+        }
+        
+        return result;
+    }
+    
     /**
      * Clean up and destroy the engine
      */
