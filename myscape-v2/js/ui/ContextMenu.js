@@ -66,9 +66,16 @@ class ContextMenu {
      * @param {MouseEvent} event - Mouse event
      */
     handleRightClick(event) {
+        // ✅ FIX: Check if game engine is fully initialized
+        if (!this.gameEngine || !this.gameEngine.canvas) {
+            console.log('ContextMenu: Game engine not ready');
+            this.hide();
+            return;
+        }
+        
         // Check if click was on game canvas
         const canvas = this.gameEngine.canvas;
-        if (!canvas || event.target !== canvas) {
+        if (event.target !== canvas) {
             this.hide();
             return;
         }
@@ -79,7 +86,14 @@ class ContextMenu {
         const mouseY = event.clientY - rect.top;
         
         // Convert to world coordinates
-        const worldPos = this.gameEngine.inputHandler.screenToWorld(mouseX, mouseY, this.gameEngine.camera);
+        // ✅ FIX: Use renderer.screenToWorld, not inputHandler
+        if (!this.gameEngine.renderer || !this.gameEngine.camera) {
+            console.log('ContextMenu: Renderer or camera not initialized');
+            this.hide();
+            return;
+        }
+        
+        const worldPos = this.gameEngine.renderer.screenToWorld(mouseX, mouseY, this.gameEngine.camera);
         
         // Find what was clicked
         const target = this.findTargetAtPosition(worldPos.x, worldPos.y);
