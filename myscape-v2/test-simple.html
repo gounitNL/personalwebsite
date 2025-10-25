@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyScape v2 - Simple Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #000;
+            color: #0f0;
+            font-family: monospace;
+            overflow: hidden;
+        }
+        
+        #container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #status {
+            padding: 10px;
+            background: #1a1a1a;
+            border-bottom: 2px solid #0f0;
+        }
+        
+        #canvasWrapper {
+            flex: 1;
+            position: relative;
+            background: #000;
+        }
+        
+        #gameCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+        
+        #logs {
+            height: 200px;
+            overflow-y: auto;
+            background: #000;
+            border-top: 2px solid #0f0;
+            padding: 10px;
+            font-size: 12px;
+        }
+        
+        .log { margin: 2px 0; }
+        .error { color: #f00; }
+        .success { color: #0f0; }
+        .info { color: #0ff; }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="status">
+            <h2>🎮 MyScape v2 - Simple Test</h2>
+            <div id="statusText">Initializing...</div>
+        </div>
+        
+        <div id="canvasWrapper">
+            <canvas id="gameCanvas"></canvas>
+        </div>
+        
+        <div id="logs" id="logs"></div>
+    </div>
+
+    <!-- Game Configuration -->
+    <script src="data/game-config.js"></script>
+
+    <!-- Core Engine Files -->
+    <script src="js/core/Camera.js"></script>
+    <script src="js/core/Renderer.js"></script>
+    <script src="js/core/InputHandler.js"></script>
+    
+    <!-- Entity Classes -->
+    <script src="js/entities/Player.js"></script>
+    <script src="js/entities/Resource.js"></script>
+    <script src="js/entities/Enemy.js"></script>
+    
+    <!-- Game Systems -->
+    <script src="js/systems/SkillsSystem.js"></script>
+    <script src="js/systems/InventorySystem.js"></script>
+    <script src="js/systems/WorldSystem.js"></script>
+    <script src="js/systems/CombatSystem.js"></script>
+    <script src="js/systems/DamageNumbersSystem.js"></script>
+    <script src="js/systems/EquipmentSystem.js"></script>
+    <script src="js/systems/BankingSystem.js"></script>
+    <script src="js/systems/NPCSystem.js"></script>
+    <script src="js/systems/QuestSystem.js"></script>
+    <script src="js/systems/ShopSystem.js"></script>
+    
+    <!-- UI Components -->
+    <script src="js/ui/UIManager.js"></script>
+    <script src="js/ui/StatsPanel.js"></script>
+    <script src="js/ui/ContextMenu.js"></script>
+    
+    <!-- Performance & Utility Systems -->
+    <script src="js/utils/SpatialGrid.js"></script>
+    <script src="js/utils/ObjectPool.js"></script>
+    <script src="js/utils/PathFinding.js"></script>
+    
+    <!-- Main Game Engine -->
+    <script src="js/core/GameEngine.js"></script>
+
+    <script>
+        // Capture console logs
+        const logsDiv = document.getElementById('logs');
+        const statusDiv = document.getElementById('statusText');
+        
+        function addLog(message, type = 'info') {
+            const logEntry = document.createElement('div');
+            logEntry.className = `log ${type}`;
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logsDiv.appendChild(logEntry);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+            
+            // Also update status
+            statusDiv.textContent = message;
+        }
+        
+        // Override console methods
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addLog(args.join(' '), 'info');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addLog('ERROR: ' + args.join(' '), 'error');
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addLog('WARN: ' + args.join(' '), 'info');
+        };
+        
+        // Wait for page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            addLog('DOM loaded, starting game...', 'info');
+            
+            try {
+                // Create fake user for demo mode
+                window.currentUser = {
+                    uid: 'test-user',
+                    email: 'test@myscape.game',
+                    displayName: 'Test Player',
+                    isDemo: true
+                };
+                
+                addLog('Creating GameEngine...', 'info');
+                const gameEngine = new GameEngine();
+                window.gameEngine = gameEngine;
+                
+                addLog('Initializing game engine...', 'info');
+                await gameEngine.init('gameCanvas');
+                
+                addLog('✅ GAME STARTED SUCCESSFULLY!', 'success');
+                addLog('Click on the green tiles to move your character!', 'success');
+                addLog('Player position: (' + gameEngine.player.x + ', ' + gameEngine.player.y + ')', 'info');
+                addLog('Camera position: (' + gameEngine.camera.x + ', ' + gameEngine.camera.y + ')', 'info');
+                addLog('Entities: ' + gameEngine.entities.length, 'info');
+                
+            } catch (error) {
+                addLog('❌ FATAL ERROR: ' + error.message, 'error');
+                addLog('Stack: ' + error.stack, 'error');
+                console.error('Full error:', error);
+            }
+        });
+        
+        // Global error handler
+        window.addEventListener('error', (event) => {
+            addLog('❌ UNCAUGHT ERROR: ' + event.message, 'error');
+            addLog('  at ' + event.filename + ':' + event.lineno + ':' + event.colno, 'error');
+            event.preventDefault();
+        });
+        
+        window.addEventListener('unhandledrejection', (event) => {
+            addLog('❌ UNHANDLED PROMISE REJECTION: ' + event.reason, 'error');
+            if (event.reason && event.reason.stack) {
+                addLog('Stack: ' + event.reason.stack, 'error');
+            }
+            event.preventDefault();
+        });
+        
+        // Check if canvas is actually rendering
+        setInterval(() => {
+            if (window.gameEngine && window.gameEngine.isRunning) {
+                const canvas = document.getElementById('gameCanvas');
+                const ctx = canvas.getContext('2d');
+                const imageData = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
+                const pixel = imageData.data;
+                const color = `rgba(${pixel[0]}, ${pixel[1]}, ${pixel[2]}, ${pixel[3]})`;
+                
+                if (pixel[0] === 0 && pixel[1] === 0 && pixel[2] === 0) {
+                    console.warn('⚠️ Canvas center is BLACK - rendering might be broken');
+                    console.log('Canvas size:', canvas.width, 'x', canvas.height);
+                    console.log('Camera:', gameEngine.camera.x, gameEngine.camera.y);
+                    console.log('Player:', gameEngine.player.x, gameEngine.player.y);
+                }
+            }
+        }, 3000);
+    </script>
+</body>
+</html>
