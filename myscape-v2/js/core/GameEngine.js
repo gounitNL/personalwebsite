@@ -111,12 +111,21 @@ class GameEngine {
             console.log('🗺️ Loading initial area...');
             await this.loadInitialArea();
             
+            // ✅ FIX: Initialize Context Menu AFTER all core systems are ready
+            console.log('📋 Initializing Context Menu...');
+            this.contextMenu = new ContextMenu(this);
+            
             // Setup window event listeners
             window.addEventListener('resize', () => this.resizeCanvas());
             window.addEventListener('blur', () => this.pause());
             window.addEventListener('focus', () => this.resume());
             
             console.log('✅ Game initialization complete!');
+            console.log('  - Player:', this.player ? `at (${this.player.x}, ${this.player.y})` : 'NOT CREATED');
+            console.log('  - Camera:', this.camera ? 'initialized' : 'NOT INITIALIZED');
+            console.log('  - Renderer:', this.renderer ? 'initialized' : 'NOT INITIALIZED');
+            console.log('  - World:', this.currentArea ? this.currentArea.name : 'NO AREA LOADED');
+            console.log('  - Entities:', this.entities.length);
             
             // Start the game loop
             this.start();
@@ -153,10 +162,6 @@ class GameEngine {
         console.log('  🖥️ Initializing UI Manager...');
         this.uiManager = new UIManager(this);
         this.uiManager.init();
-        
-        // Phase 8: Context Menu (Task 8.5)
-        console.log('  📋 Initializing Context Menu...');
-        this.contextMenu = new ContextMenu(this);
         
         // Phase 3: World (COMPLETED)
         console.log('  🗺️ Initializing World System...');
@@ -663,6 +668,8 @@ class GameEngine {
             // Render player
             if (this.player) {
                 this.renderer.renderEntity(this.player, this.camera);
+            } else {
+                console.warn('⚠️ Player not found during render!');
             }
             
             // Render UI overlays (Phase 2)
