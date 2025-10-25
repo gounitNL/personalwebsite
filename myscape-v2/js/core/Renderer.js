@@ -161,62 +161,100 @@ class Renderer {
      * Render an entity (player, enemy, NPC, resource)
      */
     renderEntity(entity, camera) {
-        const screen = this.worldToScreen(entity.x, entity.y, camera);
-        
-        // Get entity dimensions
-        const width = entity.width || 16;
-        const height = entity.height || 24;
-        
-        // Draw entity shadow
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-        this.ctx.ellipse(screen.x, screen.y + height / 2, width / 2, 4, 0, 0, Math.PI * 2);
-        this.ctx.fill();
-        
-        // Draw entity body (simple rectangle for now, will be sprites later)
-        this.ctx.fillStyle = entity.color || this.entityColors.player;
-        this.ctx.fillRect(
-            screen.x - width / 2,
-            screen.y - height,
-            width,
-            height
-        );
-        
-        // Draw entity outline
-        this.ctx.strokeStyle = '#000';
-        this.ctx.lineWidth = 2;
-        this.ctx.strokeRect(
-            screen.x - width / 2,
-            screen.y - height,
-            width,
-            height
-        );
-        
-        // Draw name label if entity has a name
-        if (entity.name) {
-            this.renderNameLabel(entity.name, screen.x, screen.y - height - 5);
+        // ✅ CRITICAL FIX: Validate entity before rendering
+        if (!entity) {
+            console.warn('Renderer.renderEntity: entity is null or undefined');
+            return;
         }
         
-        // Draw health bar if entity has HP
-        if (entity.hp !== undefined && entity.maxHp !== undefined) {
-            this.renderHealthBar(
-                screen.x,
-                screen.y - height - 20,
-                width + 10,
-                4,
-                entity.hp,
-                entity.maxHp
-            );
+        if (entity.x === undefined || entity.y === undefined) {
+            console.warn('Renderer.renderEntity: entity missing x/y coordinates', entity);
+            return;
         }
         
-        // Draw movement indicator if moving
-        if (entity.isMoving && entity.targetX !== undefined) {
-            const targetScreen = this.worldToScreen(entity.targetX, entity.targetY, camera);
-            this.ctx.strokeStyle = 'rgba(255, 255, 0, 0.5)';
-            this.ctx.lineWidth = 2;
+        if (!camera) {
+            console.warn('Renderer.renderEntity: camera is null or undefined');
+            return;
+        }
+        
+        try {
+            const screen = this.worldToScreen(entity.x, entity.y, camera);
+            
+            // ✅ Check if entity is visible before rendering
+            if (!this.isEntityVisible(entity, camera)) {
+                return; // Skip off-screen entities for performance
+            }
+            
+            // Get entity dimensions with validation
+            const width = (typeof entity.width === 'number' && entity.width > 0) ? entity.width : 16;
+            const height = (typeof entity.height === 'number' && entity.height > 0) ? entity.height : 24;
+            
+            // Draw entity shadow
+            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
             this.ctx.beginPath();
-            this.ctx.arc(targetScreen.x, targetScreen.y, 10, 0, Math.PI * 2);
-            this.ctx.stroke();
+            this.ctx.ellipse(screen.x, screen.y + height / 2, width / 2, 4, 0, 0, Math.PI * 2);
+            this.ctx.fill();
+            
+            // Draw entity body (simple rectangle for now, will be sprites later)
+            this.ctx.fillStyle = entity.color || this.entityColors[entity.type] || this.entityColors.player;
+            this.ctx.fillRect(
+                screen.x - width / 2,
+                screen.y - height,
+                width,
+                height
+            );
+            
+            // Draw entity outline
+            this.ctx.strokeStyle = '#000';
+            this.ctx.lineWidth = 2;
+            this.ctx.strokeRect(
+                screen.x - width / 2,
+                screen.y - height,
+                width,
+                height
+            );
+            
+            // Draw name label if entity has a name
+            if (entity.name && typeof entity.name === 'string') {
+                this.renderNameLabel(entity.name, screen.x, screen.y - height - 5);
+            }
+            
+            // Draw health bar if entity has HP
+            if (entity.hp !== undefined && entity.maxHp !== undefined && 
+                typeof entity.hp === 'number' && typeof entity.maxHp === 'number' &&
+                entity.maxHp > 0) {
+                this.renderHealthBar(
+                    screen.x,
+                    screen.y - height - 20,
+                    width + 10,
+                    4,
+                    entity.hp,
+                    entity.maxHp
+                );
+            }
+            
+            // Draw movement indicator if moving
+            if (entity.isMoving && entity.targetX !== undefined && entity.targetY !== undefined) {
+                const targetScreen = this.worldToScreen(entity.targetX, entity.targetY, camera);
+                this.ctx.strokeStyle = 'rgba(255, 255, 0, 0.5)';
+                this.ctx.lineWidth = 2;
+                this.ctx.beginPath();
+                this.ctx.arc(targetScreen.x, targetScreen.y, 10, 0, Math.PI * 2);
+                this.ctx.stroke();
+            }
+        } catch (error) {
+            console.error('Renderer.renderEntity: Error rendering entity', entity, error);
         }
+    }
+    
+    /**
+     * Check if entity is visible in camera viewport
+     */
+    isEntityVisible(entity, camera) {
+        if (!entity || entity.x === undefined || entity.y === undefined) {
+            return false;
+        }
+        return this.isVisible(entity.x, entity.y, camera);
     }
 
     /**
@@ -270,46 +308,75 @@ class Renderer {
      * Render the entire game world
      */
     renderWorld(worldData, camera, entities) {
-        // Calculate visible tile range
-        const topLeft = this.screenToWorld(0, 0, camera);
-        const bottomRight = this.screenToWorld(this.canvas.width, this.canvas.height, camera);
+        // ✅ CRITICAL FIX: Validate inputs
+        if (!worldData || !worldData.tiles) {
+            console.warn('Renderer.renderWorld: Invalid worldData', worldData);
+            return;
+        }
         
-        const startX = Math.max(0, Math.floor(topLeft.x) - 2);
-        const endX = Math.min(worldData.width, Math.ceil(bottomRight.x) + 2);
-        const startY = Math.max(0, Math.floor(topLeft.y) - 2);
-        const endY = Math.min(worldData.height, Math.ceil(bottomRight.y) + 2);
+        if (!camera) {
+            console.warn('Renderer.renderWorld: camera is null or undefined');
+            return;
+        }
         
-        // Render tiles (ground layer)
-        for (let y = startY; y < endY; y++) {
-            for (let x = startX; x < endX; x++) {
-                if (worldData.tiles[y] && worldData.tiles[y][x]) {
-                    this.renderTile(x, y, worldData.tiles[y][x], camera);
+        if (!Array.isArray(entities)) {
+            console.warn('Renderer.renderWorld: entities is not an array', entities);
+            entities = [];
+        }
+        
+        try {
+            // Calculate visible tile range
+            const topLeft = this.screenToWorld(0, 0, camera);
+            const bottomRight = this.screenToWorld(this.canvas.width, this.canvas.height, camera);
+            
+            const startX = Math.max(0, Math.floor(topLeft.x) - 2);
+            const endX = Math.min(worldData.width || 50, Math.ceil(bottomRight.x) + 2);
+            const startY = Math.max(0, Math.floor(topLeft.y) - 2);
+            const endY = Math.min(worldData.height || 50, Math.ceil(bottomRight.y) + 2);
+            
+            // Render tiles (ground layer)
+            for (let y = startY; y < endY; y++) {
+                for (let x = startX; x < endX; x++) {
+                    if (worldData.tiles[y] && worldData.tiles[y][x]) {
+                        try {
+                            this.renderTile(x, y, worldData.tiles[y][x], camera);
+                        } catch (tileError) {
+                            // Silent tile rendering errors to prevent spam
+                            if (Math.random() < 0.01) { // Log only 1% of tile errors
+                                console.warn('Tile render error at', x, y, tileError);
+                            }
+                        }
+                    }
                 }
             }
-        }
-        
-        // Collect and sort all renderable objects by Y position (for proper layering)
-        const renderQueue = [];
-        
-        // Add entities to render queue
-        for (const entity of entities) {
-            if (this.isVisible(entity.x, entity.y, camera)) {
-                renderQueue.push({
-                    y: entity.y,
-                    type: 'entity',
-                    data: entity
-                });
+            
+            // Collect and sort all renderable objects by Y position (for proper layering)
+            const renderQueue = [];
+            
+            // Add entities to render queue with validation
+            for (const entity of entities) {
+                if (entity && entity.x !== undefined && entity.y !== undefined) {
+                    if (this.isVisible(entity.x, entity.y, camera)) {
+                        renderQueue.push({
+                            y: entity.y,
+                            type: 'entity',
+                            data: entity
+                        });
+                    }
+                }
             }
-        }
-        
-        // Sort by Y position (back to front rendering)
-        renderQueue.sort((a, b) => a.y - b.y);
-        
-        // Render all objects in order
-        for (const item of renderQueue) {
-            if (item.type === 'entity') {
-                this.renderEntity(item.data, camera);
+            
+            // Sort by Y position (back to front rendering)
+            renderQueue.sort((a, b) => a.y - b.y);
+            
+            // Render all objects in order
+            for (const item of renderQueue) {
+                if (item.type === 'entity' && item.data) {
+                    this.renderEntity(item.data, camera);
+                }
             }
+        } catch (error) {
+            console.error('Renderer.renderWorld: Critical rendering error', error);
         }
     }
 

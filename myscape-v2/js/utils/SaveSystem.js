@@ -226,9 +226,12 @@ class SaveSystem {
     deserializeGameState(saveData) {
         const player = this.gameEngine.player;
         
-        // Restore player position
-        if (saveData.player.x !== undefined && saveData.player.y !== undefined) {
-            player.teleportTo(saveData.player.x, saveData.player.y);
+        // ✅ HIGH PRIORITY FIX: Sanitize data before applying
+        const sanitizedPlayer = this.sanitizePlayerData(saveData.player);
+        
+        // Restore player position with sanitized values
+        if (sanitizedPlayer.x !== undefined && sanitizedPlayer.y !== undefined) {
+            player.teleportTo(sanitizedPlayer.x, sanitizedPlayer.y);
         }
         
         if (saveData.player.facing) {
@@ -299,20 +302,131 @@ class SaveSystem {
      * @returns {boolean} Is valid
      */
     validateSaveData(saveData) {
+        // ✅ HIGH PRIORITY FIX: Comprehensive save data validation
+        
         if (!saveData || typeof saveData !== 'object') {
+            console.error('SaveSystem: saveData is not an object', saveData);
             return false;
         }
         
-        // Check required fields
-        if (!saveData.version || !saveData.timestamp) {
+        // Check required top-level fields
+        if (!saveData.version || typeof saveData.version !== 'string') {
+            console.error('SaveSystem: Missing or invalid version');
             return false;
         }
         
+        if (!saveData.timestamp || typeof saveData.timestamp !== 'number') {
+            console.error('SaveSystem: Missing or invalid timestamp');
+            return false;
+        }
+        
+        // Validate timestamp is reasonable (not in future, not too old)
+        const now = Date.now();
+        if (saveData.timestamp > now + 86400000) { // Not more than 1 day in future
+            console.error('SaveSystem: Timestamp is in the future');
+            return false;
+        }
+        
+        if (saveData.timestamp < now - (365 * 86400000 * 10)) { // Not more than 10 years old
+            console.error('SaveSystem: Timestamp is too old (>10 years)');
+            return false;
+        }
+        
+        // Validate player object
         if (!saveData.player || typeof saveData.player !== 'object') {
+            console.error('SaveSystem: Missing or invalid player object');
             return false;
         }
         
+        // Validate player position
+        if (typeof saveData.player.x !== 'number' || !Number.isFinite(saveData.player.x)) {
+            console.error('SaveSystem: Invalid player.x', saveData.player.x);
+            return false;
+        }
+        
+        if (typeof saveData.player.y !== 'number' || !Number.isFinite(saveData.player.y)) {
+            console.error('SaveSystem: Invalid player.y', saveData.player.y);
+            return false;
+        }
+        
+        // Validate player position is within reasonable bounds
+        if (saveData.player.x < -1000 || saveData.player.x > 1000 ||
+            saveData.player.y < -1000 || saveData.player.y > 1000) {
+            console.error('SaveSystem: Player position out of bounds', saveData.player.x, saveData.player.y);
+            return false;
+        }
+        
+        // Validate skills (if present)
+        if (saveData.player.skills) {
+            if (typeof saveData.player.skills !== 'object') {
+                console.error('SaveSystem: player.skills is not an object');
+                return false;
+            }
+            
+            // Check each skill
+            for (const [skillId, skillData] of Object.entries(saveData.player.skills)) {
+                if (!skillData || typeof skillData !== 'object') {
+                    console.warn('SaveSystem: Invalid skill data for', skillId);
+                    continue;
+                }
+                
+                if (typeof skillData.level !== 'number' || skillData.level < 1 || skillData.level > 99) {
+                    console.warn('SaveSystem: Invalid level for skill', skillId, skillData.level);
+                    // Don't fail entire save, just skip this skill
+                }
+                
+                if (typeof skillData.xp !== 'number' || skillData.xp < 0) {
+                    console.warn('SaveSystem: Invalid XP for skill', skillId, skillData.xp);
+                }
+            }
+        }
+        
+        // Validate inventory (if present)
+        if (saveData.player.inventory) {
+            if (!Array.isArray(saveData.player.inventory)) {
+                console.error('SaveSystem: player.inventory is not an array');
+                return false;
+            }
+            
+            if (saveData.player.inventory.length > 100) {
+                console.error('SaveSystem: Inventory size exceeds maximum (100)');
+                return false;
+            }
+        }
+        
+        // All validations passed
         return true;
+    }
+    
+    /**
+     * Sanitize player data before applying
+     * @param {object} playerData - Player data from save
+     * @returns {object} Sanitized player data
+     */
+    sanitizePlayerData(playerData) {
+        const sanitized = {};
+        
+        // Clamp position to safe bounds
+        sanitized.x = Math.max(-1000, Math.min(1000, playerData.x || 0));
+        sanitized.y = Math.max(-1000, Math.min(1000, playerData.y || 0));
+        
+        // Sanitize skills
+        if (playerData.skills) {
+            sanitized.skills = {};
+            for (const [skillId, skillData] of Object.entries(playerData.skills)) {
+                sanitized.skills[skillId] = {
+                    level: Math.max(1, Math.min(99, skillData.level || 1)),
+                    xp: Math.max(0, skillData.xp || 0)
+                };
+            }
+        }
+        
+        // Sanitize inventory
+        if (Array.isArray(playerData.inventory)) {
+            sanitized.inventory = playerData.inventory.slice(0, 28); // Max 28 slots
+        }
+        
+        return sanitized;
     }
     
     /**
