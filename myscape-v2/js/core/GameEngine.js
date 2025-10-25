@@ -27,8 +27,16 @@ class GameEngine {
         this.shopSystem = null;
         this.bankingSystem = null;
         
+        // Performance systems (Phase 8: Task 8.7)
+        this.spatialGrid = null;
+        this.poolManager = null;
+        
+        // Pathfinding system (Phase 8: Task 8.1)
+        this.pathfinding = null;
+        
         // UI managers
         this.uiManager = null;
+        this.contextMenu = null;
         
         // Game state
         this.player = null;
@@ -146,6 +154,10 @@ class GameEngine {
         this.uiManager = new UIManager(this);
         this.uiManager.init();
         
+        // Phase 8: Context Menu (Task 8.5)
+        console.log('  📋 Initializing Context Menu...');
+        this.contextMenu = new ContextMenu(this);
+        
         // Phase 3: World (COMPLETED)
         console.log('  🗺️ Initializing World System...');
         this.worldSystem = new WorldSystem(this);
@@ -179,6 +191,17 @@ class GameEngine {
         console.log('  📜 Initializing Quest System...');
         this.questSystem = new QuestSystem(this);
         this.questSystem.init(this.gameConfig);
+        
+        // Phase 8: Performance Systems (Task 8.7)
+        console.log('  ⚡ Initializing Spatial Grid...');
+        this.spatialGrid = new SpatialGrid(10); // 10 units per cell
+        
+        console.log('  🔄 Initializing Pool Manager...');
+        this.poolManager = new PoolManager();
+        
+        // Phase 8: Pathfinding System (Task 8.1)
+        console.log('  🗺️ Initializing Pathfinding...');
+        this.pathfinding = new PathFinding(this.worldSystem);
         
         // Shop system will be added later
         // this.shopSystem = new ShopSystem(this);
@@ -556,18 +579,47 @@ class GameEngine {
      */
     updateEntities(deltaTime) {
         // ✅ HIGH PRIORITY FIX: Remove dead entities to prevent memory leak
-        this.entities = this.entities.filter(entity => {
+        // ⚡ PERFORMANCE OPTIMIZATION (Phase 8): Use spatial grid for entity tracking
+        
+        const entitiesToRemove = [];
+        
+        for (let i = 0; i < this.entities.length; i++) {
+            const entity = this.entities[i];
+            
+            if (!entity) {
+                entitiesToRemove.push(i);
+                continue;
+            }
+            
+            // Store old position for spatial grid update
+            const oldX = entity.x;
+            const oldY = entity.y;
+            
             // Update living entities
-            if (entity && entity.update) {
+            if (entity.update) {
                 entity.update(deltaTime);
             }
             
-            // Remove dead, destroyed, or invalid entities
-            return entity && 
-                   !entity.isDead && 
-                   !entity.destroyed && 
-                   !entity.markedForRemoval;
-        });
+            // Update spatial grid if entity moved
+            if (this.spatialGrid && (entity.x !== oldX || entity.y !== oldY)) {
+                this.spatialGrid.update(entity, oldX, oldY);
+            }
+            
+            // Mark dead/destroyed entities for removal
+            if (entity.isDead || entity.destroyed || entity.markedForRemoval) {
+                entitiesToRemove.push(i);
+                
+                // Remove from spatial grid
+                if (this.spatialGrid) {
+                    this.spatialGrid.remove(entity);
+                }
+            }
+        }
+        
+        // Remove marked entities (iterate backwards to maintain indices)
+        for (let i = entitiesToRemove.length - 1; i >= 0; i--) {
+            this.entities.splice(entitiesToRemove[i], 1);
+        }
     }
 
     /**
@@ -579,18 +631,33 @@ class GameEngine {
             this.ctx.fillStyle = '#000';
             this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
             
-            // Combine entities with NPCs for rendering
-            const allEntities = [...this.entities];
+            // ⚡ PERFORMANCE OPTIMIZATION (Phase 8): Only render visible entities
+            let visibleEntities = [];
+            
+            if (this.spatialGrid && this.camera) {
+                // Calculate visible area in world coordinates
+                const viewPadding = 5; // Extra tiles around viewport
+                const minX = this.camera.x - viewPadding;
+                const minY = this.camera.y - viewPadding;
+                const maxX = this.camera.x + (this.camera.width / 32) + viewPadding;
+                const maxY = this.camera.y + (this.camera.height / 32) + viewPadding;
+                
+                // Get only visible entities from spatial grid
+                visibleEntities = this.spatialGrid.getEntitiesInArea(minX, minY, maxX, maxY);
+            } else {
+                // Fallback: render all entities if no spatial grid
+                visibleEntities = [...this.entities];
+            }
             
             // Add NPCs to render queue (Phase 6)
             if (this.npcSystem && this.worldSystem) {
                 const npcs = this.npcSystem.getNPCsInArea(this.worldSystem.currentAreaId);
-                allEntities.push(...npcs);
+                visibleEntities.push(...npcs);
             }
             
             // Render world
             if (this.currentArea) {
-                this.renderer.renderWorld(this.currentArea, this.camera, allEntities);
+                this.renderer.renderWorld(this.currentArea, this.camera, visibleEntities);
             }
             
             // Render player
@@ -763,6 +830,12 @@ class GameEngine {
         });
         
         this.entities.push(enemy);
+        
+        // Add to spatial grid (Phase 8: Performance)
+        if (this.spatialGrid) {
+            this.spatialGrid.insert(enemy);
+        }
+        
         console.log(`🐺 Spawned ${enemyType} (Lv${level}) at (${spawnX}, ${spawnY})`);
         
         return enemy;
@@ -778,10 +851,16 @@ class GameEngine {
         }
         
         // Find nearest enemy
+        // ⚡ PERFORMANCE OPTIMIZATION (Phase 8): Use spatial grid for nearby entity queries
         let nearestEnemy = null;
         let minDistance = Infinity;
         
-        for (const entity of this.entities) {
+        // Use spatial grid if available, otherwise fall back to linear search
+        const searchEntities = this.spatialGrid 
+            ? this.spatialGrid.getEntitiesInRadius(this.player.x, this.player.y, 20)
+            : this.entities;
+        
+        for (const entity of searchEntities) {
             if (entity.type === 'enemy') {
                 const dx = entity.x - this.player.x;
                 const dy = entity.y - this.player.y;
