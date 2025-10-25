@@ -57,10 +57,62 @@ class InventorySystem {
      * @returns {object} Result with success, remaining, and addedSlots
      */
     addItem(itemId, amount = 1, options = {}) {
+        // ✅ HIGH PRIORITY FIX: Comprehensive input validation
+        
+        // Validate itemId
+        if (typeof itemId !== 'string' || !itemId || itemId.trim() === '') {
+            console.error('InventorySystem.addItem: Invalid itemId', itemId);
+            return { 
+                success: false, 
+                error: 'Invalid item ID', 
+                remaining: amount, 
+                addedSlots: [] 
+            };
+        }
+        
+        // Validate amount
+        if (typeof amount !== 'number' || !Number.isFinite(amount)) {
+            console.error('InventorySystem.addItem: amount is not a valid number', amount);
+            return { 
+                success: false, 
+                error: 'Invalid amount', 
+                remaining: 0, 
+                addedSlots: [] 
+            };
+        }
+        
+        // Sanitize amount (prevent negative or excessive quantities)
+        if (amount < 1) {
+            console.warn('InventorySystem.addItem: amount less than 1, adjusting to 1', amount);
+            amount = 1;
+        }
+        
+        if (amount > 10000) {
+            console.warn('InventorySystem.addItem: amount exceeds maximum (10000), capping', amount);
+            amount = 10000;
+        }
+        
+        // Force integer amount
+        if (!Number.isInteger(amount)) {
+            amount = Math.floor(amount);
+            console.warn('InventorySystem.addItem: amount was decimal, floored to', amount);
+        }
+        
+        // Validate options
+        if (typeof options !== 'object' || options === null) {
+            options = {};
+        }
+        
+        // Get item configuration
         const itemConfig = this.getItemConfig(itemId);
         if (!itemConfig) {
-            console.error(`Invalid item ID: ${itemId}`);
-            return { success: false, remaining: amount, addedSlots: [] };
+            console.error(`InventorySystem.addItem: Item not found in config: ${itemId}`);
+            return { 
+                success: false, 
+                error: 'Item not found', 
+                remaining: amount, 
+                addedSlots: [] 
+            };
         }
         
         let remaining = amount;
@@ -142,6 +194,33 @@ class InventorySystem {
      * @returns {object} Result with success and removed count
      */
     removeItem(itemId, amount = 1, options = {}) {
+        // ✅ HIGH PRIORITY FIX: Input validation
+        
+        // Validate itemId
+        if (typeof itemId !== 'string' || !itemId || itemId.trim() === '') {
+            console.error('InventorySystem.removeItem: Invalid itemId', itemId);
+            return { 
+                success: false, 
+                error: 'Invalid item ID', 
+                removed: 0, 
+                removedSlots: [] 
+            };
+        }
+        
+        // Validate amount
+        if (typeof amount !== 'number' || !Number.isFinite(amount) || amount < 1) {
+            console.error('InventorySystem.removeItem: Invalid amount', amount);
+            return { 
+                success: false, 
+                error: 'Invalid amount', 
+                removed: 0, 
+                removedSlots: [] 
+            };
+        }
+        
+        // Force integer
+        amount = Math.floor(amount);
+        
         let remaining = amount;
         const removedSlots = [];
         

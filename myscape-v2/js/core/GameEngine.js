@@ -578,11 +578,19 @@ class GameEngine {
      * Update all entities
      */
     updateEntities(deltaTime) {
-        for (const entity of this.entities) {
-            if (entity.update) {
+        // ✅ HIGH PRIORITY FIX: Remove dead entities to prevent memory leak
+        this.entities = this.entities.filter(entity => {
+            // Update living entities
+            if (entity && entity.update) {
                 entity.update(deltaTime);
             }
-        }
+            
+            // Remove dead, destroyed, or invalid entities
+            return entity && 
+                   !entity.isDead && 
+                   !entity.destroyed && 
+                   !entity.markedForRemoval;
+        });
     }
 
     /**

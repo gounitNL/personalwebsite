@@ -185,7 +185,8 @@ class Player {
         // Update status effects
         this.updateStatusEffects(deltaTime);
         
-        // Sync properties for rendering
+        // ✅ HIGH PRIORITY FIX: Sync properties for rendering consistency
+        // This ensures renderer always has valid values
         this.hp = this.combatStats.hitpoints;
         this.maxHp = this.combatStats.maxHitpoints;
         this.isMoving = this.moving; // Keep both properties in sync
