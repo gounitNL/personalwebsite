@@ -167,6 +167,12 @@ class EquipmentSystem {
             action: 'equip'
         });
         
+        // Emit quest-tracking event (Phase 7: Quest System)
+        this.gameEngine.emit('equipment:equipped', {
+            itemId,
+            slot
+        });
+        
         // Update player combat stats
         if (player.updateCombatStats) {
             player.updateCombatStats();

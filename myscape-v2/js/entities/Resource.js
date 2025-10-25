@@ -220,6 +220,19 @@ class Resource {
                 items: itemsReceived,
                 xp: this.xpReward
             });
+            
+            // Emit quest-tracking event (Phase 7: Quest System)
+            // The resourceId from the resource node config (e.g., 'copper_rock')
+            // needs to be mapped to the item resource (e.g., 'copper_ore')
+            if (itemsReceived && itemsReceived.length > 0) {
+                itemsReceived.forEach(item => {
+                    window.game.emit('resource:gathered', {
+                        resourceId: item.id, // Use the actual item ID (copper_ore, logs, etc.)
+                        amount: item.amount || 1,
+                        player: player
+                    });
+                });
+            }
         }
         
         // Increment harvest count

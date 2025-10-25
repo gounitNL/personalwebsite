@@ -302,6 +302,15 @@ class CombatSystem {
             killer
         });
         
+        // Emit quest-tracking event for enemy kills (Phase 7: Quest System)
+        if (victim.type === 'enemy' && victim.enemyType) {
+            this.gameEngine.emit('enemy:killed', {
+                enemyType: victim.enemyType,
+                killer,
+                position: { x: victim.x, y: victim.y }
+            });
+        }
+        
         // Handle player death
         if (victim.type === 'player') {
             this.handlePlayerDeath(victim);

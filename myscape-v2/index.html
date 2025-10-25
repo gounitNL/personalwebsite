@@ -346,6 +346,55 @@
         </div>
     </div>
 
+    <!-- Quest Panel Modal (PHASE 7) -->
+    <div id="questModal" class="modal-panel hidden">
+        <div class="modal-content quest-modal">
+            <div class="modal-header">
+                <h2>📜 Quest Journal</h2>
+                <button class="modal-close" onclick="closeQuests()">✕</button>
+            </div>
+            <div class="modal-body quest-body">
+                <!-- Quest Summary -->
+                <div class="quest-summary">
+                    <div class="quest-stat">
+                        <span class="quest-stat-label">Quest Points:</span>
+                        <span class="quest-stat-value" id="questPointsDisplay">0</span>
+                    </div>
+                    <div class="quest-stat">
+                        <span class="quest-stat-label">Completed:</span>
+                        <span class="quest-stat-value" id="completedQuestsDisplay">0/3</span>
+                    </div>
+                </div>
+
+                <!-- Quest Tabs -->
+                <div class="quest-tabs">
+                    <button class="quest-tab active" onclick="switchQuestTab('active')" id="tab-active">
+                        Active (<span id="activeQuestCount">0</span>)
+                    </button>
+                    <button class="quest-tab" onclick="switchQuestTab('available')" id="tab-available">
+                        Available (<span id="availableQuestCount">0</span>)
+                    </button>
+                    <button class="quest-tab" onclick="switchQuestTab('completed')" id="tab-completed">
+                        Completed (<span id="completedQuestCount">0</span>)
+                    </button>
+                </div>
+
+                <!-- Quest List -->
+                <div class="quest-list" id="questList">
+                    <!-- Quests will be populated dynamically -->
+                </div>
+
+                <!-- Quest Details Panel -->
+                <div class="quest-details" id="questDetails">
+                    <div class="no-quest-selected">
+                        <div style="font-size: 48px; margin-bottom: 16px;">📜</div>
+                        <div>Select a quest to view details</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -373,6 +422,7 @@
     <script src="js/systems/EquipmentSystem.js"></script>
     <script src="js/systems/BankingSystem.js"></script>
     <script src="js/systems/NPCSystem.js"></script>
+    <script src="js/systems/QuestSystem.js"></script>
     
     <!-- UI Components -->
     <script src="js/ui/UIManager.js"></script>
@@ -1188,8 +1238,524 @@
             }
         }
 
+        // ==================== QUEST PANEL FUNCTIONS (PHASE 7) ====================
+        
+        let currentQuestTab = 'active'; // Track current tab: 'active', 'available', 'completed'
+        let selectedQuestId = null; // Track selected quest for details panel
+        
         function openQuests() {
-            addSystemMessage('Quest system coming in Phase 7!');
+            if (!gameEngine || !gameEngine.questSystem) {
+                addSystemMessage('Quest system not initialized', 'error');
+                return;
+            }
+            
+            const modal = document.getElementById('questModal');
+            modal.classList.remove('hidden');
+            
+            // Reset to active tab
+            currentQuestTab = 'active';
+            selectedQuestId = null;
+            
+            // Update quest display
+            updateQuestDisplay();
+            
+            // Switch to active tab
+            switchQuestTab('active');
+        }
+        
+        function closeQuests() {
+            const modal = document.getElementById('questModal');
+            modal.classList.add('hidden');
+            selectedQuestId = null;
+        }
+        
+        function switchQuestTab(tabType) {
+            if (!gameEngine || !gameEngine.questSystem) {
+                return;
+            }
+            
+            currentQuestTab = tabType;
+            
+            // Update tab button states
+            const tabs = document.querySelectorAll('.quest-tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(`tab-${tabType}`).classList.add('active');
+            
+            // Update quest list based on tab
+            updateQuestList(tabType);
+            
+            // Clear selection when switching tabs
+            selectedQuestId = null;
+            clearQuestDetails();
+        }
+        
+        function updateQuestDisplay() {
+            if (!gameEngine || !gameEngine.questSystem) {
+                return;
+            }
+            
+            const questSystem = gameEngine.questSystem;
+            
+            // Update quest points display
+            document.getElementById('questPointsDisplay').textContent = questSystem.questPoints;
+            
+            // Update completed quests count
+            const totalQuests = Object.keys(questSystem.gameConfig.quests).length;
+            const completedCount = questSystem.completedQuests.size;
+            document.getElementById('completedQuestsDisplay').textContent = `${completedCount}/${totalQuests}`;
+            
+            // Update tab counters
+            const activeCount = questSystem.activeQuests.size;
+            const availableCount = questSystem.getAvailableQuests().length;
+            const completedCountDisplay = questSystem.completedQuests.size;
+            
+            document.getElementById('activeQuestCount').textContent = activeCount;
+            document.getElementById('availableQuestCount').textContent = availableCount;
+            document.getElementById('completedQuestCount').textContent = completedCountDisplay;
+            
+            // Update quest list for current tab
+            updateQuestList(currentQuestTab);
+        }
+        
+        function updateQuestList(tabType) {
+            if (!gameEngine || !gameEngine.questSystem) {
+                return;
+            }
+            
+            const questSystem = gameEngine.questSystem;
+            const questList = document.getElementById('questList');
+            questList.innerHTML = '';
+            
+            let quests = [];
+            
+            if (tabType === 'active') {
+                // Get active quests
+                quests = Array.from(questSystem.activeQuests.values());
+                
+                if (quests.length === 0) {
+                    questList.innerHTML = '<div class="no-quests">No active quests. Check the Available tab to start a new quest!</div>';
+                    return;
+                }
+                
+                // Render active quests
+                quests.forEach(questState => {
+                    const questConfig = questSystem.getQuestConfig(questState.questId);
+                    const questItem = createQuestListItem(questState.questId, questConfig, questState);
+                    questList.appendChild(questItem);
+                });
+                
+            } else if (tabType === 'available') {
+                // Get available quests
+                const availableQuests = questSystem.getAvailableQuests();
+                
+                if (availableQuests.length === 0) {
+                    questList.innerHTML = '<div class="no-quests">No quests available. Complete more quests or level up your skills!</div>';
+                    return;
+                }
+                
+                // Render available quests
+                availableQuests.forEach(questId => {
+                    const questConfig = questSystem.getQuestConfig(questId);
+                    const questItem = createQuestListItem(questId, questConfig, null);
+                    questList.appendChild(questItem);
+                });
+                
+            } else if (tabType === 'completed') {
+                // Get completed quests
+                const completedQuestIds = Array.from(questSystem.completedQuests);
+                
+                if (completedQuestIds.length === 0) {
+                    questList.innerHTML = '<div class="no-quests">No completed quests yet. Start your adventure!</div>';
+                    return;
+                }
+                
+                // Render completed quests
+                completedQuestIds.forEach(questId => {
+                    const questConfig = questSystem.getQuestConfig(questId);
+                    const questItem = createQuestListItem(questId, questConfig, null, true);
+                    questList.appendChild(questItem);
+                });
+            }
+        }
+        
+        function createQuestListItem(questId, questConfig, questState = null, isCompleted = false) {
+            const questItem = document.createElement('div');
+            questItem.className = 'quest-item';
+            
+            if (selectedQuestId === questId) {
+                questItem.classList.add('selected');
+            }
+            
+            questItem.onclick = () => selectQuest(questId);
+            
+            // Quest header
+            const header = document.createElement('div');
+            header.className = 'quest-item-header';
+            
+            const name = document.createElement('div');
+            name.className = 'quest-item-name';
+            name.textContent = questConfig.name;
+            header.appendChild(name);
+            
+            const difficulty = document.createElement('span');
+            difficulty.className = `quest-difficulty ${questConfig.difficulty.toLowerCase()}`;
+            difficulty.textContent = questConfig.difficulty;
+            header.appendChild(difficulty);
+            
+            questItem.appendChild(header);
+            
+            // Quest status
+            const status = document.createElement('div');
+            status.className = 'quest-item-status';
+            
+            if (isCompleted) {
+                status.innerHTML = '<span style="color: #4CAF50;">✓ Completed</span>';
+            } else if (questState) {
+                const currentStageNum = questState.currentStage + 1;
+                const totalStages = questConfig.stages.length;
+                status.textContent = `Stage ${currentStageNum}/${totalStages}`;
+            } else {
+                status.textContent = 'Not Started';
+            }
+            
+            questItem.appendChild(status);
+            
+            return questItem;
+        }
+        
+        function selectQuest(questId) {
+            if (!gameEngine || !gameEngine.questSystem) {
+                return;
+            }
+            
+            selectedQuestId = questId;
+            
+            // Update selected state in quest list
+            const questItems = document.querySelectorAll('.quest-item');
+            questItems.forEach(item => {
+                item.classList.remove('selected');
+            });
+            event.target.closest('.quest-item').classList.add('selected');
+            
+            // Show quest details
+            showQuestDetails(questId);
+        }
+        
+        function showQuestDetails(questId) {
+            if (!gameEngine || !gameEngine.questSystem) {
+                return;
+            }
+            
+            const questSystem = gameEngine.questSystem;
+            const questConfig = questSystem.getQuestConfig(questId);
+            const questState = questSystem.activeQuests.get(questId);
+            const isCompleted = questSystem.completedQuests.has(questId);
+            
+            const detailsPanel = document.getElementById('questDetails');
+            detailsPanel.innerHTML = '';
+            
+            // Quest header
+            const header = document.createElement('div');
+            header.className = 'quest-detail-header';
+            
+            const title = document.createElement('h3');
+            title.textContent = questConfig.name;
+            header.appendChild(title);
+            
+            const difficulty = document.createElement('span');
+            difficulty.className = `quest-difficulty ${questConfig.difficulty.toLowerCase()}`;
+            difficulty.textContent = questConfig.difficulty;
+            header.appendChild(difficulty);
+            
+            detailsPanel.appendChild(header);
+            
+            // Quest description
+            const description = document.createElement('p');
+            description.className = 'quest-description';
+            description.textContent = questConfig.description;
+            detailsPanel.appendChild(description);
+            
+            // Requirements section
+            if (questConfig.requirements && Object.keys(questConfig.requirements).length > 0) {
+                const reqSection = document.createElement('div');
+                reqSection.className = 'quest-requirements';
+                reqSection.innerHTML = '<h4>Requirements:</h4>';
+                
+                const reqList = document.createElement('ul');
+                for (const [skillId, level] of Object.entries(questConfig.requirements)) {
+                    const reqItem = document.createElement('li');
+                    const playerSkill = gameEngine.playerStats.skills[skillId];
+                    const hasRequirement = playerSkill && playerSkill.level >= level;
+                    
+                    reqItem.innerHTML = `
+                        <span style="color: ${hasRequirement ? '#4CAF50' : '#f44336'};">
+                            ${hasRequirement ? '✓' : '✗'}
+                        </span>
+                        Level ${level} ${skillId.charAt(0).toUpperCase() + skillId.slice(1)}
+                    `;
+                    reqList.appendChild(reqItem);
+                }
+                reqSection.appendChild(reqList);
+                detailsPanel.appendChild(reqSection);
+            }
+            
+            // Stages section
+            const stagesSection = document.createElement('div');
+            stagesSection.className = 'quest-stages';
+            stagesSection.innerHTML = '<h4>Quest Stages:</h4>';
+            
+            questConfig.stages.forEach((stage, index) => {
+                const stageItem = document.createElement('div');
+                stageItem.className = 'quest-stage-item';
+                
+                // Determine stage status
+                if (isCompleted || (questState && index < questState.currentStage)) {
+                    stageItem.classList.add('completed');
+                } else if (questState && index === questState.currentStage) {
+                    stageItem.classList.add('active');
+                }
+                
+                const stageNumber = document.createElement('div');
+                stageNumber.className = 'quest-stage-number';
+                stageNumber.textContent = index + 1;
+                stageItem.appendChild(stageNumber);
+                
+                const stageContent = document.createElement('div');
+                stageContent.className = 'quest-stage-content';
+                
+                const stageDesc = document.createElement('div');
+                stageDesc.className = 'quest-stage-description';
+                stageDesc.textContent = stage.description;
+                stageContent.appendChild(stageDesc);
+                
+                // Show progress if this is the active stage
+                if (questState && index === questState.currentStage) {
+                    const progress = questState.progress[index];
+                    if (progress) {
+                        const progressBar = document.createElement('div');
+                        progressBar.className = 'quest-stage-progress';
+                        
+                        if (stage.type === 'gather' || stage.type === 'kill') {
+                            const current = progress.current || 0;
+                            const required = stage.amount || 1;
+                            const percentage = Math.min(100, (current / required) * 100);
+                            
+                            progressBar.innerHTML = `
+                                <div class="quest-progress-bar">
+                                    <div class="quest-progress-fill" style="width: ${percentage}%"></div>
+                                </div>
+                                <div class="quest-progress-text">${current}/${required}</div>
+                            `;
+                        } else if (progress.completed) {
+                            progressBar.innerHTML = '<span style="color: #4CAF50;">✓ Completed</span>';
+                        }
+                        
+                        stageContent.appendChild(progressBar);
+                    }
+                }
+                
+                stageItem.appendChild(stageContent);
+                stagesSection.appendChild(stageItem);
+            });
+            
+            detailsPanel.appendChild(stagesSection);
+            
+            // Rewards section
+            const rewardsSection = document.createElement('div');
+            rewardsSection.className = 'quest-rewards';
+            rewardsSection.innerHTML = '<h4>Rewards:</h4>';
+            
+            const rewardGrid = document.createElement('div');
+            rewardGrid.className = 'reward-grid';
+            
+            // XP rewards
+            if (questConfig.rewards.xp) {
+                for (const [skillId, xpAmount] of Object.entries(questConfig.rewards.xp)) {
+                    const rewardItem = document.createElement('div');
+                    rewardItem.className = 'reward-item';
+                    rewardItem.innerHTML = `
+                        <span class="reward-icon">✨</span>
+                        <span>${xpAmount} ${skillId.charAt(0).toUpperCase() + skillId.slice(1)} XP</span>
+                    `;
+                    rewardGrid.appendChild(rewardItem);
+                }
+            }
+            
+            // Item rewards
+            if (questConfig.rewards.items) {
+                questConfig.rewards.items.forEach(itemReward => {
+                    const rewardItem = document.createElement('div');
+                    rewardItem.className = 'reward-item';
+                    rewardItem.innerHTML = `
+                        <span class="reward-icon">📦</span>
+                        <span>${itemReward.amount}x ${itemReward.item.replace(/_/g, ' ')}</span>
+                    `;
+                    rewardGrid.appendChild(rewardItem);
+                });
+            }
+            
+            // Coin rewards
+            if (questConfig.rewards.coins) {
+                const rewardItem = document.createElement('div');
+                rewardItem.className = 'reward-item';
+                rewardItem.innerHTML = `
+                    <span class="reward-icon">💰</span>
+                    <span>${questConfig.rewards.coins} coins</span>
+                `;
+                rewardGrid.appendChild(rewardItem);
+            }
+            
+            // Quest points
+            if (questConfig.rewards.questPoints) {
+                const rewardItem = document.createElement('div');
+                rewardItem.className = 'reward-item';
+                rewardItem.innerHTML = `
+                    <span class="reward-icon">⭐</span>
+                    <span>${questConfig.rewards.questPoints} Quest Points</span>
+                `;
+                rewardGrid.appendChild(rewardItem);
+            }
+            
+            rewardsSection.appendChild(rewardGrid);
+            detailsPanel.appendChild(rewardsSection);
+            
+            // Action buttons
+            const actionButtons = document.createElement('div');
+            actionButtons.className = 'quest-actions';
+            
+            if (isCompleted) {
+                // Quest is completed - show completion message
+                const completedMsg = document.createElement('div');
+                completedMsg.className = 'quest-completed-message';
+                completedMsg.innerHTML = '<span style="color: #4CAF50;">✓ Quest Completed!</span>';
+                actionButtons.appendChild(completedMsg);
+            } else if (questState) {
+                // Quest is in progress - show abandon button
+                const abandonBtn = document.createElement('button');
+                abandonBtn.className = 'rs-button button-danger';
+                abandonBtn.textContent = 'Abandon Quest';
+                abandonBtn.onclick = () => abandonQuest(questId);
+                actionButtons.appendChild(abandonBtn);
+            } else {
+                // Quest is available - show start button
+                const canStart = questSystem.canStartQuest(questId);
+                
+                const startBtn = document.createElement('button');
+                startBtn.className = 'rs-button button-primary';
+                startBtn.textContent = 'Start Quest';
+                startBtn.disabled = !canStart.canStart;
+                startBtn.onclick = () => startQuestFromUI(questId);
+                actionButtons.appendChild(startBtn);
+                
+                if (!canStart.canStart) {
+                    const errorMsg = document.createElement('div');
+                    errorMsg.className = 'quest-error';
+                    errorMsg.textContent = canStart.reason;
+                    actionButtons.appendChild(errorMsg);
+                }
+            }
+            
+            detailsPanel.appendChild(actionButtons);
+        }
+        
+        function clearQuestDetails() {
+            const detailsPanel = document.getElementById('questDetails');
+            detailsPanel.innerHTML = `
+                <div class="no-quest-selected">
+                    <div style="font-size: 48px; margin-bottom: 16px;">📜</div>
+                    <div>Select a quest to view details</div>
+                </div>
+            `;
+        }
+        
+        function startQuestFromUI(questId) {
+            if (!gameEngine || !gameEngine.questSystem) {
+                addSystemMessage('Quest system not available', 'error');
+                return;
+            }
+            
+            const result = gameEngine.questSystem.startQuest(questId);
+            
+            if (result.success) {
+                addSystemMessage(`Started quest: ${result.questState.name}`);
+                updateQuestDisplay();
+                showQuestDetails(questId); // Refresh details
+            } else {
+                addSystemMessage(`Cannot start quest: ${result.reason}`, 'error');
+            }
+        }
+        
+        function abandonQuest(questId) {
+            if (!gameEngine || !gameEngine.questSystem) {
+                addSystemMessage('Quest system not available', 'error');
+                return;
+            }
+            
+            // Confirm abandonment
+            if (!confirm('Are you sure you want to abandon this quest? Your progress will be lost.')) {
+                return;
+            }
+            
+            const questState = gameEngine.questSystem.activeQuests.get(questId);
+            if (!questState) {
+                addSystemMessage('Quest is not active', 'error');
+                return;
+            }
+            
+            // Remove quest from active quests
+            gameEngine.questSystem.activeQuests.delete(questId);
+            gameEngine.questSystem.questProgress.delete(questId);
+            
+            addSystemMessage(`Abandoned quest: ${questState.name}`, 'warning');
+            
+            // Update display
+            updateQuestDisplay();
+            clearQuestDetails();
+            selectedQuestId = null;
+        }
+        
+        // Event listener for quest system events
+        if (gameEngine) {
+            gameEngine.on('quest:started', (data) => {
+                // Update quest display when a quest is started
+                if (document.getElementById('questModal').classList.contains('hidden') === false) {
+                    updateQuestDisplay();
+                }
+            });
+            
+            gameEngine.on('quest:progress', (data) => {
+                // Update quest display when progress is made
+                if (document.getElementById('questModal').classList.contains('hidden') === false) {
+                    updateQuestDisplay();
+                    if (selectedQuestId === data.questId) {
+                        showQuestDetails(data.questId); // Refresh details if viewing this quest
+                    }
+                }
+            });
+            
+            gameEngine.on('quest:stage_completed', (data) => {
+                // Update quest display when a stage is completed
+                if (document.getElementById('questModal').classList.contains('hidden') === false) {
+                    updateQuestDisplay();
+                    if (selectedQuestId === data.questId) {
+                        showQuestDetails(data.questId);
+                    }
+                }
+            });
+            
+            gameEngine.on('quest:completed', (data) => {
+                // Update quest display when a quest is completed
+                addSystemMessage(`Quest completed: ${data.questName}! +${data.rewards.questPoints || 0} Quest Points`, 'success');
+                
+                if (document.getElementById('questModal').classList.contains('hidden') === false) {
+                    updateQuestDisplay();
+                    if (selectedQuestId === data.questId) {
+                        showQuestDetails(data.questId);
+                    }
+                }
+            });
         }
 
         function openShop() {
