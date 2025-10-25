@@ -326,6 +326,16 @@ class Player {
             return { levelUp: false, level: 0 };
         }
         
+        // ✅ TASK 2.5 FIX: Delegate to SkillsSystem to properly emit events
+        // This ensures UI updates, level-up notifications, and XP tracking work correctly
+        if (window.gameEngine && window.gameEngine.skillsSystem) {
+            // Use SkillsSystem which emits proper events
+            const result = window.gameEngine.skillsSystem.addXP(this, skillName, xpAmount);
+            return result || { levelUp: false, level: this.skills[skillName].level };
+        }
+        
+        // Fallback for cases where SkillsSystem isn't available (shouldn't happen in normal gameplay)
+        console.warn('⚠️ SkillsSystem not available, using fallback XP method');
         const skill = this.skills[skillName];
         const oldLevel = skill.level;
         
