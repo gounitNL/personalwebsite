@@ -49,14 +49,18 @@ class Renderer {
      * Convert world coordinates to screen coordinates (isometric projection)
      */
     worldToScreen(worldX, worldY, camera) {
-        // Isometric projection formula
-        const screenX = (worldX - worldY) * (this.tileWidth / 2);
-        const screenY = (worldX + worldY) * (this.tileHeight / 2);
+        // ✅ FIX: Convert entity world position to isometric screen coordinates
+        const entityScreenX = (worldX - worldY) * (this.tileWidth / 2);
+        const entityScreenY = (worldX + worldY) * (this.tileHeight / 2);
         
-        // Apply camera offset
+        // ✅ FIX: Convert camera world position to isometric screen coordinates
+        const cameraScreenX = (camera.x - camera.y) * (this.tileWidth / 2);
+        const cameraScreenY = (camera.x + camera.y) * (this.tileHeight / 2);
+        
+        // Subtract camera position and center on canvas
         return {
-            x: screenX - camera.x + this.canvas.width / 2,
-            y: screenY - camera.y + this.canvas.height / 2
+            x: entityScreenX - cameraScreenX + this.canvas.width / 2,
+            y: entityScreenY - cameraScreenY + this.canvas.height / 2
         };
     }
 
