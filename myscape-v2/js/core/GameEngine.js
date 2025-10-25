@@ -60,6 +60,9 @@ class GameEngine {
         this.lastFpsUpdate = 0;
         this.currentFps = 0;
         
+        // ✅ FIX: Add debounce timer for pause/resume
+        this.pauseDebounceTimer = null;
+        
         console.log('🎮 GameEngine initialized');
     }
 
@@ -117,8 +120,25 @@ class GameEngine {
             
             // Setup window event listeners
             window.addEventListener('resize', () => this.resizeCanvas());
-            window.addEventListener('blur', () => this.pause());
-            window.addEventListener('focus', () => this.resume());
+            
+            // ✅ FIX: Debounce pause/resume to prevent rapid toggling
+            window.addEventListener('blur', () => {
+                clearTimeout(this.pauseDebounceTimer);
+                this.pauseDebounceTimer = setTimeout(() => {
+                    if (!this.isPaused) {
+                        this.pause();
+                    }
+                }, 200); // 200ms delay
+            });
+            
+            window.addEventListener('focus', () => {
+                clearTimeout(this.pauseDebounceTimer);
+                this.pauseDebounceTimer = setTimeout(() => {
+                    if (this.isPaused) {
+                        this.resume();
+                    }
+                }, 200); // 200ms delay
+            });
             
             console.log('✅ Game initialization complete!');
             console.log('  - Player:', this.player ? `at (${this.player.x}, ${this.player.y})` : 'NOT CREATED');

@@ -256,8 +256,14 @@ class WorldSystem {
         
         // Spawn resources
         if (areaConfig.resources) {
-            for (const resourceSpawn of areaConfig.resources) {
-                this.spawnResource(resourceSpawn);
+            for (const resourceId of areaConfig.resources) {
+                // ✅ FIX: Generate spawn data with random position
+                const spawnData = {
+                    type: resourceId,
+                    x: Math.floor(Math.random() * (areaConfig.size.width - 5)) + 2,
+                    y: Math.floor(Math.random() * (areaConfig.size.height - 5)) + 2
+                };
+                this.spawnResource(spawnData);
             }
         }
         
@@ -268,8 +274,14 @@ class WorldSystem {
         
         // Spawn enemies
         if (areaConfig.enemies) {
-            for (const enemySpawn of areaConfig.enemies) {
-                this.spawnEnemy(enemySpawn);
+            for (const enemyId of areaConfig.enemies) {
+                // ✅ FIX: Generate spawn data with random position
+                const spawnData = {
+                    type: enemyId,
+                    x: Math.floor(Math.random() * (areaConfig.size.width - 5)) + 2,
+                    y: Math.floor(Math.random() * (areaConfig.size.height - 5)) + 2
+                };
+                this.spawnEnemy(spawnData);
             }
         }
         
