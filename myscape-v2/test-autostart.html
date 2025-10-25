@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyScape v2 - Auto Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: monospace;
+            background: #1a1a1a;
+            color: #0f0;
+        }
+        #status {
+            background: #2a2a2a;
+            padding: 15px;
+            border: 2px solid #0f0;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .success { color: #0f0; }
+        .error { color: #f00; }
+        .info { color: #0ff; }
+        #logs {
+            background: #000;
+            padding: 15px;
+            border: 1px solid #0f0;
+            height: 400px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎮 MyScape v2 - Automatic Test Mode</h1>
+    
+    <div id="status">
+        <h2>Test Status: <span id="statusText">Starting...</span></h2>
+        <p>QuestSystem Fix: <span id="questStatus">Testing...</span></p>
+        <p>Game Initialization: <span id="initStatus">Pending...</span></p>
+    </div>
+    
+    <h3>Console Output:</h3>
+    <div id="logs"></div>
+    
+    <script>
+        const logsDiv = document.getElementById('logs');
+        const statusText = document.getElementById('statusText');
+        const questStatus = document.getElementById('questStatus');
+        const initStatus = document.getElementById('initStatus');
+        
+        let questSystemLoaded = false;
+        let gameInitialized = false;
+        let errors = [];
+        
+        function addLog(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logsDiv.appendChild(entry);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+        
+        // Intercept console.log, console.error, etc.
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const message = args.join(' ');
+            addLog('LOG: ' + message, 'info');
+            
+            // Check for specific messages
+            if (message.includes('QuestSystem initialized')) {
+                questSystemLoaded = true;
+                questStatus.textContent = '✅ SUCCESS';
+                questStatus.className = 'success';
+                addLog('✅ QuestSystem loaded successfully!', 'success');
+            }
+            
+            if (message.includes('Game initialized successfully')) {
+                gameInitialized = true;
+                initStatus.textContent = '✅ SUCCESS';
+                initStatus.className = 'success';
+                addLog('✅ Game initialized successfully!', 'success');
+            }
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            const message = args.join(' ');
+            addLog('ERROR: ' + message, 'error');
+            errors.push(message);
+            
+            if (message.includes('.bind')) {
+                questStatus.textContent = '❌ FAILED - .bind() error';
+                questStatus.className = 'error';
+            }
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            const message = args.join(' ');
+            addLog('WARN: ' + message, 'info');
+        };
+        
+        addLog('🚀 Starting automatic test...', 'info');
+        addLog('Loading game files...', 'info');
+        
+        // Check results after 10 seconds
+        setTimeout(() => {
+            addLog('', 'info');
+            addLog('═══════════════════════════════════════', 'info');
+            addLog('TEST RESULTS:', 'success');
+            addLog('═══════════════════════════════════════', 'info');
+            
+            if (questSystemLoaded && gameInitialized && errors.length === 0) {
+                statusText.textContent = '✅ ALL TESTS PASSED';
+                statusText.className = 'success';
+                addLog('✅ QuestSystem loaded without errors', 'success');
+                addLog('✅ Game initialized successfully', 'success');
+                addLog('✅ No .bind() errors detected', 'success');
+                addLog('', 'info');
+                addLog('🎉 GAME IS FULLY FUNCTIONAL!', 'success');
+            } else {
+                statusText.textContent = '⚠️ ISSUES DETECTED';
+                statusText.className = 'error';
+                
+                if (!questSystemLoaded) {
+                    addLog('❌ QuestSystem did not load', 'error');
+                }
+                if (!gameInitialized) {
+                    addLog('❌ Game initialization incomplete', 'error');
+                }
+                if (errors.length > 0) {
+                    addLog(`❌ ${errors.length} error(s) detected:`, 'error');
+                    errors.forEach(err => addLog('  - ' + err, 'error'));
+                }
+            }
+            
+            addLog('═══════════════════════════════════════', 'info');
+        }, 10000);
+    </script>
+    
+    <!-- Load game files -->
+    <script src="data/game-config.js"></script>
+    <script src="js/core/Camera.js"></script>
+    <script src="js/core/Renderer.js"></script>
+    <script src="js/core/InputHandler.js"></script>
+    <script src="js/entities/Player.js"></script>
+    <script src="js/entities/Enemy.js"></script>
+    <script src="js/entities/Resource.js"></script>
+    <script src="js/systems/SkillsSystem.js"></script>
+    <script src="js/systems/InventorySystem.js"></script>
+    <script src="js/systems/WorldSystem.js"></script>
+    <script src="js/systems/CombatSystem.js"></script>
+    <script src="js/systems/DamageNumbersSystem.js"></script>
+    <script src="js/systems/EquipmentSystem.js"></script>
+    <script src="js/systems/BankingSystem.js"></script>
+    <script src="js/systems/NPCSystem.js"></script>
+    <script src="js/systems/QuestSystem.js"></script>
+    <script src="js/ui/UIManager.js"></script>
+    <script src="js/ui/StatsPanel.js"></script>
+    <script src="js/ui/EquipmentPanel.js"></script>
+    <script src="js/ui/ContextMenu.js"></script>
+    <script src="js/utils/SaveSystem.js"></script>
+    <script src="js/utils/ObjectPool.js"></script>
+    <script src="js/utils/PathFinding.js"></script>
+    <script src="js/utils/SpatialGrid.js"></script>
+    <script src="js/core/GameEngine.js"></script>
+    
+    <canvas id="gameCanvas" width="800" height="600" style="display:none;"></canvas>
+    
+    <script>
+        // Wait for DOM to be fully ready
+        window.addEventListener('DOMContentLoaded', () => {
+            addLog('All scripts loaded, initializing game engine...', 'info');
+            
+            // Verify canvas exists
+            const canvas = document.getElementById('gameCanvas');
+            if (!canvas) {
+                addLog('ERROR: Canvas element not found!', 'error');
+                return;
+            }
+            addLog('Canvas element found: ' + canvas.id, 'success');
+            
+            try {
+                // Create fake user for testing
+                window.currentUser = {
+                    uid: 'test-user',
+                    email: 'test@myscape.game',
+                    displayName: 'Test Player',
+                    isDemo: true
+                };
+                
+                addLog('Creating GameEngine instance...', 'info');
+                const gameEngine = new GameEngine();
+                window.gameEngine = gameEngine;
+                
+                addLog('Initializing game...', 'info');
+                gameEngine.init('gameCanvas').then(() => {
+                    addLog('Game engine init() completed', 'success');
+                }).catch(err => {
+                    addLog('Game engine init() failed: ' + err.message, 'error');
+                    console.error('Init error:', err);
+                });
+                
+            } catch (error) {
+                addLog('Fatal error during initialization: ' + error.message, 'error');
+                console.error('Fatal error:', error);
+                statusText.textContent = '❌ FATAL ERROR';
+                statusText.className = 'error';
+            }
+        });
+    </script>
+</body>
+</html>

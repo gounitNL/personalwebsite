@@ -28,14 +28,16 @@ class QuestSystem {
             COMPLETED: 'completed'
         };
         
-        // Stage type handlers
-        this.stageHandlers = {
-            'talk_npc': this.handleTalkNPC.bind(this),
-            'gather': this.handleGather.bind(this),
-            'kill': this.handleKill.bind(this),
-            'equip': this.handleEquip.bind(this),
-            'use': this.handleUse.bind(this)
-        };
+        // ✅ FIX: Removed unused stageHandlers that caused .bind() error
+        // Stage type handlers were defined but never used in the code
+        // Progress tracking is handled via event listeners in setupEventListeners()
+        // this.stageHandlers = {
+        //     'talk_npc': this.handleTalkNPC.bind(this),
+        //     'gather': this.handleGather.bind(this),
+        //     'kill': this.handleKill.bind(this),
+        //     'equip': this.handleEquip.bind(this),
+        //     'use': this.handleUse.bind(this)
+        // };
         
         console.log('QuestSystem initialized');
     }
