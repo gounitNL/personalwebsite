@@ -13,6 +13,10 @@ class Camera {
         this.width = width;
         this.height = height;
         
+        // ✅ FIX: Store tile dimensions for coordinate conversion
+        this.tileWidth = 64;
+        this.tileHeight = 32;
+        
         // Target to follow (usually the player)
         this.target = null;
         
@@ -48,13 +52,14 @@ class Camera {
         this.target = target;
         
         if (target) {
-            // Immediately move to target
-            this.x = target.x * 32; // Convert world coords to pixel coords
-            this.y = target.y * 16;
+            // ✅ FIX: Keep camera in world coordinate space (tiles, not pixels)
+            // Renderer.worldToScreen will handle conversion to screen space
+            this.x = target.x;
+            this.y = target.y;
             this.targetX = this.x;
             this.targetY = this.y;
             
-            console.log('📷 Camera following:', target.name || 'entity');
+            console.log('📷 Camera following:', target.name || 'entity', 'at world position:', this.x, this.y);
         }
     }
 
@@ -92,9 +97,10 @@ class Camera {
     update(deltaTime) {
         // Update target position if following an entity
         if (this.target) {
-            // Convert world coordinates to camera coordinates
-            this.targetX = this.target.x * 32; // Tile width / 2 * 2 for isometric
-            this.targetY = this.target.y * 16; // Tile height / 2 * 2 for isometric
+            // ✅ FIX: Use world coordinates directly (tiles)
+            // Renderer handles conversion to screen space
+            this.targetX = this.target.x;
+            this.targetY = this.target.y;
         }
         
         // Smooth camera movement
@@ -164,14 +170,16 @@ class Camera {
      * Get viewport bounds in world coordinates
      */
     getBounds() {
-        const halfWidth = (this.width / 2) / this.zoom;
-        const halfHeight = (this.height / 2) / this.zoom;
+        // ✅ FIX: Camera is now in world space, calculate bounds accordingly
+        // Convert viewport dimensions to world tile units
+        const tilesWide = (this.width / this.tileWidth) / this.zoom;
+        const tilesHigh = (this.height / this.tileHeight) / this.zoom;
         
         return {
-            left: (this.x - halfWidth) / 32,
-            right: (this.x + halfWidth) / 32,
-            top: (this.y - halfHeight) / 16,
-            bottom: (this.y + halfHeight) / 16
+            left: this.x - tilesWide / 2,
+            right: this.x + tilesWide / 2,
+            top: this.y - tilesHigh / 2,
+            bottom: this.y + tilesHigh / 2
         };
     }
 
@@ -214,7 +222,8 @@ class Camera {
      * Center camera on position
      */
     centerOn(worldX, worldY, instant = false) {
-        this.moveTo(worldX * 32, worldY * 16, instant);
+        // ✅ FIX: Use world coordinates directly
+        this.moveTo(worldX, worldY, instant);
         
         // Stop following target
         this.target = null;
@@ -224,11 +233,9 @@ class Camera {
      * Get distance from camera center to point
      */
     getDistanceToPoint(worldX, worldY) {
-        const camWorldX = this.x / 32;
-        const camWorldY = this.y / 16;
-        
-        const dx = worldX - camWorldX;
-        const dy = worldY - camWorldY;
+        // ✅ FIX: Camera is already in world space
+        const dx = worldX - this.x;
+        const dy = worldY - this.y;
         
         return Math.sqrt(dx * dx + dy * dy);
     }
@@ -243,9 +250,9 @@ class Camera {
         // Set slower smoothing for transition
         this.smoothing = 0.02;
         
-        // Set target
-        this.targetX = worldX * 32;
-        this.targetY = worldY * 16;
+        // ✅ FIX: Set target in world coordinates
+        this.targetX = worldX;
+        this.targetY = worldY;
         
         // Restore smoothing after transition
         setTimeout(() => {
