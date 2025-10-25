@@ -395,6 +395,47 @@
         </div>
     </div>
 
+    <!-- Shop Panel Modal (PHASE 6 - Task 6.5) -->
+    <div id="shopModal" class="modal-panel hidden">
+        <div class="modal-content shop-modal">
+            <div class="modal-header">
+                <h2 id="shopTitle">🏪 General Store</h2>
+                <button class="modal-close" onclick="closeShop()">✕</button>
+            </div>
+            <div class="modal-body shop-body">
+                <!-- Shop Info -->
+                <div class="shop-info">
+                    <div class="shop-welcome" id="shopWelcome">Welcome to my shop!</div>
+                    <div class="shop-player-coins">
+                        💰 Your coins: <span id="shopPlayerCoins">0</span> gp
+                    </div>
+                </div>
+
+                <!-- Shop Items Grid -->
+                <div class="shop-section">
+                    <h3>Shop Inventory</h3>
+                    <div class="shop-items-grid" id="shopItemsGrid">
+                        <!-- Shop items will be rendered here -->
+                    </div>
+                </div>
+
+                <!-- Player Inventory for Selling -->
+                <div class="shop-section">
+                    <h3>Your Inventory (Click to Sell)</h3>
+                    <div class="shop-inventory-grid" id="shopInventoryGrid">
+                        <!-- Player inventory for selling will be rendered here -->
+                    </div>
+                </div>
+
+                <!-- Shop Hint -->
+                <div class="shop-hint">
+                    💡 Click shop items to buy | Click your inventory items to sell<br>
+                    Shops buy at 60% of item value | Shops restock periodically
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -423,6 +464,7 @@
     <script src="js/systems/BankingSystem.js"></script>
     <script src="js/systems/NPCSystem.js"></script>
     <script src="js/systems/QuestSystem.js"></script>
+    <script src="js/systems/ShopSystem.js"></script>
     
     <!-- UI Components -->
     <script src="js/ui/UIManager.js"></script>
