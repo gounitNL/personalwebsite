@@ -175,38 +175,15 @@ class GameEngine {
         this.npcSystem = new NPCSystem(this);
         this.npcSystem.init(this.gameConfig);
         
+        // Phase 7: Quest System (COMPLETED)
+        console.log('  📜 Initializing Quest System...');
+        this.questSystem = new QuestSystem(this);
+        this.questSystem.init(this.gameConfig);
+        
         // Shop system will be added later
         // this.shopSystem = new ShopSystem(this);
         
-        // Phase 2: Skills and Inventory
-        // this.skillsSystem = new SkillsSystem(this.player);
-        // this.inventorySystem = new InventorySystem(28);
-        
-        // Phase 3: World
-        // this.worldSystem = new WorldSystem(this);
-        
-        // Phase 4: Combat
-        // this.combatSystem = new CombatSystem(this);
-        
-        // Phase 5: Equipment
-        // this.equipmentSystem = new EquipmentSystem(this);
-        
-        // Phase 6: Banking & Shopping
-        // this.bankingSystem = new BankingSystem(400);
-        // this.npcSystem = new NPCSystem(this);
-        // this.shopSystem = new ShopSystem(this);
-        
-        // Phase 7: Quests (TODO)
-        // this.questSystem = new QuestSystem(this);
-        
-        console.log('⚙️ Phase 2 systems initialized successfully');
-        // Phase 7: Quests
-        // this.questSystem = new QuestSystem(this);
-        
-        // Phase 8: UI
-        // this.uiManager = new UIManager(this);
-        
-        console.log('⚙️ Systems initialized (placeholders for now)');
+        console.log('⚙️ All game systems initialized successfully');
     }
 
     /**

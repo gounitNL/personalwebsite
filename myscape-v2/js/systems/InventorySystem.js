@@ -489,6 +489,14 @@ class InventorySystem {
             // Consume food
             this.gameEngine.emit('item:consume', { item, slot });
             
+            // Emit quest-tracking event (Phase 7: Quest System)
+            this.gameEngine.emit('item:used', { 
+                itemId: item.id, 
+                itemName: item.name,
+                slot,
+                action: 'consume'
+            });
+            
             // Remove consumed item
             if (item.quantity > 1) {
                 item.quantity--;
@@ -501,6 +509,14 @@ class InventorySystem {
         } else if (itemConfig.type === 'potion') {
             // Drink potion
             this.gameEngine.emit('item:drink', { item, slot });
+            
+            // Emit quest-tracking event (Phase 7: Quest System)
+            this.gameEngine.emit('item:used', { 
+                itemId: item.id, 
+                itemName: item.name,
+                slot,
+                action: 'drink'
+            });
             
             // Remove consumed dose
             if (item.quantity > 1) {
@@ -518,6 +534,16 @@ class InventorySystem {
         } else if (itemConfig.type === 'tool') {
             // Use tool on target
             this.gameEngine.emit('item:useTool', { item, slot, target });
+            
+            // Emit quest-tracking event (Phase 7: Quest System)
+            this.gameEngine.emit('item:used', { 
+                itemId: item.id, 
+                itemName: item.name,
+                slot,
+                action: 'use_tool',
+                target
+            });
+            
             return true;
         }
         

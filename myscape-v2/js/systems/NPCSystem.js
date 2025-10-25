@@ -272,6 +272,12 @@ class NPCSystem {
             actions: npc.actions
         });
         
+        // Emit quest-tracking event (Phase 7: Quest System)
+        this.gameEngine.emit('npc:talked', {
+            npcId: npc.id,
+            npcName: npc.name
+        });
+        
         // Advance dialogue index (cycle through)
         npc.currentDialogueIndex = (npc.currentDialogueIndex + 1) % npc.dialogue.length;
         
