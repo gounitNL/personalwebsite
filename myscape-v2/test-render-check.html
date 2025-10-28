@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Render Check</title>
+    <style>
+        body { margin: 0; background: #1a1a1a; color: #0f0; font-family: monospace; }
+        #canvas { display: block; width: 100%; height: 600px; border: 2px solid #0f0; }
+        #info { padding: 20px; }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="info">Checking render functions...</div>
+
+    <script src="data/game-config.js"></script>
+    <script src="js/core/Camera.js"></script>
+    <script src="js/core/Renderer.js"></script>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const info = document.getElementById('info');
+        
+        canvas.width = 1280;
+        canvas.height = 640;
+        
+        function log(msg) {
+            info.innerHTML += msg + '<br>';
+            console.log(msg);
+        }
+        
+        log('Creating camera...');
+        const camera = new Camera(25, 25, canvas.width, canvas.height);
+        log('✅ Camera created: ' + camera.x + ', ' + camera.y);
+        
+        log('Creating renderer...');
+        const renderer = new Renderer(canvas, ctx);
+        log('✅ Renderer created');
+        
+        log('Creating fake world data...');
+        const worldData = {
+            width: 50,
+            height: 50,
+            tiles: []
+        };
+        
+        for (let y = 0; y < 50; y++) {
+            worldData.tiles[y] = [];
+            for (let x = 0; x < 50; x++) {
+                worldData.tiles[y][x] = {
+                    type: 'grass',
+                    walkable: true
+                };
+            }
+        }
+        log('✅ World data created: 50x50 tiles');
+        
+        log('Creating fake player...');
+        const player = {
+            x: 25,
+            y: 25,
+            width: 16,
+            height: 24,
+            type: 'player',
+            color: '#4080ff',
+            name: 'Test Player',
+            hp: 10,
+            maxHp: 10
+        };
+        log('✅ Player created at: ' + player.x + ', ' + player.y);
+        
+        log('Testing worldToScreen conversion...');
+        const screenPos = renderer.worldToScreen(player.x, player.y, camera);
+        log('Player screen position: ' + Math.floor(screenPos.x) + ', ' + Math.floor(screenPos.y));
+        log('Canvas center: ' + (canvas.width/2) + ', ' + (canvas.height/2));
+        
+        log('Attempting to render world...');
+        try {
+            renderer.renderWorld(worldData, camera, []);
+            log('✅ renderWorld() executed without error');
+            
+            // Check if anything was drawn
+            const imageData = ctx.getImageData(canvas.width / 2, canvas.height / 2, 1, 1);
+            const pixel = imageData.data;
+            log('Center pixel: rgb(' + pixel[0] + ', ' + pixel[1] + ', ' + pixel[2] + ')');
+            
+            if (pixel[1] > 50) {
+                log('✅ GREEN DETECTED - Tiles are rendering!');
+            } else {
+                log('❌ Canvas is still BLACK - tiles not rendering');
+            }
+        } catch (error) {
+            log('❌ ERROR in renderWorld: ' + error.message);
+            log('Stack: ' + error.stack);
+        }
+        
+        log('Attempting to render player...');
+        try {
+            renderer.renderEntity(player, camera);
+            log('✅ renderEntity() executed without error');
+            
+            // Check if player was drawn
+            const imageData = ctx.getImageData(canvas.width / 2, canvas.height / 2 - 10, 1, 1);
+            const pixel = imageData.data;
+            log('Player pixel: rgb(' + pixel[0] + ', ' + pixel[1] + ', ' + pixel[2] + ')');
+            
+            if (pixel[2] > 100) {
+                log('✅ BLUE DETECTED - Player is rendering!');
+            }
+        } catch (error) {
+            log('❌ ERROR in renderEntity: ' + error.message);
+            log('Stack: ' + error.stack);
+        }
+    </script>
+</body>
+</html>

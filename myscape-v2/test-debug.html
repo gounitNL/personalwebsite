@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>MyScape Debug Test</title>
+    <style>
+        body { margin: 0; background: #000; }
+        #gameCanvas { 
+            display: block; 
+            width: 100vw; 
+            height: 100vh; 
+            cursor: crosshair;
+            border: 2px solid #0f0;
+        }
+        #debug {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            color: #0f0;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 14px;
+            z-index: 1000;
+            border: 2px solid #0f0;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <div id="debug">
+        <div id="status">Initializing...</div>
+        <div id="info"></div>
+    </div>
+
+    <script>
+        // MINIMAL TEST - No dependencies, just raw canvas drawing
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const statusEl = document.getElementById('status');
+        const infoEl = document.getElementById('info');
+        
+        // Resize canvas
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            console.log('Canvas resized to:', canvas.width, 'x', canvas.height);
+        }
+        resize();
+        window.addEventListener('resize', resize);
+        
+        // Simple player object
+        const player = {
+            x: 25,
+            y: 25,
+            width: 16,
+            height: 24,
+            color: '#4080ff'
+        };
+        
+        // Simple camera
+        const camera = {
+            x: 25,
+            y: 25
+        };
+        
+        // Isometric conversion
+        function worldToScreen(worldX, worldY) {
+            const tileWidth = 64;
+            const tileHeight = 32;
+            
+            // Entity to screen
+            const entityScreenX = (worldX - worldY) * (tileWidth / 2);
+            const entityScreenY = (worldX + worldY) * (tileHeight / 2);
+            
+            // Camera to screen
+            const cameraScreenX = (camera.x - camera.y) * (tileWidth / 2);
+            const cameraScreenY = (camera.x + camera.y) * (tileHeight / 2);
+            
+            return {
+                x: entityScreenX - cameraScreenX + canvas.width / 2,
+                y: entityScreenY - cameraScreenY + canvas.height / 2
+            };
+        }
+        
+        // Draw function
+        function draw() {
+            // Clear
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw grid
+            ctx.strokeStyle = '#0a0';
+            ctx.lineWidth = 1;
+            for (let y = 0; y < 50; y++) {
+                for (let x = 0; x < 50; x++) {
+                    const screen = worldToScreen(x, y);
+                    
+                    // Draw tile diamond
+                    ctx.beginPath();
+                    ctx.moveTo(screen.x, screen.y);
+                    ctx.lineTo(screen.x + 32, screen.y + 16);
+                    ctx.lineTo(screen.x, screen.y + 32);
+                    ctx.lineTo(screen.x - 32, screen.y + 16);
+                    ctx.closePath();
+                    
+                    ctx.fillStyle = (x + y) % 2 === 0 ? '#0a0' : '#090';
+                    ctx.fill();
+                    ctx.stroke();
+                }
+            }
+            
+            // Draw player
+            const playerScreen = worldToScreen(player.x, player.y);
+            
+            // Draw shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.beginPath();
+            ctx.ellipse(playerScreen.x, playerScreen.y + player.height/2, player.width/2, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Draw body
+            ctx.fillStyle = player.color;
+            ctx.fillRect(
+                playerScreen.x - player.width/2,
+                playerScreen.y - player.height,
+                player.width,
+                player.height
+            );
+            
+            // Draw outline
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(
+                playerScreen.x - player.width/2,
+                playerScreen.y - player.height,
+                player.width,
+                player.height
+            );
+            
+            // Draw name
+            ctx.font = 'bold 12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#fff';
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 4;
+            ctx.strokeText('Player', playerScreen.x, playerScreen.y - player.height - 5);
+            ctx.fillText('Player', playerScreen.x, playerScreen.y - player.height - 5);
+            
+            // Update debug info
+            infoEl.innerHTML = `
+                Canvas: ${canvas.width} x ${canvas.height}<br>
+                Player: (${player.x}, ${player.y})<br>
+                Camera: (${camera.x}, ${camera.y})<br>
+                Player Screen: (${Math.floor(playerScreen.x)}, ${Math.floor(playerScreen.y)})<br>
+                <br>
+                <strong style="color: #0f0;">✅ RENDERING!</strong><br>
+                <br>
+                Click anywhere to move player
+            `;
+        }
+        
+        // Click to move
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            // Convert to world coordinates (reverse of worldToScreen)
+            const adjustedX = mouseX - canvas.width / 2;
+            const adjustedY = mouseY - canvas.height / 2;
+            
+            const worldX = (adjustedX / 32 + adjustedY / 16) / 2 + camera.x;
+            const worldY = (adjustedY / 16 - adjustedX / 32) / 2 + camera.y;
+            
+            player.x = Math.max(0, Math.min(49, Math.floor(worldX)));
+            player.y = Math.max(0, Math.min(49, Math.floor(worldY)));
+            
+            camera.x = player.x;
+            camera.y = player.y;
+            
+            console.log('Player moved to:', player.x, player.y);
+        });
+        
+        // Animation loop
+        function animate() {
+            draw();
+            requestAnimationFrame(animate);
+        }
+        
+        statusEl.textContent = '✅ Test running - You should see green tiles and a blue player!';
+        animate();
+        
+        console.log('=================================');
+        console.log('MINIMAL RENDERING TEST');
+        console.log('If you see green tiles and a blue player rectangle, rendering works!');
+        console.log('If not, there is a browser/canvas issue');
+        console.log('=================================');
+    </script>
+</body>
+</html>
