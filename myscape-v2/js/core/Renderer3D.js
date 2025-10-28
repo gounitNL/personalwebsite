@@ -309,9 +309,10 @@ class Renderer3D {
             this.setCameraTarget(camera.x, camera.y);
         }
         
-        // Create terrain if not exists
-        if (!this.terrainMesh) {
+        // Create terrain once (only on first call)
+        if (this.tileMeshes.size === 0) {
             this.createTerrain(worldData);
+            this.terrainMesh = true; // Mark as created
         }
     }
 
