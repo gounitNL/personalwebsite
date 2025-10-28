@@ -682,12 +682,28 @@ class GameEngine {
             
             // Render world
             if (this.currentArea) {
-                this.renderer.renderWorld(this.currentArea, this.camera, visibleEntities);
+                try {
+                    this.renderer.renderWorld(this.currentArea, this.camera, visibleEntities);
+                } catch (worldError) {
+                    console.error('❌ Error rendering world:', worldError);
+                    // Draw error on canvas
+                    this.ctx.fillStyle = '#f00';
+                    this.ctx.font = '20px Arial';
+                    this.ctx.fillText('World Render Error: ' + worldError.message, 50, 100);
+                }
             }
             
             // Render player
             if (this.player) {
-                this.renderer.renderEntity(this.player, this.camera);
+                try {
+                    this.renderer.renderEntity(this.player, this.camera);
+                } catch (playerError) {
+                    console.error('❌ Error rendering player:', playerError);
+                    // Draw error on canvas
+                    this.ctx.fillStyle = '#f00';
+                    this.ctx.font = '20px Arial';
+                    this.ctx.fillText('Player Render Error: ' + playerError.message, 50, 150);
+                }
             } else {
                 console.warn('⚠️ Player not found during render!');
             }

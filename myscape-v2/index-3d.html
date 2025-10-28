@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyScape 3D - RuneScape-Style MMORPG</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- Three.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-container">
+            <h1>⚔️ MyScape 3D</h1>
+            <p class="subtitle">A RuneScape-Inspired MMORPG (3D Edition)</p>
+            
+            <div class="login-form">
+                <input type="email" id="emailInput" placeholder="Email" autocomplete="email">
+                <input type="password" id="passwordInput" placeholder="Password" autocomplete="current-password">
+                
+                <button id="loginButton" class="btn-primary">Login</button>
+                <button id="registerButton" class="btn-secondary">Register</button>
+                <button id="demoButton" class="btn-demo">Play Demo (3D)</button>
+                
+                <div id="authError" class="error-message hidden"></div>
+            </div>
+            
+            <div class="auth-info">
+                <p>🎮 <strong>3D Controls:</strong></p>
+                <ul>
+                    <li><strong>Click</strong> on map to move</li>
+                    <li><strong>Arrow Keys (←→)</strong> to rotate camera</li>
+                    <li><strong>Arrow Keys (↑↓)</strong> to zoom in/out</li>
+                    <li><strong>Right-click</strong> for actions</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Game Screen -->
+    <div id="gameScreen" class="game-screen hidden">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="player-info">
+                <span id="playerName">Player</span>
+                <span class="separator">|</span>
+                <span>Combat Lvl: <span id="combatLevel">3</span></span>
+            </div>
+            <div class="game-title">MyScape 3D Enhanced</div>
+            <div class="top-bar-actions">
+                <button id="settingsButton" class="icon-button" title="Settings">⚙️</button>
+                <button id="logoutButton" class="icon-button" title="Logout">🚪</button>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Left Sidebar -->
+            <div class="left-sidebar">
+                <!-- Skills Panel -->
+                <div class="panel skills-panel">
+                    <div class="panel-header">Skills</div>
+                    <div class="panel-content" id="skillsList"></div>
+                </div>
+                
+                <!-- Quest Panel -->
+                <div class="panel quest-panel">
+                    <div class="panel-header">Quests (<span id="questPoints">0</span>)</div>
+                    <div class="panel-content" id="questsList"></div>
+                </div>
+            </div>
+
+            <!-- Game Viewport (3D Canvas) -->
+            <div class="game-viewport">
+                <canvas id="gameCanvas"></canvas>
+                
+                <!-- Context Menu -->
+                <div id="contextMenu" class="context-menu hidden"></div>
+                
+                <!-- 3D Controls Info Overlay -->
+                <div class="controls-overlay">
+                    <div class="control-hint">🖱️ Click to move</div>
+                    <div class="control-hint">⬅️➡️ Rotate camera</div>
+                    <div class="control-hint">⬆️⬇️ Zoom</div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar -->
+            <div class="right-sidebar">
+                <!-- Inventory Panel -->
+                <div class="panel inventory-panel">
+                    <div class="panel-header">
+                        Inventory
+                        <span class="inventory-count"><span id="inventoryCount">0</span>/28</span>
+                    </div>
+                    <div class="panel-content">
+                        <div id="inventoryGrid" class="inventory-grid"></div>
+                    </div>
+                </div>
+                
+                <!-- Equipment Panel -->
+                <div class="panel equipment-panel">
+                    <div class="panel-header">Equipment</div>
+                    <div class="panel-content">
+                        <div id="equipmentSlots" class="equipment-slots"></div>
+                        <div id="equipmentStats" class="equipment-stats"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Panels (Chat, etc.) -->
+        <div class="bottom-panels">
+            <div class="panel chat-panel">
+                <div class="panel-header">Chat</div>
+                <div class="panel-content">
+                    <div id="chatMessages" class="chat-messages"></div>
+                    <div class="chat-input-container">
+                        <input type="text" id="chatInput" placeholder="Type message..." />
+                        <button id="chatSendButton">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <!-- Firebase Configuration -->
+    <script src="js/firebase-config.js"></script>
+
+    <!-- Game Configuration -->
+    <script src="data/game-config.js"></script>
+
+    <!-- Core Systems (3D Version) -->
+    <script src="js/core/InputHandler.js"></script>
+    <script src="js/core/Camera3D.js"></script>
+    <script src="js/core/Renderer3D.js"></script>
+    <script src="js/core/GameEngine3D.js"></script>
+
+    <!-- Entities -->
+    <script src="js/entities/Player.js"></script>
+    <script src="js/entities/Resource.js"></script>
+    <script src="js/entities/Enemy.js"></script>
+
+    <!-- Game Systems -->
+    <script src="js/systems/SkillsSystem.js"></script>
+    <script src="js/systems/InventorySystem.js"></script>
+    <script src="js/systems/WorldSystem.js"></script>
+    <script src="js/systems/CombatSystem.js"></script>
+    <script src="js/systems/DamageNumbersSystem.js"></script>
+    <script src="js/systems/EquipmentSystem.js"></script>
+    <script src="js/systems/BankingSystem.js"></script>
+    <script src="js/systems/NPCSystem.js"></script>
+    <script src="js/systems/QuestSystem.js"></script>
+    <script src="js/systems/ShopSystem.js"></script>
+
+    <!-- UI Components -->
+    <script src="js/ui/UIManager.js"></script>
+    <script src="js/ui/StatsPanel.js"></script>
+    <script src="js/ui/ContextMenu.js"></script>
+
+    <!-- Utilities -->
+    <script src="js/utils/SpatialGrid.js"></script>
+    <script src="js/utils/ObjectPool.js"></script>
+    <script src="js/utils/PathFinding.js"></script>
+    <script src="js/utils/FirebaseManager.js"></script>
+
+    <!-- Main Application Script (3D Version) -->
+    <script>
+        // Global variables
+        let gameEngine = null;
+        let currentUser = null;
+        
+        // Initialize Firebase
+        let firebaseManager = null;
+        if (typeof firebase !== 'undefined' && typeof FirebaseConfig !== 'undefined') {
+            firebase.initializeApp(FirebaseConfig);
+            firebaseManager = new FirebaseManager();
+        }
+
+        // Login Screen Handlers
+        document.getElementById('loginButton')?.addEventListener('click', handleLogin);
+        document.getElementById('registerButton')?.addEventListener('click', handleRegister);
+        document.getElementById('demoButton')?.addEventListener('click', handleDemo);
+        document.getElementById('logoutButton')?.addEventListener('click', handleLogout);
+
+        // Enter key on password field
+        document.getElementById('passwordInput')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleLogin();
+        });
+
+        async function handleLogin() {
+            const email = document.getElementById('emailInput').value;
+            const password = document.getElementById('passwordInput').value;
+            
+            if (!email || !password) {
+                showAuthError('Please enter email and password');
+                return;
+            }
+            
+            try {
+                const user = await firebaseManager.login(email, password);
+                currentUser = user;
+                window.currentUser = user;
+                await startGame();
+            } catch (error) {
+                showAuthError(error.message);
+            }
+        }
+
+        async function handleRegister() {
+            const email = document.getElementById('emailInput').value;
+            const password = document.getElementById('passwordInput').value;
+            
+            if (!email || !password) {
+                showAuthError('Please enter email and password');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showAuthError('Password must be at least 6 characters');
+                return;
+            }
+            
+            try {
+                const user = await firebaseManager.register(email, password);
+                currentUser = user;
+                window.currentUser = user;
+                await startGame();
+            } catch (error) {
+                showAuthError(error.message);
+            }
+        }
+
+        async function handleDemo() {
+            currentUser = {
+                uid: 'demo-user-' + Date.now(),
+                email: 'demo@myscape.game',
+                displayName: 'Demo Player',
+                isDemo: true
+            };
+            window.currentUser = currentUser;
+            await startGame();
+        }
+
+        async function handleLogout() {
+            if (firebaseManager && !currentUser.isDemo) {
+                await firebaseManager.logout();
+            }
+            
+            if (gameEngine) {
+                gameEngine.destroy();
+                gameEngine = null;
+            }
+            
+            currentUser = null;
+            window.currentUser = null;
+            
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+        }
+
+        async function startGame() {
+            // Hide login screen
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            
+            // Update player info
+            document.getElementById('playerName').textContent = currentUser.displayName || 'Player';
+            
+            // Initialize 3D game engine
+            try {
+                gameEngine = new GameEngine3D();
+                window.gameEngine = gameEngine;
+                await gameEngine.init('gameCanvas');
+                
+                console.log('✅ 3D Game started successfully!');
+            } catch (error) {
+                console.error('❌ Failed to start game:', error);
+                showAuthError('Failed to start game: ' + error.message);
+            }
+        }
+
+        function showAuthError(message) {
+            const errorDiv = document.getElementById('authError');
+            if (errorDiv) {
+                errorDiv.textContent = message;
+                errorDiv.classList.remove('hidden');
+                
+                setTimeout(() => {
+                    errorDiv.classList.add('hidden');
+                }, 5000);
+            }
+        }
+
+        // Auto-login if demo mode
+        if (window.location.search.includes('demo')) {
+            handleDemo();
+        }
+    </script>
+
+    <style>
+        /* Additional styles for 3D controls overlay */
+        .controls-overlay {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            color: #fff;
+            pointer-events: none;
+        }
+        
+        .control-hint {
+            margin: 3px 0;
+            opacity: 0.8;
+        }
+        
+        .auth-info {
+            margin-top: 20px;
+            text-align: left;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .auth-info ul {
+            margin: 10px 0 0 20px;
+            padding: 0;
+        }
+        
+        .auth-info li {
+            margin: 5px 0;
+        }
+    </style>
+</body>
+</html>
